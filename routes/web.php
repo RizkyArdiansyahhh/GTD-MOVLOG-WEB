@@ -19,6 +19,9 @@ use Inertia\Inertia;
 |--------------------------------------------------------------------------
 */
 
+// If you want a landing page that renders welcome.blade.php, you can keep this:
+Route::get('/welcome', fn () => view('welcome'))->name('welcome');
+
 // ─── Guest routes ─────────────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {
     Route::get('login', fn () => Inertia::render('Auth/Login'))
