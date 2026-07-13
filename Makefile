@@ -1,107 +1,161 @@
-# Logistics Management System — Makefile
-# ─────────────────────────────────────────────────────────────────────
-# Usage: make <target>
-# ─────────────────────────────────────────────────────────────────────
+# ==========================================================
+# Logistics Management System - Makefile
+# ==========================================================
 
-.PHONY: help up down restart build shell logs \
-        install migrate seed fresh test lint \
-        artisan tinker cache-clear queue-work
+.PHONY: help \
+	up down restart build rebuild logs ps \
+	shell install setup \
+	migrate migrate-fresh seed fresh \
+	test lint tinker artisan \
+	cache-clear queue-work
 
-# ── Default target ────────────────────────────────────────────────────
+# ==========================================================
+# Variables
+# ==========================================================
+
+COMPOSE = docker compose
+APP = app
+
+# ==========================================================
+# Help
+# ==========================================================
+
 help:
 	@echo ""
-	@echo "  Logistics Management System"
-	@echo "  ─────────────────────────────────────────"
+	@echo "==============================================="
+	@echo " Logistics Management System"
+	@echo "==============================================="
 	@echo ""
-	@echo "  Docker:"
-	@echo "    make up          Start all containers"
-	@echo "    make down        Stop all containers"
-	@echo "    make restart     Restart all containers"
-	@echo "    make build       Rebuild containers"
-	@echo "    make logs        Show container logs"
+	@echo "Docker"
+	@echo "  make build        Build Docker images"
+	@echo "  make rebuild      Rebuild images without cache"
+	@echo "  make up           Start containers"
+	@echo "  make down         Stop containers"
+	@echo "  make restart      Restart containers"
+	@echo "  make logs         Follow logs"
+	@echo "  make ps           Show running containers"
 	@echo ""
-	@echo "  Development:"
-	@echo "    make shell       Enter the app container (bash)"
-	@echo "    make install     Install PHP & JS dependencies"
-	@echo "    make migrate     Run migrations"
-	@echo "    make seed        Run seeders"
-	@echo "    make fresh       Migrate fresh + seed"
-	@echo "    make test        Run PHPUnit tests"
-	@echo "    make lint        Run Laravel Pint (PSR-12)"
-	@echo "    make tinker      Open Laravel Tinker"
-	@echo "    make cache-clear Clear all caches"
+	@echo "Laravel"
+	@echo "  make shell        Enter app container"
+	@echo "  make install      Install Composer & NPM packages"
+	@echo "  make migrate      Run migrations"
+	@echo "  make seed         Run seeders"
+	@echo "  make fresh        Migrate fresh --seed"
+	@echo "  make cache-clear  Clear Laravel cache"
+	@echo "  make test         Run tests"
+	@echo "  make lint         Run Laravel Pint"
+	@echo "  make tinker       Open Tinker"
+	@echo "  make artisan      Run artisan command"
+	@echo ""
+	@echo "Project"
+	@echo "  make setup        First-time project setup"
 	@echo ""
 
-# ── Docker ────────────────────────────────────────────────────────────
-up:
-	@echo "🚀 Starting containers..."
-	docker compose up -d
-	@echo "✅ Application running at http://localhost:8080"
-	@echo "   pgAdmin running at  http://localhost:5050"
-
-down:
-	@echo "🛑 Stopping containers..."
-	docker compose down
-
-restart:
-	docker compose restart
+# ==========================================================
+# Docker
+# ==========================================================
 
 build:
-	@echo "🔨 Building containers..."
-	docker compose build --no-cache
+	$(COMPOSE) build
+
+rebuild:
+	$(COMPOSE) build --no-cache
+
+up:
+	@echo "🚀 Starting containers..."
+	$(COMPOSE) up -d
+	@echo ""
+	@echo "Application : http://localhost:8080"
+	@echo "pgAdmin     : http://localhost:5050"
+
+down:
+	$(COMPOSE) down
+
+restart:
+	$(COMPOSE) restart
 
 logs:
-	docker compose logs -f --tail=50
+	$(COMPOSE) logs -f --tail=100
 
-# ── Development ───────────────────────────────────────────────────────
+ps:
+	$(COMPOSE) ps
+
+# ==========================================================
+# Development
+# ==========================================================
+
 shell:
-	docker compose exec app bash
+	$(COMPOSE) exec $(APP) bash
 
 install:
-	@echo "📦 Installing PHP dependencies..."
-	docker compose exec app composer install
-	@echo "📦 Installing JS dependencies..."
-	docker compose exec app npm install
+	$(COMPOSE) exec $(APP) composer install
+	$(COMPOSE) exec $(APP) npm install
+
+# ==========================================================
+# Database
+# ==========================================================
 
 migrate:
-	docker compose exec app php artisan migrate
+	$(COMPOSE) exec $(APP) php artisan migrate
 
 seed:
-	docker compose exec app php artisan db:seed
+	$(COMPOSE) exec $(APP) php artisan db:seed
 
 fresh:
-	@echo "⚠️  Running migrate:fresh --seed (this will DESTROY the database!)"
-	docker compose exec app php artisan migrate:fresh --seed
+	$(COMPOSE) exec $(APP) php artisan migrate:fresh --seed
 
-test:
-	docker compose exec app php artisan test --parallel
+# Alias
+migrate-fresh: fresh
 
-lint:
-	docker compose exec app ./vendor/bin/pint
+# ==========================================================
+# Laravel
+# ==========================================================
 
 artisan:
-	docker compose exec app php artisan $(ARGS)
+	$(COMPOSE) exec $(APP) php artisan $(ARGS)
 
 tinker:
-	docker compose exec app php artisan tinker
+	$(COMPOSE) exec $(APP) php artisan tinker
 
 cache-clear:
-	docker compose exec app php artisan cache:clear
-	docker compose exec app php artisan config:clear
-	docker compose exec app php artisan route:clear
-	docker compose exec app php artisan view:clear
-	@echo "✅ All caches cleared."
+	$(COMPOSE) exec $(APP) php artisan optimize:clear
 
 queue-work:
-	docker compose exec app php artisan queue:work redis --sleep=3 --tries=3
+	$(COMPOSE) exec $(APP) php artisan queue:work redis --sleep=3 --tries=3
 
-# ── Shortcut: Setup from scratch ──────────────────────────────────────
+test:
+	$(COMPOSE) exec $(APP) php artisan test --parallel
+
+lint:
+	$(COMPOSE) exec $(APP) ./vendor/bin/pint
+
+# ==========================================================
+# First Time Setup
+# ==========================================================
+
 setup: build up
-	@echo "⏳ Waiting for containers to be ready..."
-	sleep 5
-	docker compose exec app composer install
-	docker compose exec app npm install
-	docker compose exec app php artisan key:generate
-	docker compose exec app php artisan migrate --seed
-	docker compose exec app npm run build
-	@echo "🎉 Setup complete! Visit http://localhost:8080"
+	@echo "⏳ Waiting for containers..."
+	@sleep 10
+
+	@echo "📄 Preparing .env..."
+	$(COMPOSE) exec $(APP) sh -c "test -f .env || cp .env.example .env"
+
+	@echo "📦 Installing Composer dependencies..."
+	$(COMPOSE) exec $(APP) composer install
+
+	@echo "📦 Installing NPM dependencies..."
+	$(COMPOSE) exec $(APP) npm install
+
+	@echo "🔑 Generating application key..."
+	$(COMPOSE) exec $(APP) php artisan key:generate
+
+	@echo "🗄️ Running migrations..."
+	$(COMPOSE) exec $(APP) php artisan migrate --seed
+
+	@echo ""
+	@echo "======================================="
+	@echo "✅ Project setup completed!"
+	@echo "======================================="
+	@echo ""
+	@echo "Application : http://localhost:8080"
+	@echo "pgAdmin     : http://localhost:5050"

@@ -6,6 +6,7 @@ services:
     build:
       context: .
       dockerfile: docker/app/Dockerfile
+    platform: linux/amd64
     container_name: lms_app
     restart: unless-stopped
     working_dir: /var/www/html
@@ -44,7 +45,7 @@ services:
   # PostgreSQL 17
   # ─────────────────────────────────────────
   postgres:
-    image: postgres:17-alpine
+    image: postgres:17
     container_name: lms_postgres
     restart: unless-stopped
     environment:
@@ -69,7 +70,7 @@ services:
   # Redis 7
   # ─────────────────────────────────────────
   redis:
-    image: redis:7-alpine
+    image: redis:7
     container_name: lms_redis
     restart: unless-stopped
     command: redis-server --appendonly yes --requirepass "${REDIS_PASSWORD:-secret}"
@@ -90,6 +91,7 @@ services:
   # ─────────────────────────────────────────
   pgadmin:
     image: dpage/pgadmin4:latest
+    platform: linux/amd64
     container_name: lms_pgadmin
     restart: unless-stopped
     environment:
