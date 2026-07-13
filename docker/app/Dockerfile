@@ -1,7 +1,7 @@
 FROM php:8.4-fpm
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
     git \
     curl \
     libpng-dev \
@@ -35,7 +35,9 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
         sockets
 
 # Install Redis extension
-RUN pecl install redis && docker-php-ext-enable redis
+RUN pecl channel-update pecl.php.net \
+    && pecl install redis \
+    && docker-php-ext-enable redis
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
