@@ -59,7 +59,7 @@ export default function Login() {
                 {/* ══════════════════════════════════════════════════
                     LEFT PANEL — Branding (Desktop only)
                     ══════════════════════════════════════════════════ */}
-                <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden shrink-0">
+                <div className="hidden lg:flex lg:w-[60%] relative overflow-hidden shrink-0">
                     {/* Background image */}
                     <img
                         src="/service-vessel.png"
@@ -113,7 +113,7 @@ export default function Login() {
                 {/* ══════════════════════════════════════════════════
                     RIGHT PANEL — Login Form
                     ══════════════════════════════════════════════════ */}
-                <div className="w-full lg:w-1/2 flex flex-col justify-center items-center z-10 relative px-4 py-8 sm:px-6 lg:px-8 xl:px-16 min-h-screen">
+                <div className="w-full lg:w-[40%] flex flex-col justify-center items-center z-10 relative px-4 py-8 sm:px-6 lg:px-8 xl:px-12 min-h-screen">
                     {/* Header Logo for Mobile */}
                     <motion.div
                         {...fadeBlurUp(0.2)}
