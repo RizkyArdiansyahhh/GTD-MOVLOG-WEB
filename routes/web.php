@@ -29,6 +29,12 @@ Route::middleware('guest')->group(function () {
 
     Route::post('login', [\App\Http\Controllers\Web\Auth\AuthenticatedSessionController::class, 'store'])
         ->name('login.store');
+
+    Route::get('register', fn () => Inertia::render('Auth/Register'))
+        ->name('register');
+
+    Route::post('register', [\App\Http\Controllers\Web\Auth\RegisteredUserController::class, 'store'])
+        ->name('register.store');
 });
 
 // ─── Authenticated routes ──────────────────────────────────────────────────
