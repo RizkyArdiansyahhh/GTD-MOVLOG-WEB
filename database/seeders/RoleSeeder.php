@@ -5,15 +5,11 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Enums\UserRole;
+use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
-use Illuminate\Database\Seeder;
+use Spatie\Permission\PermissionRegistrar;
 
-/**
- * Role Seeder
- *
- * Creates all roles and permissions for the Logistics Management System.
- */
 class RoleSeeder extends Seeder
 {
     /**
@@ -21,95 +17,212 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
-        // Reset cached roles and permissions
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // ─── Define Permissions ────────────────────────────────────────────
+        /*
+        |--------------------------------------------------------------------------
+        | Permissions
+        |--------------------------------------------------------------------------
+        */
+
         $permissions = [
-            // User management
+
+            // User
             'users.view',
             'users.create',
             'users.update',
             'users.delete',
 
-            // Shipment management
-            'shipments.view',
-            'shipments.create',
-            'shipments.update',
-            'shipments.delete',
-            'shipments.assign',
+            // Customer
+            'customers.view',
+            'customers.create',
+            'customers.update',
+            'customers.delete',
 
-            // Driver management
-            'drivers.view',
-            'drivers.assign',
+            // Shipping Session
+            'shipping_sessions.view',
+            'shipping_sessions.create',
+            'shipping_sessions.update',
+            'shipping_sessions.delete',
 
-            // Warehouse management
-            'warehouse.view',
-            'warehouse.manage',
+            // Document
+            'documents.view',
+            'documents.upload',
+            'documents.verify',
 
-            // Reports
+            // Checkpoint
+            'checkpoints.view',
+            'checkpoints.update',
+
+            // Movement
+            'movements.view',
+            'movements.create',
+            'movements.update',
+
+            // Report
             'reports.view',
+            'reports.create',
+            'reports.update',
             'reports.export',
 
             // System
-            'system.settings',
-            'system.roles',
+            'roles.manage',
+            'settings.manage',
         ];
 
         foreach ($permissions as $permission) {
-            Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
-            Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'sanctum']);
+            Permission::firstOrCreate([
+                'name' => $permission,
+                'guard_name' => 'web',
+            ]);
+
+            Permission::firstOrCreate([
+                'name' => $permission,
+                'guard_name' => 'sanctum',
+            ]);
         }
 
-        // ─── Create Roles & Assign Permissions ────────────────────────────
-        // Super Admin — full access (bypass via Policy::before)
-        $superAdmin = Role::firstOrCreate(['name' => UserRole::SuperAdmin->value, 'guard_name' => 'web']);
-        Role::firstOrCreate(['name' => UserRole::SuperAdmin->value, 'guard_name' => 'sanctum']);
+        /*
+        |--------------------------------------------------------------------------
+        | Super Admin
+        |--------------------------------------------------------------------------
+        */
 
-        // Admin
-        $admin = Role::firstOrCreate(['name' => UserRole::Admin->value, 'guard_name' => 'web']);
-        Role::firstOrCreate(['name' => UserRole::Admin->value, 'guard_name' => 'sanctum']);
-        $admin->syncPermissions([
-            'users.view', 'users.create', 'users.update',
-            'shipments.view', 'shipments.create', 'shipments.update', 'shipments.assign',
-            'drivers.view', 'drivers.assign',
-            'warehouse.view', 'warehouse.manage',
-            'reports.view', 'reports.export',
+        Role::firstOrCreate([
+            'name' => UserRole::SuperAdmin->value,
+            'guard_name' => 'web',
         ]);
 
-        // Manager
-        $manager = Role::firstOrCreate(['name' => UserRole::Manager->value, 'guard_name' => 'web']);
-        Role::firstOrCreate(['name' => UserRole::Manager->value, 'guard_name' => 'sanctum']);
-        $manager->syncPermissions([
+        Role::firstOrCreate([
+            'name' => UserRole::SuperAdmin->value,
+            'guard_name' => 'sanctum',
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Supervisor
+        |--------------------------------------------------------------------------
+        */
+
+        $supervisor = Role::firstOrCreate([
+            'name' => UserRole::Supervisor->value,
+            'guard_name' => 'web',
+        ]);
+
+        Role::firstOrCreate([
+            'name' => UserRole::Supervisor->value,
+            'guard_name' => 'sanctum',
+        ]);
+
+        $supervisor->syncPermissions([
             'users.view',
-            'shipments.view', 'shipments.create', 'shipments.update', 'shipments.assign',
-            'drivers.view', 'drivers.assign',
-            'warehouse.view',
+
+            'customers.view',
+            'customers.create',
+            'customers.update',
+
+            'shipping_sessions.view',
+            'shipping_sessions.create',
+            'shipping_sessions.update',
+
+            'documents.view',
+            'documents.verify',
+
+            'checkpoints.view',
+
+            'movements.view',
+
+            'reports.view',
+            'reports.export',
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Staff
+        |--------------------------------------------------------------------------
+        */
+
+        $staff = Role::firstOrCreate([
+            'name' => UserRole::Staff->value,
+            'guard_name' => 'web',
+        ]);
+
+        Role::firstOrCreate([
+            'name' => UserRole::Staff->value,
+            'guard_name' => 'sanctum',
+        ]);
+
+        $staff->syncPermissions([
+            'customers.view',
+            'customers.create',
+            'customers.update',
+
+            'shipping_sessions.view',
+            'shipping_sessions.create',
+            'shipping_sessions.update',
+
+            'documents.view',
+            'documents.upload',
+
             'reports.view',
         ]);
 
-        // Driver
-        $driver = Role::firstOrCreate(['name' => UserRole::Driver->value, 'guard_name' => 'web']);
-        Role::firstOrCreate(['name' => UserRole::Driver->value, 'guard_name' => 'sanctum']);
-        $driver->syncPermissions([
-            'shipments.view',
+        /*
+        |--------------------------------------------------------------------------
+        | Field Worker (Mobile)
+        |--------------------------------------------------------------------------
+        */
+
+        $fieldWorker = Role::firstOrCreate([
+            'name' => UserRole::FieldWorker->value,
+            'guard_name' => 'web',
         ]);
 
-        // Warehouse Staff
-        $warehouse = Role::firstOrCreate(['name' => UserRole::Warehouse->value, 'guard_name' => 'web']);
-        Role::firstOrCreate(['name' => UserRole::Warehouse->value, 'guard_name' => 'sanctum']);
-        $warehouse->syncPermissions([
-            'shipments.view',
-            'warehouse.view', 'warehouse.manage',
+        Role::firstOrCreate([
+            'name' => UserRole::FieldWorker->value,
+            'guard_name' => 'sanctum',
         ]);
 
-        // Customer
-        $customer = Role::firstOrCreate(['name' => UserRole::Customer->value, 'guard_name' => 'web']);
-        Role::firstOrCreate(['name' => UserRole::Customer->value, 'guard_name' => 'sanctum']);
+        $fieldWorker->syncPermissions([
+            'shipping_sessions.view',
+
+            'documents.view',
+            'documents.upload',
+
+            'checkpoints.view',
+            'checkpoints.update',
+
+            'movements.view',
+            'movements.create',
+            'movements.update',
+
+            'reports.view',
+            'reports.create',
+            'reports.update',
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Customer
+        |--------------------------------------------------------------------------
+        */
+
+        $customer = Role::firstOrCreate([
+            'name' => UserRole::Customer->value,
+            'guard_name' => 'web',
+        ]);
+
+        Role::firstOrCreate([
+            'name' => UserRole::Customer->value,
+            'guard_name' => 'sanctum',
+        ]);
+
         $customer->syncPermissions([
-            'shipments.view',
+            'shipping_sessions.view',
+            'documents.view',
+            'reports.view',
         ]);
 
-        $this->command->info('✅ Roles and permissions seeded successfully.');
+        $this->command->info('✅ Roles & permissions seeded successfully.');
     }
 }

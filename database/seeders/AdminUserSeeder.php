@@ -11,9 +11,9 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 /**
- * Admin User Seeder
+ * Default User Seeder
  *
- * Creates the default super-admin and admin users for the system.
+ * Creates default users for each role.
  */
 class AdminUserSeeder extends Seeder
 {
@@ -22,7 +22,7 @@ class AdminUserSeeder extends Seeder
      */
     public function run(): void
     {
-        // ─── Super Admin ───────────────────────────────────────────────────
+        // ─── Super Admin ───────────────────────────────────────────────
         $superAdmin = User::firstOrCreate(
             ['email' => 'superadmin@lms.local'],
             [
@@ -32,39 +32,71 @@ class AdminUserSeeder extends Seeder
                 'email_verified_at' => now(),
             ]
         );
+
         $superAdmin->assignRole(UserRole::SuperAdmin->value);
 
-        // ─── Admin ─────────────────────────────────────────────────────────
-        $admin = User::firstOrCreate(
-            ['email' => 'admin@lms.local'],
+        // ─── Supervisor ────────────────────────────────────────────────
+        $supervisor = User::firstOrCreate(
+            ['email' => 'supervisor@lms.local'],
             [
-                'name'              => 'Admin LMS',
+                'name'              => 'Supervisor',
                 'password'          => Hash::make('Admin@1234'),
                 'status'            => UserStatus::Active->value,
                 'email_verified_at' => now(),
             ]
         );
-        $admin->assignRole(UserRole::Admin->value);
 
-        // ─── Manager ───────────────────────────────────────────────────────
-        $manager = User::firstOrCreate(
-            ['email' => 'manager@lms.local'],
+        $supervisor->assignRole(UserRole::Supervisor->value);
+
+        // ─── Staff ─────────────────────────────────────────────────────
+        $staff = User::firstOrCreate(
+            ['email' => 'staff@lms.local'],
             [
-                'name'              => 'Manager LMS',
+                'name'              => 'Staff',
                 'password'          => Hash::make('Admin@1234'),
                 'status'            => UserStatus::Active->value,
                 'email_verified_at' => now(),
             ]
         );
-        $manager->assignRole(UserRole::Manager->value);
 
-        $this->command->info('✅ Admin users seeded successfully.');
+        $staff->assignRole(UserRole::Staff->value);
+
+        // ─── Field Worker ──────────────────────────────────────────────
+        $fieldWorker = User::firstOrCreate(
+            ['email' => 'fieldworker@lms.local'],
+            [
+                'name'              => 'Field Worker',
+                'password'          => Hash::make('Admin@1234'),
+                'status'            => UserStatus::Active->value,
+                'email_verified_at' => now(),
+            ]
+        );
+
+        $fieldWorker->assignRole(UserRole::FieldWorker->value);
+
+        // ─── Customer ──────────────────────────────────────────────────
+        $customer = User::firstOrCreate(
+            ['email' => 'customer@lms.local'],
+            [
+                'name'              => 'Customer',
+                'password'          => Hash::make('Admin@1234'),
+                'status'            => UserStatus::Active->value,
+                'email_verified_at' => now(),
+            ]
+        );
+
+        $customer->assignRole(UserRole::Customer->value);
+
+        $this->command->info('✅ Default users seeded successfully.');
+
         $this->command->table(
             ['Email', 'Password', 'Role'],
             [
                 ['superadmin@lms.local', 'Admin@1234', UserRole::SuperAdmin->label()],
-                ['admin@lms.local', 'Admin@1234', UserRole::Admin->label()],
-                ['manager@lms.local', 'Admin@1234', UserRole::Manager->label()],
+                ['supervisor@lms.local', 'Admin@1234', UserRole::Supervisor->label()],
+                ['staff@lms.local', 'Admin@1234', UserRole::Staff->label()],
+                ['fieldworker@lms.local', 'Admin@1234', UserRole::FieldWorker->label()],
+                ['customer@lms.local', 'Admin@1234', UserRole::Customer->label()],
             ]
         );
     }

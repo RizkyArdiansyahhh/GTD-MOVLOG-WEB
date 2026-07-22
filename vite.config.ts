@@ -18,4 +18,13 @@ export default defineConfig({
             '@': path.resolve(__dirname, './resources/js'),
         },
     },
+    server: {
+        host: '0.0.0.0',   // listen on all interfaces inside Docker
+        port: 5173,
+        strictPort: true,   // fail instead of silently switching ports
+        hmr: {
+            host: 'localhost', // browser connects via localhost
+            port: 5173,
+        },
+    },
 });
