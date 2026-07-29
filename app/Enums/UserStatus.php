@@ -13,7 +13,6 @@ enum UserStatus: string
 {
     case Active   = 'active';
     case Inactive = 'inactive';
-    case Banned   = 'banned';
     case Pending  = 'pending';
 
     /**
@@ -24,7 +23,6 @@ enum UserStatus: string
         return match ($this) {
             self::Active   => 'Active',
             self::Inactive => 'Inactive',
-            self::Banned   => 'Banned',
             self::Pending  => 'Pending Verification',
         };
     }

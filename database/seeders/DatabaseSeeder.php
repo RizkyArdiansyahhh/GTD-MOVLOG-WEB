@@ -23,6 +23,18 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,      // Must run first: creates roles & permissions
             AdminUserSeeder::class, // Depends on roles
+            CheckpointSeeder::class,
+            DocumentTypeSeeder::class,
+            ReportTemplateSeeder::class,
+            TemplateFieldSeeder::class,
+            CustomerSeeder::class,
+            ShippingSessionSeeder::class,
+            SessionCheckpointSeeder::class,
+            MovementSeeder::class,
+            DocumentSeeder::class,
+            ReportSeeder::class,
+            ReportValueSeeder::class,
+            ReportPhotoSeeder::class,
         ]);
 
         $this->command->info('✅ Database seeding completed!');

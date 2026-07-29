@@ -19,11 +19,12 @@ export default defineConfig({
         },
     },
     server: {
-        host: '0.0.0.0',
+        host: '0.0.0.0',   // listen on all interfaces inside Docker
         port: 5173,
-        strictPort: true,
+        strictPort: true,   // fail instead of silently switching ports
         hmr: {
-            host: 'localhost',
+            host: 'localhost', // browser connects via localhost
+            port: 5173,
         },
     },
 });
