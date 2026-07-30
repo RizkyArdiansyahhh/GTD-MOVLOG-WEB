@@ -318,7 +318,7 @@ export default function Login() {
                         >
                             Belum punya akun?{' '}
                             <a
-                                href="#"
+                                href="/register"
                                 className="text-gold hover:underline font-semibold transition-colors"
                             >
                                 Daftar sekarang
