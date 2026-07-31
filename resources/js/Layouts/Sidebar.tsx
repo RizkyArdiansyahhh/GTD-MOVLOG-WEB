@@ -9,7 +9,16 @@ import {
     BarChart3,
     LogOut,
 } from 'lucide-react';
+import type { PageProps } from '@/types';
 
+// ─────────────────────────────────────────────
+// Dummy current user fallback
+// ─────────────────────────────────────────────
+const dummyCurrentUser = {
+    id: '1',
+    name: 'Super Admin',
+    role: 'super-admin',
+};
 
 // ─────────────────────────────────────────────
 // Menu definition
@@ -18,12 +27,13 @@ interface MenuItem {
     label: string;
     href: string;
     icon: React.ElementType;
+    /** If set, the menu only renders when the user has one of these roles */
+    roles?: string[];
 }
 
-// Module-level constant – defined once, not re-created on every render
 const menuItems: MenuItem[] = [
     { label: 'Dashboard',             href: '/',                  icon: LayoutDashboard },
-    { label: 'Kelola Akun',           href: '/kelola-akun',       icon: Users },
+    { label: 'Kelola Akun',           href: '/kelola-akun',       icon: Users, roles: ['super-admin', 'Super Admin', 'Super-Admin'] },
     { label: 'Monitoring Barang',     href: '/monitoring-barang', icon: PackageSearch },
     { label: 'Monitoring Checkpoint', href: '/monitoring-cp',     icon: MapPin },
     { label: 'Kelola Sesi Pekerja',   href: '/sesi-pekerja',      icon: ClipboardList },
@@ -35,8 +45,14 @@ const menuItems: MenuItem[] = [
 const NAVBAR_HEIGHT = 64;
 
 export default function Sidebar() {
-    const { url } = usePage();
-    const currentPath = url;
+    const page = usePage<PageProps>();
+    const currentPath = page.url;
+    const authUser = page.props.auth?.user;
+
+    // Get active user roles (normalized to lowercase)
+    const userRoles = (authUser?.roles && authUser.roles.length > 0)
+        ? authUser.roles.map((r) => r.toLowerCase())
+        : [dummyCurrentUser.role.toLowerCase()];
 
     const isActive = (href: string) => {
         if (href === '/') return currentPath === '/';
@@ -58,6 +74,15 @@ export default function Sidebar() {
                 {/* ── Navigation ── */}
                 <nav className="flex-1 flex flex-col gap-1 overflow-y-auto">
                     {menuItems.map((item) => {
+                        // ── Conditional rendering: skip restricted items if role doesn't match ──
+                        if (item.roles) {
+                            const allowedRoles = item.roles.map((r) => r.toLowerCase());
+                            const hasPermission = allowedRoles.some((role) => userRoles.includes(role));
+                            if (!hasPermission) {
+                                return null;
+                            }
+                        }
+
                         const active = isActive(item.href);
                         const Icon = item.icon;
                         return (
