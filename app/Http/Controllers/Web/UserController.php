@@ -71,7 +71,7 @@ class UserController extends Controller
      * GET /users/{user}
      * Show a user's profile.
      */
-    public function show(int $user): Response
+    public function show(string $user): Response
     {
         $userData = $this->userService->findById($user);
 
@@ -86,7 +86,7 @@ class UserController extends Controller
      * GET /users/{user}/edit
      * Show the edit form for a user.
      */
-    public function edit(int $user): Response
+    public function edit(string $user): Response
     {
         $userData = $this->userService->findById($user);
 
@@ -101,7 +101,7 @@ class UserController extends Controller
      * PUT /users/{user}
      * Update an existing user.
      */
-    public function update(UpdateUserRequest $request, int $user): RedirectResponse
+    public function update(UpdateUserRequest $request, string $user): RedirectResponse
     {
         $this->userService->update($user, UserDTO::from($request->validated()));
 
@@ -113,13 +113,64 @@ class UserController extends Controller
      * DELETE /users/{user}
      * Delete a user.
      */
-    public function destroy(int $user): RedirectResponse
+    public function destroy(string $user)
     {
-        $this->authorize('delete', \App\Models\User::findOrFail($user));
+        $request = request();
+        $userModel = \App\Models\User::find($user);
 
-        $this->userService->delete($user);
+        if (!$userModel) {
+            if ($request->expectsJson() && !$request->header('X-Inertia')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pengguna tidak ditemukan.',
+                ], 404);
+            }
+            return redirect()->back()->withErrors(['error' => 'Pengguna tidak ditemukan.']);
+        }
 
-        return redirect()->route('users.index')
-            ->with('success', 'User deleted successfully.');
+        if ($request->user() && $request->user()->cannot('delete', $userModel)) {
+            $msg = 'Anda tidak memiliki akses untuk menghapus pengguna ini.';
+            if ($request->expectsJson() && !$request->header('X-Inertia')) {
+                return response()->json(['success' => false, 'message' => $msg], 403);
+            }
+            return redirect()->back()->withErrors(['error' => $msg]);
+        }
+
+        try {
+            $this->userService->delete($user, $request->user());
+        } catch (\App\Exceptions\BusinessException $e) {
+            if ($request->expectsJson() && !$request->header('X-Inertia')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage(),
+                ], 422);
+            }
+            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            if ($request->expectsJson() && !$request->header('X-Inertia')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pengguna tidak ditemukan.',
+                ], 404);
+            }
+            return redirect()->back()->withErrors(['error' => 'Pengguna tidak ditemukan.']);
+        } catch (\Throwable $e) {
+            if ($request->expectsJson() && !$request->header('X-Inertia')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage() ?: 'Gagal menghapus pengguna.',
+                ], 500);
+            }
+            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+        }
+
+        if ($request->expectsJson() && !$request->header('X-Inertia')) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Pengguna berhasil dihapus.',
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Pengguna berhasil dihapus.');
     }
 }

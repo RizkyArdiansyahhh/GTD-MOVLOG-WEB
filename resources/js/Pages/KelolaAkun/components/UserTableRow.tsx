@@ -8,6 +8,7 @@ interface UserTableRowProps {
     selected: boolean;
     onToggleSelect: (id: string) => void;
     onStatusToggleClick: (user: KelolaAkunUser) => void;
+    onDeleteClick?: (user: KelolaAkunUser) => void;
     isUpdatingStatus?: boolean;
 }
 
@@ -16,6 +17,7 @@ export default function UserTableRow({
     selected,
     onToggleSelect,
     onStatusToggleClick,
+    onDeleteClick,
     isUpdatingStatus = false,
 }: UserTableRowProps) {
     return (
@@ -73,7 +75,10 @@ export default function UserTableRow({
 
             {/* Aksi */}
             <td className="px-4 py-3.5 whitespace-nowrap">
-                <UserActionButtons userId={user.id} />
+                <UserActionButtons
+                    userId={user.id}
+                    onDelete={() => onDeleteClick?.(user)}
+                />
             </td>
         </tr>
     );

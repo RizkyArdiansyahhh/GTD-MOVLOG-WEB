@@ -8,6 +8,7 @@ import UserFilters from './components/UserFilters';
 import UserTable from './components/UserTable';
 import Pagination from './components/Pagination';
 import UserStatusConfirmationModal from './components/UserStatusConfirmationModal';
+import UserDeleteConfirmationModal from './components/UserDeleteConfirmationModal';
 import ToastNotification, { type ToastMessage } from './components/ToastNotification';
 import type { KelolaAkunUser } from './types';
 import { seederUsers, seederStats, roleOptions as defaultRoleOptions } from './data';
@@ -74,10 +75,12 @@ export default function Index() {
     const [currentPage, setCurrentPage] = useState(users?.current_page ?? 1);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-    // State for Status Confirmation Modal & Toast
+    // State for Status Confirmation Modal, Delete Confirmation Modal & Toast
     const [modalUser, setModalUser] = useState<KelolaAkunUser | null>(null);
     const [isSubmittingStatus, setIsSubmittingStatus] = useState(false);
     const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
+    const [deleteModalUser, setDeleteModalUser] = useState<KelolaAkunUser | null>(null);
+    const [isSubmittingDelete, setIsSubmittingDelete] = useState(false);
     const [toast, setToast] = useState<ToastMessage | null>(null);
 
     // Filtered users (works for both server fallback and local client filter)
@@ -243,6 +246,62 @@ export default function Index() {
         }
     };
 
+    // Delete user handlers
+    const handleDeleteClick = (user: KelolaAkunUser) => {
+        setDeleteModalUser(user);
+    };
+
+    const handleConfirmDelete = () => {
+        if (!deleteModalUser) return;
+
+        setIsSubmittingDelete(true);
+
+        const updateLocal = () => {
+            setLocalUsers((prev) => prev.filter((u) => u.id !== deleteModalUser.id));
+        };
+
+        if (hasServerData) {
+            router.delete(`/users/${deleteModalUser.id}`, {
+                preserveScroll: true,
+                preserveState: false,
+                onSuccess: () => {
+                    updateLocal();
+                    setIsSubmittingDelete(false);
+                    setDeleteModalUser(null);
+                    setToast({
+                        id: String(Date.now()),
+                        type: 'success',
+                        message: '✅ Pengguna berhasil dihapus.',
+                    });
+                },
+                onError: (errors) => {
+                    setIsSubmittingDelete(false);
+                    setDeleteModalUser(null);
+                    const errMessage = errors?.error || errors?.message || (typeof errors === 'string' ? errors : Object.values(errors)[0]) || '';
+                    setToast({
+                        id: String(Date.now()),
+                        type: 'error',
+                        message: `❌ Gagal menghapus pengguna.${errMessage ? ` ${errMessage}` : ''}`,
+                    });
+                },
+                onFinish: () => {
+                    setIsSubmittingDelete(false);
+                },
+            });
+        } else {
+            setTimeout(() => {
+                updateLocal();
+                setIsSubmittingDelete(false);
+                setDeleteModalUser(null);
+                setToast({
+                    id: String(Date.now()),
+                    type: 'success',
+                    message: '✅ Pengguna berhasil dihapus.',
+                });
+            }, 300);
+        }
+    };
+
     // Pagination bounds
     const totalPages = hasServerData ? (users.last_page ?? 1) : Math.max(1, Math.ceil(filteredUsers.length / ITEMS_PER_PAGE));
     const paginatedUsers = hasServerData ? filteredUsers : filteredUsers.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
@@ -290,6 +349,15 @@ export default function Index() {
                 onClose={() => setModalUser(null)}
                 onConfirm={handleConfirmStatusChange}
                 isSubmitting={isSubmittingStatus}
+            />
+
+            {/* Delete Confirmation Modal */}
+            <UserDeleteConfirmationModal
+                isOpen={deleteModalUser !== null}
+                user={deleteModalUser}
+                onClose={() => setDeleteModalUser(null)}
+                onConfirm={handleConfirmDelete}
+                isSubmitting={isSubmittingDelete}
             />
 
             {!isSuperAdmin ? (
@@ -387,6 +455,7 @@ export default function Index() {
                         onToggleSelect={handleToggleSelect}
                         onToggleSelectAll={handleToggleSelectAll}
                         onStatusToggleClick={handleStatusToggleClick}
+                        onDeleteClick={handleDeleteClick}
                         updatingUserId={updatingUserId}
                     />
 
