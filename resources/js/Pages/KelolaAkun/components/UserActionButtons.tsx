@@ -1,16 +1,14 @@
-import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { router } from '@inertiajs/react';
 
 interface UserActionButtonsProps {
     userId: string;
-    onDetail?: (id: string) => void;
     onEdit?: (id: string) => void;
     onDelete?: (id: string) => void;
 }
 
 export default function UserActionButtons({
     userId,
-    onDetail,
     onEdit,
     onDelete,
 }: UserActionButtonsProps) {
@@ -24,18 +22,6 @@ export default function UserActionButtons({
 
     return (
         <div className="flex items-center gap-1">
-            {/* Detail */}
-            <button
-                type="button"
-                onClick={() => onDetail?.(userId)}
-                className="flex items-center justify-center rounded-lg transition-all duration-150 hover:bg-blue-50 cursor-pointer"
-                style={{ width: 32, height: 32 }}
-                title="Detail"
-                aria-label="Lihat detail pengguna"
-            >
-                <Eye size={16} className="text-gray-400 hover:text-blue-600" strokeWidth={1.8} />
-            </button>
-
             {/* Edit */}
             <button
                 type="button"
@@ -52,7 +38,7 @@ export default function UserActionButtons({
             <button
                 type="button"
                 onClick={() => onDelete?.(userId)}
-                className="flex items-center justify-center rounded-lg transition-all duration-150 hover:bg-red-50"
+                className="flex items-center justify-center rounded-lg transition-all duration-150 hover:bg-red-50 cursor-pointer"
                 style={{ width: 32, height: 32 }}
                 title="Hapus"
                 aria-label="Hapus pengguna"
