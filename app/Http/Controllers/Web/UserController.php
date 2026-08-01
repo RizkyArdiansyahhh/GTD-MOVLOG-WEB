@@ -10,6 +10,7 @@ use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Services\UserService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -31,7 +32,7 @@ class UserController extends Controller
      */
     public function index(): Response
     {
-        $this->authorize('viewAny', \App\Models\User::class);
+        Gate::authorize('viewAny', \App\Models\User::class);
 
         $users = $this->userService->list(
             perPage: (int) request()->query('per_page', 15),
@@ -50,7 +51,7 @@ class UserController extends Controller
      */
     public function create(): Response
     {
-        $this->authorize('create', \App\Models\User::class);
+        Gate::authorize('create', \App\Models\User::class);
 
         return Inertia::render('Users/Create');
     }
@@ -75,7 +76,7 @@ class UserController extends Controller
     {
         $userData = $this->userService->findById($user);
 
-        $this->authorize('view', $userData);
+        Gate::authorize('view', $userData);
 
         return Inertia::render('Users/Show', [
             'user' => $userData,
@@ -90,10 +91,17 @@ class UserController extends Controller
     {
         $userData = $this->userService->findById($user);
 
-        $this->authorize('update', $userData);
+        Gate::authorize('update', $userData);
 
         return Inertia::render('Users/Edit', [
-            'user' => $userData,
+            'user' => [
+                'id'     => (string) $userData->id,
+                'name'   => $userData->name,
+                'email'  => $userData->email,
+                'role'   => $userData->roles->first()?->name ?? 'staff',
+                'status' => $userData->status->value,
+                'phone'  => $userData->phone,
+            ],
         ]);
     }
 
@@ -105,8 +113,8 @@ class UserController extends Controller
     {
         $this->userService->update($user, UserDTO::from($request->validated()));
 
-        return redirect()->route('users.index')
-            ->with('success', 'User updated successfully.');
+        return redirect()->route('kelola-akun')
+            ->with('success', 'Data pengguna berhasil diperbarui.');
     }
 
     /**

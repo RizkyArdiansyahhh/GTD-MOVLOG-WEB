@@ -82,7 +82,7 @@ class UserService extends BaseService
                 'status' => $dto->status->value,
             ];
 
-            if ($dto->password) {
+            if (is_string($dto->password) && $dto->password !== '') {
                 $data['password'] = Hash::make($dto->password);
             }
 

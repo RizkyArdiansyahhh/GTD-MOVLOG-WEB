@@ -1,4 +1,5 @@
 import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { router } from '@inertiajs/react';
 
 interface UserActionButtonsProps {
     userId: string;
@@ -13,13 +14,21 @@ export default function UserActionButtons({
     onEdit,
     onDelete,
 }: UserActionButtonsProps) {
+    const handleEdit = () => {
+        if (onEdit) {
+            onEdit(userId);
+        } else {
+            router.get(`/users/${userId}/edit`);
+        }
+    };
+
     return (
         <div className="flex items-center gap-1">
             {/* Detail */}
             <button
                 type="button"
                 onClick={() => onDetail?.(userId)}
-                className="flex items-center justify-center rounded-lg transition-all duration-150 hover:bg-blue-50"
+                className="flex items-center justify-center rounded-lg transition-all duration-150 hover:bg-blue-50 cursor-pointer"
                 style={{ width: 32, height: 32 }}
                 title="Detail"
                 aria-label="Lihat detail pengguna"
@@ -30,8 +39,8 @@ export default function UserActionButtons({
             {/* Edit */}
             <button
                 type="button"
-                onClick={() => onEdit?.(userId)}
-                className="flex items-center justify-center rounded-lg transition-all duration-150 hover:bg-amber-50"
+                onClick={handleEdit}
+                className="flex items-center justify-center rounded-lg transition-all duration-150 hover:bg-amber-50 cursor-pointer"
                 style={{ width: 32, height: 32 }}
                 title="Edit"
                 aria-label="Edit pengguna"

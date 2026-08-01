@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Head, router, usePage } from '@inertiajs/react';
 import { Users, ShieldCheck, UserCheck, UserX, Plus, AlertCircle } from 'lucide-react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
@@ -46,6 +46,10 @@ interface KelolaAkunProps extends PageProps {
     stats?: StatsData;
     availableRoles?: string[];
     filters?: Filters;
+    flash?: {
+        success?: string;
+        error?: string;
+    };
 }
 
 const ITEMS_PER_PAGE = 5;
@@ -55,11 +59,14 @@ const ITEMS_PER_PAGE = 5;
 // ─────────────────────────────────────────────
 export default function Index() {
     const pageProps = usePage<KelolaAkunProps>().props;
-    const { users, stats, availableRoles, filters, auth } = pageProps;
+    const { users, stats, availableRoles, filters, auth, flash } = pageProps;
 
     // ── Access control ──
-    const userRoles = auth?.user?.roles?.map((r) => r.toLowerCase()) ?? ['super-admin'];
-    const isSuperAdmin = userRoles.includes('super-admin') || userRoles.includes('super admin');
+    const isSuperAdmin = useMemo(() => {
+        if (!auth?.user) return true;
+        const roles = auth.user.roles || [];
+        return roles.includes('super-admin') || roles.includes('Super Admin');
+    }, [auth]);
 
     // Determine if server data is present and non-empty
     const hasServerData = users && Array.isArray(users.data) && users.data.length > 0;
@@ -82,6 +89,23 @@ export default function Index() {
     const [deleteModalUser, setDeleteModalUser] = useState<KelolaAkunUser | null>(null);
     const [isSubmittingDelete, setIsSubmittingDelete] = useState(false);
     const [toast, setToast] = useState<ToastMessage | null>(null);
+
+    // Listen to flash messages (e.g., success message on redirect from Edit User)
+    useEffect(() => {
+        if (flash?.success) {
+            setToast({
+                id: String(Date.now()),
+                type: 'success',
+                message: flash.success,
+            });
+        } else if (flash?.error) {
+            setToast({
+                id: String(Date.now()),
+                type: 'error',
+                message: flash.error,
+            });
+        }
+    }, [flash]);
 
     // Filtered users (works for both server fallback and local client filter)
     const filteredUsers = useMemo(() => {
@@ -455,6 +479,7 @@ export default function Index() {
                         onToggleSelect={handleToggleSelect}
                         onToggleSelectAll={handleToggleSelectAll}
                         onStatusToggleClick={handleStatusToggleClick}
+                        onEditClick={(u) => router.get(`/users/${u.id}/edit`)}
                         onDeleteClick={handleDeleteClick}
                         updatingUserId={updatingUserId}
                     />

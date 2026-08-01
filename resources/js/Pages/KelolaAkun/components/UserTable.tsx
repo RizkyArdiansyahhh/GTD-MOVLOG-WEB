@@ -8,6 +8,7 @@ interface UserTableProps {
     onToggleSelect: (id: string) => void;
     onToggleSelectAll: () => void;
     onStatusToggleClick: (user: KelolaAkunUser) => void;
+    onEditClick?: (user: KelolaAkunUser) => void;
     onDeleteClick?: (user: KelolaAkunUser) => void;
     updatingUserId?: string | null;
 }
@@ -18,6 +19,7 @@ export default function UserTable({
     onToggleSelect,
     onToggleSelectAll,
     onStatusToggleClick,
+    onEditClick,
     onDeleteClick,
     updatingUserId,
 }: UserTableProps) {
@@ -70,6 +72,7 @@ export default function UserTable({
                                     selected={selectedIds.has(user.id)}
                                     onToggleSelect={onToggleSelect}
                                     onStatusToggleClick={onStatusToggleClick}
+                                    onEditClick={onEditClick}
                                     onDeleteClick={onDeleteClick}
                                     isUpdatingStatus={updatingUserId === user.id}
                                 />
