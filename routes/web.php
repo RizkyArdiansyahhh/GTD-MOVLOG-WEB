@@ -48,6 +48,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Kelola Akun
     Route::get('kelola-akun', [KelolaAkunController::class, 'index'])
         ->name('kelola-akun');
+    Route::get('kelola-akun/tambah', [KelolaAkunController::class, 'create'])
+        ->name('kelola-akun.create');
+    Route::post('kelola-akun/tambah', [KelolaAkunController::class, 'store'])
+        ->name('kelola-akun.store');
     Route::patch('kelola-akun/{user}/status', [KelolaAkunController::class, 'toggleStatus'])
         ->name('kelola-akun.toggle-status');
 

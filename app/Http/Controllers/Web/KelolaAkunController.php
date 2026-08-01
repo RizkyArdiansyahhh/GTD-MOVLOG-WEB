@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Web;
 
-use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\DTOs\UserDTO;
+use App\Enums\UserRole;
 use App\Enums\UserStatus;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\User\StoreUserRequest;
+use App\Models\User;
+use App\Services\UserService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -30,6 +35,10 @@ class KelolaAkunController extends Controller
         'field-worker' => 'Field Worker',
         'customer'     => 'Customer',
     ];
+
+    public function __construct(
+        private readonly UserService $userService,
+    ) {}
 
     /**
      * GET /kelola-akun
@@ -159,6 +168,34 @@ class KelolaAkunController extends Controller
         $actionLabel = $newStatusValue === UserStatus::Active->value ? 'diaktifkan' : 'dinonaktifkan';
 
         return redirect()->to('/kelola-akun')->with('success', "Status akun {$user->name} berhasil {$actionLabel}.");
+    }
+
+    /**
+     * GET /kelola-akun/tambah
+     * Show the Tambah Akun (Add Account) form.
+     */
+    public function create(): Response
+    {
+        $availableRoles = collect(UserRole::cases())->map(fn (UserRole $role) => [
+            'value' => $role->value,
+            'label' => $role->label(),
+        ])->values()->all();
+
+        return Inertia::render('KelolaAkun/TambahAkun', [
+            'availableRoles' => $availableRoles,
+        ]);
+    }
+
+    /**
+     * POST /kelola-akun/tambah
+     * Store a newly created user from the Tambah Akun form.
+     */
+    public function store(StoreUserRequest $request): RedirectResponse
+    {
+        $this->userService->create(UserDTO::from($request->validated()));
+
+        return redirect()->route('kelola-akun')
+            ->with('success', 'Akun baru berhasil ditambahkan.');
     }
 
     /**

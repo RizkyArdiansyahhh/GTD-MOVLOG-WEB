@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Head, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Users, ShieldCheck, UserCheck, UserX, Plus, AlertCircle } from 'lucide-react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import type { PageProps } from '@/types';
@@ -412,9 +412,9 @@ export default function Index() {
                                 Kelola seluruh akun pengguna beserta role, status, dan aktivitas terakhir.
                             </p>
                         </div>
-                        <button
-                            type="button"
-                            className="flex items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold shadow-lg transition-all duration-200 hover:shadow-xl hover:brightness-110 active:scale-[0.98] shrink-0 cursor-pointer w-full sm:w-auto"
+                        <Link
+                            href="/kelola-akun/tambah"
+                            className="flex items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold shadow-lg transition-all duration-200 hover:shadow-xl hover:brightness-110 active:scale-[0.98] shrink-0 cursor-pointer w-full sm:w-auto text-decoration-none"
                             style={{
                                 height: 44,
                                 backgroundColor: '#F5B800',
@@ -423,7 +423,7 @@ export default function Index() {
                         >
                             <Plus size={18} strokeWidth={2.2} />
                             Tambah Pengguna Baru
-                        </button>
+                        </Link>
                     </div>
 
                     {/* ── Stats Cards ── */}
