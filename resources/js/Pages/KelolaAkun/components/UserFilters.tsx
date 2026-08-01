@@ -35,7 +35,7 @@ export default function UserFilters({
 
     return (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-4">
-            <div className="flex flex-col lg:flex-row items-start lg:items-center gap-3">
+            <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">
                 {/* Search */}
                 <div
                     className="flex items-center gap-2 rounded-xl px-3.5 flex-1 w-full lg:max-w-sm border border-gray-200 transition-all duration-150 focus-within:border-amber-300 focus-within:ring-2 focus-within:ring-amber-100"
@@ -56,8 +56,8 @@ export default function UserFilters({
                 <select
                     value={roleFilter}
                     onChange={(e) => onRoleFilterChange(e.target.value)}
-                    className="rounded-xl px-3.5 text-sm text-gray-600 border border-gray-200 outline-none cursor-pointer transition-all duration-150 focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
-                    style={{ height: 42, backgroundColor: '#F8FAFC', minWidth: 160 }}
+                    className="w-full sm:w-40 rounded-xl px-3.5 text-sm text-gray-600 border border-gray-200 outline-none cursor-pointer transition-all duration-150 focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
+                    style={{ height: 42, backgroundColor: '#F8FAFC' }}
                 >
                     {roleOptions.map((role) => (
                         <option key={role} value={role}>
@@ -70,8 +70,8 @@ export default function UserFilters({
                 <select
                     value={statusFilter}
                     onChange={(e) => onStatusFilterChange(e.target.value)}
-                    className="rounded-xl px-3.5 text-sm text-gray-600 border border-gray-200 outline-none cursor-pointer transition-all duration-150 focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
-                    style={{ height: 42, backgroundColor: '#F8FAFC', minWidth: 150 }}
+                    className="w-full sm:w-38 rounded-xl px-3.5 text-sm text-gray-600 border border-gray-200 outline-none cursor-pointer transition-all duration-150 focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
+                    style={{ height: 42, backgroundColor: '#F8FAFC' }}
                 >
                     {statusOptions.map((status) => (
                         <option key={status} value={status}>
@@ -85,7 +85,7 @@ export default function UserFilters({
                     <button
                         type="button"
                         onClick={onReset}
-                        className="flex items-center gap-1.5 rounded-xl px-3.5 text-sm font-medium text-gray-500 border border-gray-200 hover:bg-gray-50 hover:text-gray-700 transition-all duration-150"
+                        className="w-full sm:w-auto justify-center flex items-center gap-1.5 rounded-xl px-3.5 text-sm font-medium text-gray-500 border border-gray-200 hover:bg-gray-50 hover:text-gray-700 transition-all duration-150"
                         style={{ height: 42 }}
                     >
                         <RotateCcw size={14} strokeWidth={2} />

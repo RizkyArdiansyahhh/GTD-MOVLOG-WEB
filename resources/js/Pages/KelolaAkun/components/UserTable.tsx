@@ -27,7 +27,7 @@ export default function UserTable({
                 <table className="w-full text-left">
                     <thead>
                         <tr className="border-b border-gray-100" style={{ backgroundColor: '#F8FAFC' }}>
-                            <th className="px-4 py-3 w-12">
+                            <th className="px-4 py-3 w-12 whitespace-nowrap">
                                 <input
                                     type="checkbox"
                                     checked={allSelected}
@@ -36,19 +36,19 @@ export default function UserTable({
                                     style={{ width: 16, height: 16, accentColor: '#F5B800' }}
                                 />
                             </th>
-                            <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                            <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
                                 Pengguna
                             </th>
-                            <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                            <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
                                 Role
                             </th>
-                            <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                            <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
                                 Email
                             </th>
-                            <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                            <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
                                 Status
                             </th>
-                            <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                            <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
                                 Aksi
                             </th>
                         </tr>

@@ -322,7 +322,7 @@ export default function Index() {
                         </div>
                         <button
                             type="button"
-                            className="flex items-center gap-2 rounded-xl px-5 text-sm font-semibold shadow-lg transition-all duration-200 hover:shadow-xl hover:brightness-110 active:scale-[0.98] shrink-0 cursor-pointer"
+                            className="flex items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold shadow-lg transition-all duration-200 hover:shadow-xl hover:brightness-110 active:scale-[0.98] shrink-0 cursor-pointer w-full sm:w-auto"
                             style={{
                                 height: 44,
                                 backgroundColor: '#F5B800',
@@ -335,7 +335,7 @@ export default function Index() {
                     </div>
 
                     {/* ── Stats Cards ── */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                         <UserStatsCard
                             label="Total Pengguna"
                             value={displayStats.totalPengguna.toLocaleString('id-ID')}

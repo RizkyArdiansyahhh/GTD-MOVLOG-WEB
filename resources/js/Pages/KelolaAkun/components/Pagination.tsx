@@ -44,13 +44,13 @@ export default function Pagination({
     return (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 px-1">
             {/* Info */}
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-gray-400 text-center sm:text-left">
                 Menampilkan <span className="font-semibold text-gray-600">{from}–{to}</span> dari{' '}
                 <span className="font-semibold text-gray-600">{totalItems}</span> pengguna
             </p>
 
             {/* Page Controls */}
-            <div className="flex items-center gap-1">
+            <div className="flex flex-wrap items-center justify-center sm:justify-end gap-1">
                 {/* Sebelumnya */}
                 <button
                     type="button"

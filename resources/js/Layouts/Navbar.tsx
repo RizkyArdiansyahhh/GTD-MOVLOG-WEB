@@ -1,5 +1,5 @@
 import { usePage } from '@inertiajs/react';
-import { Search, Bell } from 'lucide-react';
+import { Search, Bell, Menu } from 'lucide-react';
 import type { PageProps } from '@/types';
 
 // ─────────────────────────────────────────────
@@ -7,7 +7,11 @@ import type { PageProps } from '@/types';
 // ─────────────────────────────────────────────
 const NOTIFICATION_COUNT = 3;
 
-export default function Navbar() {
+interface NavbarProps {
+    onToggleSidebar?: () => void;
+}
+
+export default function Navbar({ onToggleSidebar }: NavbarProps) {
     const { auth } = usePage<PageProps>().props;
 
     const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(auth.user.name)}&background=F6C343&color=1a1a1a&bold=true&size=128`;
@@ -17,8 +21,18 @@ export default function Navbar() {
             className="fixed top-0 left-0 right-0 z-50 flex items-center bg-white border-b border-gray-200 shadow-sm"
             style={{ height: '64px', padding: '0 24px' }}
         >
-            {/* ── Left side – Logo & Brand ── */}
+            {/* ── Left side – Hamburger + Logo & Brand ── */}
             <div className="flex items-center gap-3 shrink-0">
+                {/* Hamburger button (mobile/tablet only) */}
+                <button
+                    type="button"
+                    onClick={onToggleSidebar}
+                    className="flex lg:hidden items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 transition-colors duration-150"
+                    aria-label="Toggle menu"
+                >
+                    <Menu size={22} className="text-gray-600" strokeWidth={2} />
+                </button>
+
                 <div
                     className="flex items-center justify-center rounded-xl shrink-0 overflow-hidden"
                     style={{ width: 40, height: 40 }}
@@ -29,7 +43,7 @@ export default function Navbar() {
                         className="w-full h-full object-contain"
                     />
                 </div>
-                <span className="font-bold text-gray-900 text-sm whitespace-nowrap">Global Trans Djaya</span>
+                <span className="font-bold text-gray-900 text-sm whitespace-nowrap hidden sm:inline">Global Trans Djaya</span>
             </div>
 
             {/* ── Spacer ── */}
@@ -37,9 +51,9 @@ export default function Navbar() {
 
             {/* ── Right side ── */}
             <div className="flex items-center gap-4">
-                {/* Search bar */}
+                {/* Search bar (hidden on mobile) */}
                 <div
-                    className="flex items-center gap-2 rounded-full px-4 transition-all duration-150 focus-within:ring-2 focus-within:ring-yellow-300"
+                    className="hidden md:flex items-center gap-2 rounded-full px-4 transition-all duration-150 focus-within:ring-2 focus-within:ring-yellow-300"
                     style={{
                         width: '260px',
                         height: '40px',

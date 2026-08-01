@@ -21,7 +21,7 @@ export default function UserTableRow({
     return (
         <tr className="border-b border-gray-50 hover:bg-gray-50/60 transition-colors duration-100">
             {/* Checkbox */}
-            <td className="px-4 py-3.5">
+            <td className="px-4 py-3.5 whitespace-nowrap">
                 <input
                     type="checkbox"
                     checked={selected}
@@ -32,7 +32,7 @@ export default function UserTableRow({
             </td>
 
             {/* Pengguna (Avatar + Nama + Email) */}
-            <td className="px-4 py-3.5">
+            <td className="px-4 py-3.5 whitespace-nowrap">
                 <div className="flex items-center gap-3">
                     <img
                         src={user.avatarUrl}
@@ -53,17 +53,17 @@ export default function UserTableRow({
             </td>
 
             {/* Role */}
-            <td className="px-4 py-3.5">
+            <td className="px-4 py-3.5 whitespace-nowrap">
                 <UserRoleBadge role={user.role} />
             </td>
 
             {/* Email */}
-            <td className="px-4 py-3.5">
+            <td className="px-4 py-3.5 whitespace-nowrap">
                 <span className="text-sm text-gray-500">{user.email}</span>
             </td>
 
             {/* Status (Toggle Switch) */}
-            <td className="px-4 py-3.5">
+            <td className="px-4 py-3.5 whitespace-nowrap">
                 <UserStatusToggle
                     status={user.status}
                     onToggle={() => onStatusToggleClick(user)}
@@ -72,7 +72,7 @@ export default function UserTableRow({
             </td>
 
             {/* Aksi */}
-            <td className="px-4 py-3.5">
+            <td className="px-4 py-3.5 whitespace-nowrap">
                 <UserActionButtons userId={user.id} />
             </td>
         </tr>
