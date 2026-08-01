@@ -8,8 +8,6 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Enums\UserStatus;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -80,38 +78,20 @@ class KelolaAkunController extends Controller
 
         $users = $query->paginate($perPage)->withQueryString();
 
-        // Batch query last activity from sessions table
-        $userIds = $users->pluck('id')->toArray();
-        $sessionActivities = DB::table('sessions')
-            ->whereIn('user_id', $userIds)
-            ->groupBy('user_id')
-            ->select('user_id', DB::raw('MAX(last_activity) as max_activity'))
-            ->pluck('max_activity', 'user_id');
-
         // ── Transform users for frontend ──
-        $transformedUsers = $users->through(function (User $user) use ($sessionActivities) {
+        $transformedUsers = $users->through(function (User $user) {
             $firstRole = $user->roles->first()?->name;
 
-            // Determine latest active time (either from session last_activity or user updated_at)
-            $sessionTimestamp = isset($sessionActivities[$user->id])
-                ? Carbon::createFromTimestamp($sessionActivities[$user->id])
-                : null;
-
-            $latestActive = $sessionTimestamp && $sessionTimestamp->gt($user->updated_at)
-                ? $sessionTimestamp
-                : $user->updated_at;
-
             return [
-                'id'         => (string) $user->id,
-                'name'       => $user->name,
-                'email'      => $user->email,
-                'status'     => $user->status === UserStatus::Active ? 'Aktif' : 'Tidak Aktif',
-                'role'       => $this->mapRoleLabel($firstRole),
-                'avatarUrl'  => $user->avatar_url
+                'id'        => (string) $user->id,
+                'name'      => $user->name,
+                'email'     => $user->email,
+                'status'    => $user->status === UserStatus::Active ? 'Aktif' : 'Tidak Aktif',
+                'role'      => $this->mapRoleLabel($firstRole),
+                'avatarUrl' => $user->avatar_url
                     ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=F5B800&color=fff&bold=true&size=128',
-                'lastActive' => $this->formatLastActive($latestActive),
-                'phone'      => $user->phone,
-                'createdAt'  => $user->created_at?->toISOString(),
+                'phone'     => $user->phone,
+                'createdAt' => $user->created_at?->toISOString(),
             ];
         });
 
@@ -197,39 +177,5 @@ class KelolaAkunController extends Controller
     {
         $flipped = array_flip(self::ROLE_MAP);
         return $flipped[$label] ?? strtolower($label);
-    }
-
-    /**
-     * Format last active timestamp to a human-readable Indonesian string.
-     */
-    private function formatLastActive(?Carbon $timestamp): string
-    {
-        if (!$timestamp) {
-            return 'Tidak diketahui';
-        }
-
-        $diffInMinutes = $timestamp->diffInMinutes(now());
-
-        if ($diffInMinutes < 1) {
-            return 'Baru saja';
-        }
-        if ($diffInMinutes < 60) {
-            return (int) $diffInMinutes . ' menit lalu';
-        }
-
-        $diffInHours = $timestamp->diffInHours(now());
-        if ($diffInHours < 24) {
-            return (int) $diffInHours . ' jam lalu';
-        }
-
-        $diffInDays = $timestamp->diffInDays(now());
-        if ($diffInDays === 1) {
-            return 'Kemarin';
-        }
-        if ($diffInDays < 30) {
-            return (int) $diffInDays . ' hari lalu';
-        }
-
-        return $timestamp->format('d M Y');
     }
 }

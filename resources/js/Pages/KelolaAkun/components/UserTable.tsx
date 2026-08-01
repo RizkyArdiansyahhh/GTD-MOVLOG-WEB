@@ -49,9 +49,6 @@ export default function UserTable({
                                 Status
                             </th>
                             <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                Terakhir Aktif
-                            </th>
-                            <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                 Aksi
                             </th>
                         </tr>
@@ -59,7 +56,7 @@ export default function UserTable({
                     <tbody>
                         {users.length === 0 ? (
                             <tr>
-                                <td colSpan={7}>
+                                <td colSpan={6}>
                                     <EmptyState />
                                 </td>
                             </tr>

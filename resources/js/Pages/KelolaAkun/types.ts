@@ -13,7 +13,6 @@ export interface KelolaAkunUser {
     role: string;
     status: UserStatus;
     avatarUrl: string;
-    lastActive: string;
     phone?: string | null;
     createdAt?: string;
 }

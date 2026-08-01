@@ -21,7 +21,6 @@ export const seederUsers: KelolaAkunUser[] = [
         role: 'Super Admin',
         status: 'Aktif',
         avatarUrl: 'https://ui-avatars.com/api/?name=Super+Admin&background=F5B800&color=fff&bold=true&size=128',
-        lastActive: 'Baru saja',
     },
     {
         id: '01kyq6j18p5d35nvehgfvbjhhq',
@@ -30,7 +29,6 @@ export const seederUsers: KelolaAkunUser[] = [
         role: 'Supervisor',
         status: 'Aktif',
         avatarUrl: 'https://ui-avatars.com/api/?name=Supervisor&background=3b82f6&color=fff&bold=true&size=128',
-        lastActive: '10 menit lalu',
     },
     {
         id: '01kyq6j1ewy5ka4qjbx347zn04',
@@ -39,7 +37,6 @@ export const seederUsers: KelolaAkunUser[] = [
         role: 'Staff',
         status: 'Aktif',
         avatarUrl: 'https://ui-avatars.com/api/?name=Staff&background=8b5cf6&color=fff&bold=true&size=128',
-        lastActive: '1 jam lalu',
     },
     {
         id: '01kyq6j1n63xft7xdbqcx8f6qr',
@@ -48,7 +45,6 @@ export const seederUsers: KelolaAkunUser[] = [
         role: 'Field Worker',
         status: 'Aktif',
         avatarUrl: 'https://ui-avatars.com/api/?name=Field+Worker&background=10b981&color=fff&bold=true&size=128',
-        lastActive: '2 jam lalu',
     },
     {
         id: '01kyq6j1vaka0pdt5dyz0d780t',
@@ -57,7 +53,6 @@ export const seederUsers: KelolaAkunUser[] = [
         role: 'Customer',
         status: 'Aktif',
         avatarUrl: 'https://ui-avatars.com/api/?name=Customer&background=6b7280&color=fff&bold=true&size=128',
-        lastActive: '3 jam lalu',
     },
 ];
 

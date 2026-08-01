@@ -71,11 +71,6 @@ export default function UserTableRow({
                 />
             </td>
 
-            {/* Terakhir Aktif */}
-            <td className="px-4 py-3.5">
-                <span className="text-sm text-gray-400">{user.lastActive}</span>
-            </td>
-
             {/* Aksi */}
             <td className="px-4 py-3.5">
                 <UserActionButtons userId={user.id} />
