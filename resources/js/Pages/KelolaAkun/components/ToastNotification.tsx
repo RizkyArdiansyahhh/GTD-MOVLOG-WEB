@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { CircleCheck, TriangleAlert, X } from 'lucide-react';
+import { CircleCheck, CircleX, X } from 'lucide-react';
 
 export interface ToastMessage {
     id: string;
@@ -37,7 +37,7 @@ export default function ToastNotification({ toast, onClose }: ToastNotificationP
                 {isSuccess ? (
                     <CircleCheck size={20} className="text-emerald-600" />
                 ) : (
-                    <TriangleAlert size={20} className="text-red-600" />
+                    <CircleX size={20} className="text-red-600" />
                 )}
             </div>
 

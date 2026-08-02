@@ -44,7 +44,7 @@ const getStatusBadge = (status: VerificationDocument['status']) => {
                 label: 'Pending',
                 bg: 'bg-amber-50',
                 text: 'text-amber-700',
-                border: 'border-amber-200',
+                border: 'border-amber-200/80',
                 dot: 'bg-amber-500',
                 icon: AlertCircle,
             };
@@ -53,7 +53,7 @@ const getStatusBadge = (status: VerificationDocument['status']) => {
                 label: 'Approved',
                 bg: 'bg-emerald-50',
                 text: 'text-emerald-700',
-                border: 'border-emerald-200',
+                border: 'border-emerald-200/80',
                 dot: 'bg-emerald-500',
                 icon: CheckCircle2,
             };
@@ -62,7 +62,7 @@ const getStatusBadge = (status: VerificationDocument['status']) => {
                 label: 'Rejected',
                 bg: 'bg-rose-50',
                 text: 'text-rose-700',
-                border: 'border-rose-200',
+                border: 'border-rose-200/80',
                 dot: 'bg-rose-500',
                 icon: XCircle,
             };
@@ -89,61 +89,53 @@ export default function DocumentListItem({
                 }
             }}
             className={[
-                'group relative p-4 rounded-xl border transition-all duration-150 cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-amber-400',
+                'group relative rounded-[12px] transition-all duration-150 cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-[#F5B800]',
                 isSelected
-                    ? 'bg-[#FFFBEB] border-amber-300 shadow-sm border-l-4 border-l-[#F5B800]'
-                    : 'bg-white border-gray-100 hover:bg-gray-50 hover:border-gray-200',
+                    ? 'bg-[#FFF9E8] border-2 border-[#F5B800] shadow-[0_4px_14px_rgba(6,40,58,0.08)] p-[15px]'
+                    : 'bg-white border border-[#E2E8F0] shadow-[0_2px_8px_rgba(6,40,58,0.05)] hover:border-[#F5B800] hover:-translate-y-[1px] hover:shadow-[0_4px_12px_rgba(6,40,58,0.08)] p-4',
             ].join(' ')}
         >
             <div className="flex items-start justify-between gap-3">
-                {/* ── Left: Icon + Main details ── */}
-                <div className="flex items-start gap-3 min-w-0">
+                {/* ── Left: 40x40 Icon + Main details ── */}
+                <div className="flex items-start gap-3.5 min-w-0 flex-1">
+                    {/* 40x40 Document Icon Container with background #FFF8E6 */}
                     <div
-                        className={[
-                            'flex items-center justify-center shrink-0 rounded-xl transition-colors duration-150',
-                            isSelected
-                                ? 'bg-[#F5B800]/20 text-[#06283A]'
-                                : 'bg-gray-100 text-gray-600 group-hover:bg-amber-100 group-hover:text-amber-700',
-                        ].join(' ')}
-                        style={{ width: 42, height: 42 }}
+                        className="w-10 h-10 shrink-0 rounded-lg bg-[#FFF8E6] text-[#B45309] flex items-center justify-center border border-[#F5B800]/20 transition-transform duration-150 group-hover:scale-105"
                     >
                         <IconComponent size={20} strokeWidth={1.8} />
                     </div>
 
-                    <div className="min-w-0">
-                        {/* Document Title */}
-                        <h4 className="text-sm font-semibold text-gray-900 truncate leading-snug">
-                            {document.title}
-                        </h4>
-
-                        {/* Document Number & Type */}
-                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                            <span className="text-xs font-mono font-medium text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200/60">
+                    <div className="min-w-0 flex-1 pt-0.5">
+                        {/* Document Number (Font Semibold) */}
+                        <div className="flex items-center gap-2">
+                            <h4 className="text-sm font-semibold text-[#06283A] leading-tight truncate">
                                 {document.documentNumber}
-                            </span>
-                            <span className="text-xs text-gray-500 font-normal">
-                                • {document.documentType}
-                            </span>
+                            </h4>
                         </div>
 
-                        {/* Upload details: Uploaded by & time */}
-                        <div className="flex items-center gap-3 mt-2 text-xs text-gray-500 flex-wrap">
-                            <span className="flex items-center gap-1">
-                                <User size={12} className="text-gray-400 shrink-0" />
+                        {/* Document Type (Text Secondary) */}
+                        <p className="text-xs text-slate-500 font-normal mt-0.5 leading-normal truncate">
+                            {document.documentType}
+                        </p>
+
+                        {/* Metadata: Uploader & Timestamp */}
+                        <div className="flex items-center gap-3.5 mt-2.5 text-xs text-slate-400 font-normal flex-wrap">
+                            <span className="flex items-center gap-1.5 min-w-0">
+                                <User size={13} className="text-slate-400 shrink-0" />
                                 <span className="truncate max-w-[130px]" title={document.uploadedBy}>
                                     {document.uploadedBy}
                                 </span>
                             </span>
-                            <span className="flex items-center gap-1">
-                                <Clock size={12} className="text-gray-400 shrink-0" />
+                            <span className="flex items-center gap-1.5 shrink-0">
+                                <Clock size={13} className="text-slate-400 shrink-0" />
                                 <span>{document.timeAgo}</span>
                             </span>
                         </div>
                     </div>
                 </div>
 
-                {/* ── Right: Status badge ── */}
-                <div className="shrink-0 flex items-center">
+                {/* ── Right: Status badge at top right ── */}
+                <div className="shrink-0 flex items-center pt-0.5">
                     <span
                         className={[
                             'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors',
