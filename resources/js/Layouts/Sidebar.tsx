@@ -22,24 +22,26 @@ const dummyCurrentUser = {
 };
 
 // ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
 // Menu definition
 // ─────────────────────────────────────────────
 interface MenuItem {
     label: string;
     href: string;
+    routeName?: string;
     icon: React.ElementType;
     /** If set, the menu only renders when the user has one of these roles */
     roles?: string[];
 }
 
 const menuItems: MenuItem[] = [
-    { label: 'Dashboard',             href: '/',                  icon: LayoutDashboard },
-    { label: 'Kelola Akun',           href: '/kelola-akun',       icon: Users, roles: ['super-admin', 'Super Admin', 'Super-Admin'] },
-    { label: 'Monitoring Barang',     href: '/monitoring-barang', icon: PackageSearch },
-    { label: 'Monitoring Checkpoint', href: '/monitoring-cp',     icon: MapPin },
-    { label: 'Kelola Sesi Pekerja',   href: '/sesi-pekerja',      icon: ClipboardList },
-    { label: 'Verifikasi Berkas',     href: '/verifikasi-berkas', icon: FileCheck2 },
-    { label: 'Laporan',               href: '/laporan',           icon: BarChart3 },
+    { label: 'Dashboard',             href: '/',                  routeName: 'dashboard',          icon: LayoutDashboard },
+    { label: 'Kelola Akun',           href: '/kelola-akun',       routeName: 'kelola-akun',        icon: Users, roles: ['super-admin', 'Super Admin', 'Super-Admin'] },
+    { label: 'Monitoring Barang',     href: '/monitoring-barang',                                  icon: PackageSearch },
+    { label: 'Monitoring Checkpoint', href: '/monitoring-cp',                                     icon: MapPin },
+    { label: 'Kelola Sesi Pekerja',   href: '/sesi-pekerja',                                      icon: ClipboardList },
+    { label: 'Verifikasi Berkas',     href: '/verifikasi-berkas', routeName: 'verifikasi-berkas',  icon: FileCheck2, roles: ['supervisor', 'Supervisor'] },
+    { label: 'Laporan',               href: '/laporan',                                           icon: BarChart3 },
 ];
 
 /** Navbar height – must match the value in Navbar.tsx */
@@ -59,6 +61,17 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     const userRoles = (authUser?.roles && authUser.roles.length > 0)
         ? authUser.roles.map((r) => r.toLowerCase())
         : [dummyCurrentUser.role.toLowerCase()];
+
+    const getItemHref = (item: MenuItem): string => {
+        if (item.routeName && typeof (window as any).route === 'function') {
+            try {
+                return (window as any).route(item.routeName);
+            } catch {
+                return item.href;
+            }
+        }
+        return item.href;
+    };
 
     const isActive = (href: string) => {
         if (href === '/') return currentPath === '/';
@@ -96,12 +109,13 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                         }
                     }
 
-                    const active = isActive(item.href);
+                    const targetHref = getItemHref(item);
+                    const active = isActive(item.href) || (targetHref !== item.href && isActive(targetHref));
                     const Icon = item.icon;
                     return (
                         <Link
                             key={item.href}
-                            href={item.href}
+                            href={targetHref}
                             onClick={() => { if (onClose) onClose(); }}
                             className={[
                                 'flex items-center gap-3 px-3 rounded-lg transition-all duration-150 text-sm font-medium select-none',

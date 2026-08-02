@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Web\KelolaAkunController;
 use App\Http\Controllers\Web\UserController;
+use App\Http\Controllers\Web\VerifikasiBerkasController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -57,6 +58,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // User Management
     Route::resource('users', UserController::class);
+
+    // Verifikasi Berkas
+    Route::get('verifikasi-berkas', [VerifikasiBerkasController::class, 'index'])
+        ->name('verifikasi-berkas');
 
     // Logout
     Route::post('logout', [\App\Http\Controllers\Web\Auth\AuthenticatedSessionController::class, 'destroy'])
