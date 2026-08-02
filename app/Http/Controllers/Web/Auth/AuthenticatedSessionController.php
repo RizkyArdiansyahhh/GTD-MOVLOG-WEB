@@ -38,7 +38,28 @@ class AuthenticatedSessionController extends Controller
             ]);
         }
 
-        $request->session()->regenerate();
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+
+        if ($user && ! $user->isActive()) {
+            Auth::guard('web')->logout();
+            if ($request->hasSession()) {
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+            }
+
+            throw ValidationException::withMessages([
+                'email' => 'Akun Anda saat ini dinonaktifkan. Silakan hubungi Administrator untuk informasi lebih lanjut.',
+            ]);
+        }
+
+        if ($request->hasSession()) {
+            $request->session()->regenerate();
+        }
+
+        if ($user) {
+            $user->touch();
+        }
 
         return redirect()->intended(route('dashboard'));
     }
