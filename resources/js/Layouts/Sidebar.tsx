@@ -39,7 +39,7 @@ const menuItems: MenuItem[] = [
     { label: 'Kelola Akun',           href: '/kelola-akun',       routeName: 'kelola-akun',        icon: Users, roles: ['super-admin', 'Super Admin', 'Super-Admin'] },
     { label: 'Monitoring Barang',     href: '/monitoring-barang',                                  icon: PackageSearch },
     { label: 'Monitoring Checkpoint', href: '/monitoring-cp',                                     icon: MapPin },
-    { label: 'Kelola Sesi Pekerja',   href: '/sesi-pekerja',                                      icon: ClipboardList },
+    { label: 'Kelola Sesi Pekerja',   href: '/sesi-pekerja',       routeName: 'sesi-pekerja',        icon: ClipboardList, roles: ['super-admin', 'Super Admin', 'Super-Admin'] },
     { label: 'Verifikasi Berkas',     href: '/verifikasi-berkas', routeName: 'verifikasi-berkas',  icon: FileCheck2, roles: ['supervisor', 'Supervisor'] },
     { label: 'Laporan',               href: '/laporan',                                           icon: BarChart3 },
 ];
@@ -59,7 +59,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
     // Get active user roles (normalized to lowercase)
     const userRoles = (authUser?.roles && authUser.roles.length > 0)
-        ? authUser.roles.map((r) => r.toLowerCase())
+        ? authUser.roles.map((r: any) => (typeof r === 'string' ? r : r?.name || String(r)).toLowerCase())
         : [dummyCurrentUser.role.toLowerCase()];
 
     const getItemHref = (item: MenuItem): string => {

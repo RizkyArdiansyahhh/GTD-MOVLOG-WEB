@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Web\KelolaAkunController;
+use App\Http\Controllers\Web\SesiPekerjaController;
 use App\Http\Controllers\Web\UserController;
 use App\Http\Controllers\Web\VerifikasiBerkasController;
 use Illuminate\Support\Facades\Route;
@@ -62,6 +63,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Verifikasi Berkas
     Route::get('verifikasi-berkas', [VerifikasiBerkasController::class, 'index'])
         ->name('verifikasi-berkas');
+
+    // Kelola Sesi Pekerja
+    Route::get('sesi-pekerja', [SesiPekerjaController::class, 'index'])
+        ->name('sesi-pekerja');
+    Route::get('sesi-pekerja/tambah', [SesiPekerjaController::class, 'create'])
+        ->name('sesi-pekerja.create');
 
     // Logout
     Route::post('logout', [\App\Http\Controllers\Web\Auth\AuthenticatedSessionController::class, 'destroy'])
