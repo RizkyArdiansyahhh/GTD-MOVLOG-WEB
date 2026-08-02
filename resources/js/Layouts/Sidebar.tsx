@@ -5,6 +5,7 @@ import {
     PackageSearch,
     MapPin,
     ClipboardList,
+    FileUp,
     FileCheck2,
     BarChart3,
     LogOut,
@@ -27,6 +28,7 @@ const menuItems: MenuItem[] = [
     { label: 'Monitoring Barang',     href: '/monitoring-barang', icon: PackageSearch },
     { label: 'Monitoring Checkpoint', href: '/monitoring-cp',     icon: MapPin },
     { label: 'Kelola Sesi Pekerja',   href: '/sesi-pekerja',      icon: ClipboardList },
+    { label: 'Submit Dokumen',        href: '/submit-dokumen',    icon: FileUp },
     { label: 'Verifikasi Berkas',     href: '/verifikasi-berkas', icon: FileCheck2 },
     { label: 'Laporan',               href: '/laporan',           icon: BarChart3 },
 ];
