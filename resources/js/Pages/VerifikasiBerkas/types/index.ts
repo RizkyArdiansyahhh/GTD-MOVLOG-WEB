@@ -5,7 +5,18 @@ export type SupportedDocumentType =
     | 'Commercial Invoice'
     | 'Bill of Lading';
 
-export type VerificationStatus = 'Pending' | 'Approved' | 'Rejected';
+export type VerificationStatus =
+    | 'Pending'
+    | 'Approved'
+    | 'Rejected'
+    | 'WaitingForResubmission'; // Prepared for future integration with Submit Dokumen module
+
+export enum VerificationStatusEnum {
+    PENDING = 'Pending',
+    APPROVED = 'Approved',
+    REJECTED = 'Rejected',
+    WAITING_FOR_RESUBMISSION = 'WaitingForResubmission',
+}
 
 export interface CompanyEntity {
     name: string;
@@ -48,6 +59,9 @@ export interface VerificationDocument {
     shipmentReference: string;
     status: VerificationStatus;
     notes?: string;
+    rejectionReason?: string;
+    verifiedBy?: string;
+    verifiedAt?: string;
     previewUrl?: string;
     thumbnail?: string;
 

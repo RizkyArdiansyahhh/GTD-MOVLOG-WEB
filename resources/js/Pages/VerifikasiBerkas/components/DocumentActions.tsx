@@ -1,4 +1,4 @@
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Info, ShieldCheck } from 'lucide-react';
 import type { VerificationDocument } from '../types';
 
 interface DocumentActionsProps {
@@ -15,6 +15,39 @@ export default function DocumentActions({
     isSubmitting = false,
 }: DocumentActionsProps) {
     if (!document) return null;
+
+    const isApproved = document.status === 'Approved';
+    const isRejected = document.status === 'Rejected';
+    const isFinalStatus = isApproved || isRejected;
+
+    // Requirement 1 & 3: Hide action buttons if status is already Approved or Rejected
+    if (isFinalStatus) {
+        return (
+            <div className="pt-3 border-t border-gray-100 shrink-0">
+                {isApproved && (
+                    <div className="flex items-center gap-2.5 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium">
+                        <ShieldCheck size={18} className="text-emerald-600 shrink-0" />
+                        <div>
+                            <span className="font-semibold block text-emerald-900">Status Final: Disetujui</span>
+                            <span>Dokumen ini telah disetujui dan berstatus final. Tidak dapat diubah kembali.</span>
+                        </div>
+                    </div>
+                )}
+
+                {isRejected && (
+                    <div className="flex items-start gap-2.5 p-3.5 rounded-lg bg-amber-50/90 border border-amber-200 text-amber-900 text-xs leading-relaxed">
+                        <Info size={18} className="text-amber-600 shrink-0 mt-0.5" />
+                        <div>
+                            <span className="font-semibold block text-amber-900 mb-0.5">Status Final: Ditolak (Menunggu Revisi)</span>
+                            <span>
+                                Dokumen telah ditolak. Perbaikan dan pengiriman ulang akan dilakukan melalui modul Submit Dokumen setelah modul tersebut tersedia.
+                            </span>
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-3 border-t border-gray-100 shrink-0">

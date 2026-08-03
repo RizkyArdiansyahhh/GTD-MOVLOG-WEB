@@ -108,11 +108,27 @@ export default function VerifikasiBerkasIndex() {
     ) => {
         setIsSubmitting(true);
 
+        const supervisorName = auth?.user?.name || 'Supervisor Logistik';
+        const nowFormatted = new Date().toLocaleString('id-ID', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+        }) + ' WIB';
+
         setTimeout(() => {
             setDocuments((prev) =>
                 prev.map((item) =>
                     item.id === doc.id
-                        ? { ...item, status, notes: notes || item.notes }
+                        ? {
+                              ...item,
+                              status,
+                              notes: notes || item.notes,
+                              rejectionReason: status === 'Rejected' ? notes : item.rejectionReason,
+                              verifiedBy: supervisorName,
+                              verifiedAt: nowFormatted,
+                          }
                         : item
                 )
             );
