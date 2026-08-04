@@ -3,27 +3,34 @@ import { Head, Link } from '@inertiajs/react';
 import { Plus, Search } from 'lucide-react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { mockWorkSessions } from './mockData';
-import type { WorkSession } from './types';
+import type { WorkSession, FieldWorker } from './types';
 import SesiTable from './components/SesiTable';
 import SesiPagination from './components/SesiPagination';
 
 const ITEMS_PER_PAGE = 6;
 
-export default function KelolaSesiIndex() {
+interface KelolaSesiIndexProps {
+    fieldWorkers?: FieldWorker[];
+    sessions?: WorkSession[];
+}
+
+export default function KelolaSesiIndex({ sessions, fieldWorkers }: KelolaSesiIndexProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
 
+    const activeSessions = sessions && sessions.length > 0 ? sessions : mockWorkSessions;
+
     // Filter sessions based on search query (ID Sesi or Nama Unit or Petugas)
     const filteredSessions = useMemo(() => {
-        if (!searchQuery.trim()) return mockWorkSessions;
+        if (!searchQuery.trim()) return activeSessions;
         const q = searchQuery.toLowerCase().trim();
-        return mockWorkSessions.filter(
+        return activeSessions.filter(
             (s) =>
                 s.id.toLowerCase().includes(q) ||
                 s.unitName.toLowerCase().includes(q) ||
                 s.petugas.toLowerCase().includes(q)
         );
-    }, [searchQuery]);
+    }, [searchQuery, activeSessions]);
 
     // Paginate sessions
     const totalPages = Math.max(1, Math.ceil(filteredSessions.length / ITEMS_PER_PAGE));

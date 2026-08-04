@@ -1,28 +1,55 @@
-import { useState } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import { useState, useMemo } from 'react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ArrowLeft, Save, Truck } from 'lucide-react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
-import type { LogisticsStage } from './types';
+import type { LogisticsStage, FieldWorker } from './types';
+import FieldWorkerSelect from './components/FieldWorkerSelect';
 
 const STAGE_OPTIONS: LogisticsStage[] = ['Kapal', 'Tongkang', 'Pelabuhan', 'Site'];
 
-export default function KelolaSesiCreate() {
+interface KelolaSesiCreateProps {
+    fieldWorkers?: FieldWorker[];
+}
+
+export default function KelolaSesiCreate({ fieldWorkers: propFieldWorkers }: KelolaSesiCreateProps) {
+    const pageProps = usePage<{ fieldWorkers?: FieldWorker[] }>().props;
+
+    const availableFieldWorkers = useMemo(() => {
+        if (Array.isArray(propFieldWorkers) && propFieldWorkers.length > 0) {
+            return propFieldWorkers;
+        }
+        if (Array.isArray(pageProps.fieldWorkers) && pageProps.fieldWorkers.length > 0) {
+            return pageProps.fieldWorkers;
+        }
+        return [];
+    }, [propFieldWorkers, pageProps.fieldWorkers]);
+
     const [idSesi, setIdSesi] = useState('');
     const [unitName, setUnitName] = useState('');
-    const [petugas, setPetugas] = useState('');
+    const [fieldWorkerId, setFieldWorkerId] = useState('');
     const [initialStage, setInitialStage] = useState<LogisticsStage>('Kapal');
     const [notes, setNotes] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        if (!fieldWorkerId) return;
+
         setIsSubmitting(true);
 
-        // Simulated submit behavior
-        setTimeout(() => {
-            setIsSubmitting(false);
-            router.visit('/sesi-pekerja');
-        }, 500);
+        router.post(
+            '/sesi-pekerja',
+            {
+                id_sesi: idSesi,
+                field_worker_id: fieldWorkerId,
+                unit_name: unitName,
+                initial_stage: initialStage,
+                notes: notes,
+            },
+            {
+                onFinish: () => setIsSubmitting(false),
+            }
+        );
     };
 
     return (
@@ -81,18 +108,17 @@ export default function KelolaSesiCreate() {
                             />
                         </div>
 
-                        {/* Petugas Penanggung Jawab (Manual input) */}
+                        {/* Petugas Penanggung Jawab (Dynamic Searchable Dropdown) */}
                         <div>
                             <label className="block text-xs font-semibold uppercase text-slate-600 mb-1.5">
                                 Petugas Penanggung Jawab <span className="text-red-500">*</span>
                             </label>
-                            <input
-                                type="text"
-                                value={petugas}
-                                onChange={(e) => setPetugas(e.target.value)}
-                                placeholder="Contoh: Budi S."
+                            <FieldWorkerSelect
+                                fieldWorkers={availableFieldWorkers}
+                                value={fieldWorkerId}
+                                onChange={(id) => setFieldWorkerId(id)}
+                                disabled={isSubmitting}
                                 required
-                                className="w-full px-3.5 py-2.5 bg-white border border-[#E2E8F0] rounded-xl text-sm text-[#06283A] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#F5B800] transition-all"
                             />
                         </div>
                     </div>
@@ -162,7 +188,13 @@ export default function KelolaSesiCreate() {
                         </Link>
                         <button
                             type="submit"
-                            disabled={isSubmitting || !idSesi.trim() || !unitName.trim() || !petugas.trim()}
+                            disabled={
+                                isSubmitting ||
+                                !idSesi.trim() ||
+                                !unitName.trim() ||
+                                !fieldWorkerId.trim() ||
+                                availableFieldWorkers.length === 0
+                            }
                             className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400 disabled:opacity-50 disabled:cursor-not-allowed"
                             style={{
                                 backgroundColor: '#F5B800',
@@ -178,3 +210,4 @@ export default function KelolaSesiCreate() {
         </DashboardLayout>
     );
 }
+
