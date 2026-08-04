@@ -39,7 +39,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
             {/* ── Main content area ── */}
             <main
-                className="flex-1"
+                className="flex-1 relative overflow-hidden"
                 style={{
                     marginTop: `${NAVBAR_HEIGHT + GAP}px`,
                     marginLeft: `${SIDEBAR_WIDTH + GAP * 2 + GAP}px`, // sidebar + left offset + gap
