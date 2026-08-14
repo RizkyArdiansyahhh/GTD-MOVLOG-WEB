@@ -2,12 +2,10 @@ import React from 'react';
 import { Head } from '@inertiajs/react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { useLaporan } from './hooks/useLaporan';
-import { DateRangeCard } from './components/DateRangeCard';
-import { FileFormatCard } from './components/FileFormatCard';
+import { DateRangeCard, FileFormatCard } from './components/ExportOptionsCards';
 import { DownloadHistoryTable } from './components/DownloadHistoryTable';
 import { ExportSummary } from './components/ExportSummary';
-import { ExportProcessing } from './components/ExportProcessing';
-import { ExportSuccess } from './components/ExportSuccess';
+import { ExportProcessing, ExportSuccess } from './components/ExportStatusScreens';
 
 export default function Laporan() {
     const {
