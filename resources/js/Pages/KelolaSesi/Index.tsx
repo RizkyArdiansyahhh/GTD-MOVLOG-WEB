@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { Plus, Search } from 'lucide-react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { mockWorkSessions } from './mockData';
@@ -15,6 +15,8 @@ interface KelolaSesiIndexProps {
 }
 
 export default function KelolaSesiIndex({ sessions, fieldWorkers }: KelolaSesiIndexProps) {
+    const pageProps = usePage<{ flash?: { success?: string } }>().props;
+    const flash = pageProps.flash;
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
 
@@ -26,7 +28,7 @@ export default function KelolaSesiIndex({ sessions, fieldWorkers }: KelolaSesiIn
         const q = searchQuery.toLowerCase().trim();
         return activeSessions.filter(
             (s) =>
-                s.id.toLowerCase().includes(q) ||
+                (s.sessionId || s.id).toLowerCase().includes(q) ||
                 s.unitName.toLowerCase().includes(q) ||
                 s.petugas.toLowerCase().includes(q)
         );
@@ -76,6 +78,13 @@ export default function KelolaSesiIndex({ sessions, fieldWorkers }: KelolaSesiIn
                         <span>Buat Sesi Baru</span>
                     </Link>
                 </div>
+
+                {/* ── Flash Message ── */}
+                {flash?.success && (
+                    <div className="px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-sm font-medium text-emerald-700">
+                        {flash.success}
+                    </div>
+                )}
 
                 {/* ── Single Large Card Container ── */}
                 <div className="bg-white border border-[#E2E8F0] shadow-sm rounded-2xl p-6 space-y-5">
