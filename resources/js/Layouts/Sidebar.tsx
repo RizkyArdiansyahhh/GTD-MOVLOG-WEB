@@ -27,14 +27,14 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-    { label: 'Dashboard',             href: '/',                  routeName: 'dashboard',          icon: LayoutDashboard },
-    { label: 'Kelola Akun',           href: '/kelola-akun',       routeName: 'kelola-akun',        icon: Users, roles: ['super-admin'] },
-    { label: 'Monitoring Barang',     href: '/monitoring-barang', icon: PackageSearch },
-    { label: 'Monitoring Checkpoint', href: '/monitoring-cp',     icon: MapPin },
-    { label: 'Kelola Sesi Pekerja',   href: '/sesi-pekerja',       routeName: 'kelola-sesi',        icon: ClipboardList, roles: ['super-admin'] },
-    { label: 'Submit Dokumen',        href: '/submit-dokumen',    routeName: 'submit-dokumen',     icon: FileUp },
-    { label: 'Verifikasi Berkas',     href: '/verifikasi-berkas', routeName: 'verifikasi-berkas',  icon: FileCheck2, roles: ['supervisor'] },
-    { label: 'Laporan',               href: '/laporan',           icon: BarChart3 },
+    { label: 'Dashboard', href: '/', routeName: 'dashboard', icon: LayoutDashboard },
+    { label: 'Kelola Akun', href: '/kelola-akun', routeName: 'kelola-akun', icon: Users, roles: ['super-admin'] },
+    { label: 'Monitoring Barang', href: '/monitoring-barang', icon: PackageSearch },
+    { label: 'Monitoring Checkpoint', href: '/monitoring-cp', icon: MapPin },
+    { label: 'Kelola Sesi Pekerja', href: '/sesi-pekerja', routeName: 'kelola-sesi', icon: ClipboardList, roles: ['super-admin'] },
+    { label: 'Submit Dokumen', href: '/submit-dokumen', routeName: 'submit-dokumen', icon: FileUp },
+    { label: 'Verifikasi Berkas', href: '/verifikasi-berkas', routeName: 'verifikasi-berkas', icon: FileCheck2, roles: ['supervisor'] },
+    { label: 'Laporan', href: '/laporan', icon: BarChart3 },
 ];
 
 /** Navbar height – must match the value in Navbar.tsx */
@@ -159,10 +159,14 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         <>
             {/* ── Desktop sidebar (lg+): fixed, always visible ── */}
             <aside
-                className="hidden lg:flex fixed left-4 bottom-4 z-40 flex-col"
+                className="hidden lg:flex fixed left-0 bottom-0 z-40 flex-col"
                 style={{
-                    width: '260px',
-                    top: `${NAVBAR_HEIGHT + 16}px`,
+                    width: '276px',
+                    top: 'var(--navbar-h)',
+                    paddingTop: '16px',
+                    paddingLeft: '16px',
+                    paddingBottom: '16px',
+                    backgroundColor: '#F5F7FC',
                 }}
             >
                 {sidebarContent}

@@ -18,8 +18,8 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
 
     return (
         <header
-            className="fixed top-0 left-0 right-0 z-50 flex items-center bg-white border-b border-gray-200 shadow-sm"
-            style={{ height: '64px', padding: '0 24px' }}
+            className="fixed top-0 left-0 right-0 z-50 flex items-center bg-white shadow-sm"
+            style={{ height: 'var(--navbar-h)', padding: '0 24px' }}
         >
             {/* ── Left side – Hamburger + Logo & Brand ── */}
             <div className="flex items-center gap-3 shrink-0">
