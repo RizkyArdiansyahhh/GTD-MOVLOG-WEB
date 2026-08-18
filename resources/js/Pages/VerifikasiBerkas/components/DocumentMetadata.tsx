@@ -1,4 +1,4 @@
-import { ShieldCheck, UserCheck, Clock, FileText, AlertCircle } from 'lucide-react';
+import { UserCheck, Clock } from 'lucide-react';
 import type { VerificationDocument } from '../types';
 
 interface DocumentMetadataProps {
@@ -16,6 +16,7 @@ export default function DocumentMetadata({ document }: DocumentMetadataProps) {
                 return 'text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200 inline-flex items-center gap-1.5';
             case 'Rejected':
                 return 'text-rose-700 font-semibold bg-rose-50 px-2.5 py-0.5 rounded border border-rose-200 inline-flex items-center gap-1.5';
+            case 'Pending':
             default:
                 return 'text-amber-700 font-semibold bg-amber-50 px-2.5 py-0.5 rounded border border-amber-200 inline-flex items-center gap-1.5';
         }

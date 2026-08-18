@@ -20,7 +20,7 @@ export default function DocumentActions({
     const isRejected = document.status === 'Rejected';
     const isFinalStatus = isApproved || isRejected;
 
-    // Requirement 1 & 3: Hide action buttons if status is already Approved or Rejected
+    // Hide action buttons if status is already Approved or Rejected
     if (isFinalStatus) {
         return (
             <div className="pt-3 border-t border-gray-100 shrink-0">

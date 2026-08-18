@@ -1,0 +1,226 @@
+/* ── Shipment Table: Row-based Layout (Linear/Notion style) ─── */
+
+.shipment-table {
+    font-family: 'Poppins', sans-serif;
+    background: #ffffff;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 4px rgba(6, 40, 58, 0.04);
+    overflow: hidden;
+}
+
+/* ── Column Header ── */
+.shipment-table__header {
+    font-family: 'Poppins', sans-serif;
+    display: grid;
+    grid-template-columns: minmax(180px, 1.4fr) minmax(120px, 1fr) minmax(160px, 1.3fr) 80px;
+    gap: 0;
+    padding: 10px 16px;
+    border-bottom: 0.5px solid #cbd5e1;
+}
+
+.shipment-table__th {
+    font-family: 'Poppins', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
+    user-select: none;
+}
+
+.shipment-table__th--progress {
+    text-align: right;
+}
+
+/* ── Row ── */
+.shipment-row {
+    font-family: 'Poppins', sans-serif;
+    display: grid;
+    grid-template-columns: minmax(180px, 1.4fr) minmax(120px, 1fr) minmax(160px, 1.3fr) 80px;
+    gap: 0;
+    padding: 10px 16px;
+    min-height: 58px;
+    align-items: center;
+    cursor: pointer;
+    outline: none;
+    transition: background-color 120ms ease, opacity 150ms ease;
+}
+
+.shipment-row:hover {
+    background-color: #f8fafc;
+}
+
+.shipment-row:focus-visible {
+    background-color: #f1f5f9;
+    box-shadow: inset 0 0 0 2px #94a3b8;
+}
+
+/* ── Column cells ── */
+.shipment-row__col {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    gap: 2px;
+}
+
+.shipment-row__col--route {
+    justify-content: flex-start;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+}
+
+.shipment-row__col--progress {
+    align-items: flex-end;
+    justify-content: center;
+}
+
+/* ── Contract / Shipper ── */
+.shipment-row__contract-number {
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: #06283A;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.shipment-row--first .shipment-row__contract-number {
+    font-weight: 600;
+}
+
+.shipment-row__warning-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #f59e0b;
+    flex-shrink: 0;
+}
+
+.shipment-row__shipper {
+    font-family: 'Poppins', sans-serif;
+    font-size: 11px;
+    color: #94a3b8;
+    font-weight: 400;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Route ── */
+.shipment-row__port {
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px;
+    color: #475569;
+    font-weight: 400;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 140px;
+}
+
+.shipment-row__arrow {
+    color: #cbd5e1;
+    flex-shrink: 0;
+}
+
+/* ── Documents ── */
+.shipment-row__doc-statuses {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 3px;
+}
+
+.shipment-row__doc-item {
+    font-family: 'Poppins', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1;
+}
+
+.shipment-row__doc-sep {
+    color: #cbd5e1;
+    user-select: none;
+    font-size: 13px;
+    line-height: 1;
+}
+
+.shipment-row__no-docs {
+    font-family: 'Poppins', sans-serif;
+    font-size: 11px;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+/* ── Progress ── */
+.shipment-row__progress-text {
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+    display: inline-block;
+    text-align: right;
+}
+
+.shipment-row__progress-bar {
+    display: flex;
+    gap: 2px;
+    justify-content: flex-end;
+    margin-top: 3px;
+}
+
+.shipment-row__progress-segment {
+    width: 10px;
+    height: 3px;
+    border-radius: 1px;
+}
+
+/* ── Responsive: stack on small screens ── */
+@media (max-width: 768px) {
+    .shipment-table__header {
+        display: none;
+    }
+
+    .shipment-row {
+        grid-template-columns: 1fr auto;
+        grid-template-rows: auto auto;
+        gap: 4px 12px;
+        padding: 12px 14px;
+        min-height: auto;
+    }
+
+    /* Contract spans first column, row 1 */
+    .shipment-row__col--contract {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    /* Progress top-right, row 1 */
+    .shipment-row__col--progress {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    /* Route hidden on mobile */
+    .shipment-row__col--route {
+        display: none;
+    }
+
+    /* Docs spans full width, row 2 */
+    .shipment-row__col--docs {
+        grid-column: 1 / -1;
+        grid-row: 2;
+    }
+}

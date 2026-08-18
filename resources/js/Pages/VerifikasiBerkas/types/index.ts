@@ -1,9 +1,19 @@
 export type SupportedDocumentType =
-    | 'Insurance'
-    | 'Certificate of Origin (COO)'
-    | 'Packing List'
     | 'Commercial Invoice'
-    | 'Bill of Lading';
+    | 'Bill of Lading'
+    | 'Packing List'
+    | 'Insurance'
+    | 'Certificate of Origin (COO)';
+
+export const REQUIRED_DOCUMENT_TYPES: SupportedDocumentType[] = [
+    'Commercial Invoice',
+    'Bill of Lading',
+    'Packing List',
+    'Insurance',
+    'Certificate of Origin (COO)',
+];
+
+export const TOTAL_REQUIRED_DOCUMENTS = REQUIRED_DOCUMENT_TYPES.length; // 5
 
 export type VerificationStatus =
     | 'Pending'
@@ -101,3 +111,25 @@ export interface DocumentStats {
     totalRejected: number;
 }
 
+export interface ShipmentGroup {
+    contractNumber: string;
+    shipperName: string;
+    consigneeName: string;
+    portOfLoading: string;
+    portOfDischarge: string;
+    documents: VerificationDocument[];
+    approvedCount: number;
+    pendingCount: number;
+    rejectedCount: number;
+    totalDocuments: number;
+    oldestPendingDate: string | null;
+    hasWarnings: boolean;
+}
+
+export interface FieldMismatchWarning {
+    field: string;
+    documentType: string;
+    expected: string;
+    actual: string;
+    referenceDocType: string;
+}
