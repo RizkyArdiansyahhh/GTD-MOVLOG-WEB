@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\SessionCheckpointStatus;
 use App\Enums\ShippingSessionStatus;
-use App\Enums\StageStatus;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -63,32 +63,12 @@ class ShippingSession extends Model
 
     public function sessionCheckpoints(): HasMany
     {
-        return $this->hasMany(SessionCheckpoint::class);
+        return $this->hasMany(SessionCheckpoint::class, 'shipping_session_id');
     }
 
-    /**
-     * Logistics stages for this session (kapal -> tongkang -> pelabuhan -> site).
-     */
-    public function stages(): HasMany
+    public function activeSessionCheckpoint(): HasOne
     {
-        return $this->hasMany(SessionStage::class, 'shipping_session_id')
-            ->orderBy('stage_order');
-    }
-
-    /**
-     * Heavy equipment units assigned to this session.
-     */
-    public function units(): HasMany
-    {
-        return $this->hasMany(SessionUnit::class, 'shipping_session_id');
-    }
-
-    /**
-     * Get the currently active stage (there should be at most one).
-     */
-    public function activeStage(): HasOne
-    {
-        return $this->hasOne(SessionStage::class, 'shipping_session_id')
-            ->where('status', StageStatus::Aktif);
+        return $this->hasOne(SessionCheckpoint::class, 'shipping_session_id')
+            ->where('status', SessionCheckpointStatus::IN_PROGRESS);
     }
 }

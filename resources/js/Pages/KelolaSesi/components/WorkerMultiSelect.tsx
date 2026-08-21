@@ -3,7 +3,8 @@ import { ChevronDown, Search, Check, X, User, Users } from 'lucide-react';
 import type { FieldWorker } from '../types';
 
 interface WorkerMultiSelectProps {
-    fieldWorkers: FieldWorker[];
+    fieldWorkers?: FieldWorker[];
+    workers?: FieldWorker[];
     value: string[];
     onChange: (ids: string[]) => void;
     disabled?: boolean;
@@ -12,7 +13,8 @@ interface WorkerMultiSelectProps {
 
 export default function WorkerMultiSelect({
     fieldWorkers = [],
-    value,
+    workers = [],
+    value = [],
     onChange,
     disabled = false,
     placeholder = 'Pilih worker...',
@@ -22,19 +24,25 @@ export default function WorkerMultiSelect({
     const containerRef = useRef<HTMLDivElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
 
+    const availableWorkers = useMemo(() => {
+        if (Array.isArray(fieldWorkers) && fieldWorkers.length > 0) return fieldWorkers;
+        if (Array.isArray(workers) && workers.length > 0) return workers;
+        return [];
+    }, [fieldWorkers, workers]);
+
     const selectedWorkers = useMemo(() => {
-        return fieldWorkers.filter((w) => value.includes(w.id));
-    }, [fieldWorkers, value]);
+        return availableWorkers.filter((w) => value.includes(w.id));
+    }, [availableWorkers, value]);
 
     const filteredWorkers = useMemo(() => {
-        if (!searchQuery.trim()) return fieldWorkers;
+        if (!searchQuery.trim()) return availableWorkers;
         const q = searchQuery.toLowerCase().trim();
-        return fieldWorkers.filter(
+        return availableWorkers.filter(
             (w) =>
                 w.name.toLowerCase().includes(q) ||
                 (w.email && w.email.toLowerCase().includes(q))
         );
-    }, [fieldWorkers, searchQuery]);
+    }, [availableWorkers, searchQuery]);
 
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
