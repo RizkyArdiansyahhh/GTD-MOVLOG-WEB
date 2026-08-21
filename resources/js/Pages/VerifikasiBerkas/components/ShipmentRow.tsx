@@ -1,4 +1,4 @@
-import { ArrowRight, AlertTriangle } from 'lucide-react';
+﻿import { ArrowRight, AlertTriangle } from 'lucide-react';
 import type { ShipmentGroup, SupportedDocumentType } from '../types';
 
 interface ShipmentRowProps {
@@ -8,14 +8,13 @@ interface ShipmentRowProps {
     isFirst?: boolean;
 }
 
-/** Short label for document type */
-const docTypeShort: Record<SupportedDocumentType, string> = {
-    'Commercial Invoice': 'CI',
-    'Bill of Lading': 'BOL',
-    'Packing List': 'PL',
-    'Insurance': 'INS',
-    'Certificate of Origin (COO)': 'COO',
-};
+const REQUIRED_DOCS: { type: SupportedDocumentType; code: string }[] = [
+    { type: 'Commercial Invoice', code: 'CI' },
+    { type: 'Bill of Lading', code: 'BOL' },
+    { type: 'Packing List', code: 'PL' },
+    { type: 'Insurance', code: 'INS' },
+    { type: 'Certificate of Origin (COO)', code: 'COO' },
+];
 
 export default function ShipmentRow({
     shipment,
@@ -30,14 +29,14 @@ export default function ShipmentRow({
     const polShort = shipment.portOfLoading.split(',')[0] || shipment.portOfLoading;
     const podShort = shipment.portOfDischarge.split(',')[0] || shipment.portOfDischarge;
 
-    let progressColor = '#94a3b8';
+    let progressColor = 'var(--text-muted, #94a3b8)';
     if (hasRejected) {
-        progressColor = '#e11d48';
+        progressColor = 'var(--text-danger, #dc2626)';
     } else if (hasPending) {
-        progressColor = '#d97706';
+        progressColor = 'var(--text-warning, #d97706)';
+    } else if (isCompleted) {
+        progressColor = 'var(--text-primary, #06283A)';
     }
-
-    const noDocsUploaded = shipment.documents.length === 0;
 
     return (
         <div
@@ -52,8 +51,8 @@ export default function ShipmentRow({
             }}
             className={['shipment-row', isFirst ? 'shipment-row--first' : ''].filter(Boolean).join(' ')}
             style={{
-                opacity: isCompleted ? 0.52 : 1,
-                borderBottom: isLast ? 'none' : '0.5px solid #e2e8f0',
+                opacity: isCompleted ? 0.45 : 1,
+                borderBottom: isLast ? 'none' : '0.5px solid var(--border-subtle, #e2e8f0)',
             }}
         >
             {/* Column 1: Kontrak / Shipper */}
@@ -64,7 +63,7 @@ export default function ShipmentRow({
                     </span>
                     {shipment.hasWarnings && (
                         <span
-                            title="Ketidaksesuaian data terdeteksi"
+                            title="Ketidaksesuaian data terdeteksi antar dokumen"
                             className="shipment-row__warning-icon"
                         >
                             <AlertTriangle size={13} strokeWidth={2.2} />
@@ -89,46 +88,45 @@ export default function ShipmentRow({
 
             {/* Column 3: Dokumen */}
             <div className="shipment-row__col shipment-row__col--docs">
-                {noDocsUploaded ? (
-                    <span className="shipment-row__no-docs">
-                        Belum ada dokumen diupload
-                    </span>
-                ) : (
-                    <div className="shipment-row__doc-statuses">
-                        {shipment.documents.map((doc, idx) => {
-                            const short = docTypeShort[doc.documentType] || doc.documentType;
+                <div className="shipment-row__doc-statuses">
+                    {REQUIRED_DOCS.map((docDef, idx) => {
+                        const doc = shipment.documents.find((d) => d.documentType === docDef.type);
 
-                            let color = '#94a3b8'; // Pending atau belum upload
+                        let color = 'var(--text-muted, #94a3b8)';
+                        let fontWeight = 400;
+                        let statusLabel = 'Belum diunggah';
+
+                        if (doc) {
                             if (doc.status === 'Approved') {
-                                color = '#06283A'; // Approved
+                                color = 'var(--text-success, #16a34a)';
+                                fontWeight = 600;
+                                statusLabel = 'Disetujui';
                             } else if (doc.status === 'Rejected') {
-                                color = '#e11d48'; // Ditolak
+                                color = 'var(--text-danger, #dc2626)';
+                                fontWeight = 600;
+                                statusLabel = 'Ditolak';
+                            } else {
+                                color = 'var(--text-muted, #94a3b8)';
+                                fontWeight = 400;
+                                statusLabel = 'Pending';
                             }
+                        }
 
-                            return (
-                                <span key={doc.id} className="shipment-row__doc-item">
-                                    <span
-                                        style={{ color, fontWeight: 400 }}
-                                        title={
-                                            doc.documentType +
-                                            ': ' +
-                                            (doc.status === 'Rejected'
-                                                ? 'Ditolak'
-                                                : doc.status === 'Approved'
-                                                ? 'Disetujui'
-                                                : 'Pending')
-                                        }
-                                    >
-                                        {short}
-                                    </span>
-                                    {idx < shipment.documents.length - 1 && (
-                                        <span className="shipment-row__doc-sep">{"\u00B7"}</span>
-                                    )}
+                        return (
+                            <span key={docDef.code} className="shipment-row__doc-item">
+                                <span
+                                    style={{ color, fontWeight }}
+                                    title={`${docDef.type}: ${statusLabel}`}
+                                >
+                                    {docDef.code}
                                 </span>
-                            );
-                        })}
-                    </div>
-                )}
+                                {idx < REQUIRED_DOCS.length - 1 && (
+                                    <span className="shipment-row__doc-sep">{"\u00B7"}</span>
+                                )}
+                            </span>
+                        );
+                    })}
+                </div>
             </div>
 
             {/* Column 4: Progress */}
@@ -147,7 +145,7 @@ export default function ShipmentRow({
                             style={{
                                 backgroundColor:
                                     i < shipment.approvedCount
-                                        ? '#22c55e'
+                                        ? '#16a34a'
                                         : '#e2e8f0',
                             }}
                         />

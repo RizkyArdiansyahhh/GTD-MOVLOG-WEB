@@ -1,4 +1,4 @@
-import { ArrowRight, AlertTriangle } from 'lucide-react';
+﻿import { ArrowRight, AlertTriangle } from 'lucide-react';
 import type { ShipmentGroup, SupportedDocumentType } from '../types';
 
 interface ShipmentCardProps {
@@ -6,27 +6,32 @@ interface ShipmentCardProps {
     onClick: (contractNumber: string) => void;
 }
 
-const docTypeShort: Record<SupportedDocumentType, string> = {
-    'Commercial Invoice': 'CI',
-    'Bill of Lading': 'BOL',
-    'Packing List': 'PL',
-    'Insurance': 'INS',
-    'Certificate of Origin (COO)': 'COO',
-};
+const REQUIRED_DOCS: { type: SupportedDocumentType; code: string }[] = [
+    { type: 'Commercial Invoice', code: 'CI' },
+    { type: 'Bill of Lading', code: 'BOL' },
+    { type: 'Packing List', code: 'PL' },
+    { type: 'Insurance', code: 'INS' },
+    { type: 'Certificate of Origin (COO)', code: 'COO' },
+];
 
 export default function ShipmentCard({ shipment, onClick }: ShipmentCardProps) {
     const isCompleted = shipment.approvedCount === 5;
     const hasRejected = shipment.rejectedCount > 0;
     const hasPending = shipment.pendingCount > 0;
 
-    let progressColor = '#94a3b8';
-    if (hasRejected) {
-        progressColor = '#e11d48';
-    } else if (hasPending) {
-        progressColor = '#d97706';
-    }
+    const polShort = shipment.portOfLoading.split(',')[0] || shipment.portOfLoading;
+    const podShort = shipment.portOfDischarge.split(',')[0] || shipment.portOfDischarge;
 
-    const noDocsUploaded = shipment.documents.length === 0;
+    // Progress color follows urgency:
+    // Red if rejected, warning/yellow if pending, normal dark text if completed (5/5), muted otherwise
+    let progressColor = 'var(--text-muted, #94a3b8)';
+    if (hasRejected) {
+        progressColor = 'var(--text-danger, #dc2626)';
+    } else if (hasPending) {
+        progressColor = 'var(--text-warning, #d97706)';
+    } else if (isCompleted) {
+        progressColor = 'var(--text-primary, #06283A)';
+    }
 
     return (
         <div
@@ -39,98 +44,93 @@ export default function ShipmentCard({ shipment, onClick }: ShipmentCardProps) {
                     onClick(shipment.contractNumber);
                 }
             }}
-            className={[
-                'group relative bg-white rounded-[10px] border border-[#E2E8F0] shadow-[0_1px_4px_rgba(6,40,58,0.04)] p-4 cursor-pointer select-none outline-none transition-all duration-150 hover:border-slate-300 hover:shadow-[0_4px_12px_rgba(6,40,58,0.06)] focus-visible:ring-2 focus-visible:ring-slate-400',
-                isCompleted ? 'opacity-55' : '',
-            ].join(' ')}
+            className="shipment-card w-full"
+            style={{
+                opacity: isCompleted ? 0.45 : 1,
+            }}
         >
-            <div className="flex items-start justify-between gap-3 mb-3">
-                <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                        <span className="font-semibold text-sm text-[#06283A] truncate">
+            {/* Header: Kontrak / Shipper (Kiri) & Progress X/5 (Kanan) */}
+            <div className="shipment-card__header">
+                <div className="shipment-card__contract-wrap">
+                    <div className="shipment-card__contract-row">
+                        <span className="shipment-card__contract-number" title={shipment.contractNumber}>
                             {shipment.contractNumber}
                         </span>
                         {shipment.hasWarnings && (
                             <span
-                                title="Ketidaksesuaian data terdeteksi"
-                                className="inline-flex items-center text-amber-500 shrink-0"
+                                title="Ketidaksesuaian data terdeteksi antar dokumen"
+                                className="shipment-card__warning-icon"
                             >
                                 <AlertTriangle size={13} strokeWidth={2.2} />
                             </span>
                         )}
                     </div>
-                    <p className="text-xs text-slate-400 font-normal mt-0.5 truncate">
+                    <p className="shipment-card__shipper" title={shipment.shipperName}>
                         {shipment.shipperName}
                     </p>
                 </div>
-                <div className="flex flex-col items-end shrink-0">
+
+                <div className="shipment-card__progress-wrap">
                     <span
-                        className="text-xs font-semibold tabular-nums"
+                        className="shipment-card__progress-num"
                         style={{ color: progressColor }}
                     >
-                        {shipment.approvedCount}/5
+                        {shipment.approvedCount}
                     </span>
-                    <div className="flex gap-0.5 mt-1.5">
-                        {[0, 1, 2, 3, 4].map((i) => (
-                            <div
-                                key={i}
-                                className="w-2.5 h-1 rounded-[1px]"
-                                style={{
-                                    backgroundColor:
-                                        i < shipment.approvedCount
-                                            ? '#22c55e'
-                                            : '#e2e8f0',
-                                }}
-                            />
-                        ))}
-                    </div>
+                    <span className="shipment-card__progress-total">/5</span>
                 </div>
             </div>
 
-            <div className="flex items-center gap-1.5 text-xs text-slate-600 mb-3 font-normal">
-                <span className="truncate max-w-[140px]" title={shipment.portOfLoading}>
-                    {shipment.portOfLoading.split(',')[0]}
+            {/* Baris Rute: Port Asal → Port Tujuan */}
+            <div className="shipment-card__route">
+                <span className="shipment-card__port" title={shipment.portOfLoading}>
+                    {polShort}
                 </span>
-                <ArrowRight size={11} className="text-slate-300 shrink-0" />
-                <span className="truncate max-w-[140px]" title={shipment.portOfDischarge}>
-                    {shipment.portOfDischarge.split(',')[0]}
+                <ArrowRight size={11} className="shipment-card__route-arrow" />
+                <span className="shipment-card__port" title={shipment.portOfDischarge}>
+                    {podShort}
                 </span>
             </div>
 
-            <div className="pt-2.5 border-t border-slate-100">
-                {noDocsUploaded ? (
-                    <span className="text-xs text-slate-400 italic">
-                        Belum ada dokumen diupload
-                    </span>
-                ) : (
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                        {shipment.documents.map((doc, idx) => {
-                            const short = docTypeShort[doc.documentType] || doc.documentType;
+            {/* Baris Status Dokumen (Horizontal flow dengan gap, rata kiri tanpa kotak-kotak) */}
+            <div className="shipment-card__docs-row">
+                {REQUIRED_DOCS.map((docDef) => {
+                    const doc = shipment.documents.find((d) => d.documentType === docDef.type);
 
-                            let color = '#94a3b8';
-                            if (doc.status === 'Approved') {
-                                color = '#06283A';
-                            } else if (doc.status === 'Rejected') {
-                                color = '#e11d48';
-                            }
+                    let color = 'var(--text-muted, #94a3b8)';
+                    let fontWeight = 400;
+                    let statusLabel = 'Belum diunggah';
 
-                            return (
-                                <span key={doc.id} className="inline-flex items-center gap-1.5">
-                                    <span
-                                        className="text-xs font-normal"
-                                        style={{ color }}
-                                        title={doc.documentType + ': ' + doc.status}
-                                    >
-                                        {short}
-                                    </span>
-                                    {idx < shipment.documents.length - 1 && (
-                                        <span className="text-slate-300 text-xs select-none">{"\u00B7"}</span>
-                                    )}
-                                </span>
-                            );
-                        })}
-                    </div>
-                )}
+                    if (doc) {
+                        if (doc.status === 'Approved') {
+                            color = 'var(--text-success, #16a34a)';
+                            fontWeight = 600;
+                            statusLabel = 'Disetujui';
+                        } else if (doc.status === 'Rejected') {
+                            color = 'var(--text-danger, #dc2626)';
+                            fontWeight = 600;
+                            statusLabel = 'Ditolak';
+                        } else {
+                            color = 'var(--text-muted, #94a3b8)';
+                            fontWeight = 400;
+                            statusLabel = 'Pending verifikasi';
+                        }
+                    }
+
+                    return (
+                        <span
+                            key={docDef.code}
+                            className="shipment-card__doc-tag"
+                            style={{
+                                color,
+                                fontWeight,
+                            }}
+                            title={`${docDef.type}: ${statusLabel}`}
+                        >
+                            {docDef.code}
+                        </span>
+                    );
+                })}
             </div>
         </div>
     );

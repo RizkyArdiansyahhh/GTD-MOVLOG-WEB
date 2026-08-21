@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+﻿import { useState, useMemo } from 'react';
 import { Head, usePage, router } from '@inertiajs/react';
 import { FileCheck2, Search, AlertCircle, Ship, Clock } from 'lucide-react';
 import './shipment-table.css';
@@ -6,7 +6,7 @@ import DashboardLayout from '@/Layouts/DashboardLayout';
 import type { PageProps } from '@/types';
 import { useDocumentStore } from './hooks/useDocumentStore';
 import { groupDocumentsByShipment } from './utils/shipmentUtils';
-import ShipmentRow from './components/ShipmentRow';
+import ShipmentCard from './components/ShipmentCard';
 
 type ShipmentFilter = 'Semua' | 'Perlu Revisi' | 'Perlu Verifikasi' | 'Lengkap';
 
@@ -80,7 +80,7 @@ export default function VerifikasiBerkasIndex() {
     };
 
     return (
-        <DashboardLayout>
+        <DashboardLayout title="Verifikasi Berkas">
             <Head title="Verifikasi Berkas — Global Trans Djaya" />
 
             {!isSupervisor ? (
@@ -166,7 +166,7 @@ export default function VerifikasiBerkasIndex() {
                         </div>
                     </div>
 
-                    {/* ──────── SHIPMENT TABLE ──────── */}
+                    {/* ──────── SHIPMENT LIST HEADER ──────── */}
                     <div className="flex items-center justify-between mb-3 px-0.5">
                         <div className="flex items-center gap-2">
                             <FileCheck2 size={16} className="text-slate-600" strokeWidth={2} />
@@ -179,6 +179,7 @@ export default function VerifikasiBerkasIndex() {
                         </div>
                     </div>
 
+                    {/* ──────── SHIPMENT CARDS STACK (Full-Width, 1 per baris) ──────── */}
                     {filteredShipments.length === 0 ? (
                         <div className="bg-white rounded-[10px] border border-dashed border-slate-200 shadow-sm p-8 text-center">
                             <div
@@ -193,22 +194,12 @@ export default function VerifikasiBerkasIndex() {
                             </p>
                         </div>
                     ) : (
-                        <div className="shipment-table">
-                            {/* Column Headers */}
-                            <div className="shipment-table__header">
-                                <span className="shipment-table__th shipment-table__th--contract">Kontrak / Shipper</span>
-                                <span className="shipment-table__th shipment-table__th--route">Rute</span>
-                                <span className="shipment-table__th shipment-table__th--docs">Dokumen</span>
-                                <span className="shipment-table__th shipment-table__th--progress">Progress</span>
-                            </div>
-                            {/* Rows */}
-                            {filteredShipments.map((group, idx) => (
-                                <ShipmentRow
+                        <div className="shipment-cards-list flex flex-col gap-2 w-full">
+                            {filteredShipments.map((group) => (
+                                <ShipmentCard
                                     key={group.contractNumber}
                                     shipment={group}
                                     onClick={handleCardClick}
-                                    isFirst={idx === 0}
-                                    isLast={idx === filteredShipments.length - 1}
                                 />
                             ))}
                         </div>

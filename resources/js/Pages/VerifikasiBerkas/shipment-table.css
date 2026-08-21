@@ -1,5 +1,174 @@
-/* ── Shipment Table: Row-based Layout (Linear/Notion style) ─── */
+﻿/* ── CSS Tokens & Theme Variables ── */
+:root {
+    --surface-1: #F5F7FC;
+    --surface-2: #FFFFFF;
+    --surface-card-hover: #F8FAFC;
+    --border-subtle: #E2E8F0;
+    --border-muted: #CBD5E1;
+    --text-primary: #06283A;
+    --text-secondary: #64748B;
+    --text-muted: #94A3B8;
+    --text-success: #16A34A;
+    --text-danger: #DC2626;
+    --text-warning: #D97706;
+}
 
+/* ── Shipment Cards List: Stack vertikal full-width (1 per baris) ── */
+.shipment-cards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+/* ── Distinctive Shipment Card (Financial / Statement style) ── */
+.shipment-card {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--surface-2, #ffffff);
+    border: 1px solid var(--border-subtle, #e2e8f0);
+    border-radius: 8px;
+    padding: 14px 16px 14px 16px;
+    cursor: pointer;
+    outline: none;
+    box-shadow: none;
+    transition: background-color 150ms ease, border-color 150ms ease, opacity 150ms ease;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.shipment-card:hover {
+    background-color: var(--surface-card-hover, #f8fafc);
+    border-color: var(--border-muted, #cbd5e1);
+}
+
+.shipment-card:focus-visible {
+    border-color: #94a3b8;
+    outline: 2px solid #94a3b8;
+    outline-offset: 1px;
+}
+
+/* Header */
+.shipment-card__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.shipment-card__contract-wrap {
+    min-width: 0;
+    flex: 1;
+}
+
+.shipment-card__contract-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+
+.shipment-card__contract-number {
+    font-family: 'Poppins', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--text-primary, #06283A);
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.shipment-card__warning-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #f59e0b;
+    flex-shrink: 0;
+}
+
+.shipment-card__shipper {
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px;
+    color: var(--text-muted, #94a3b8);
+    font-weight: 400;
+    margin-top: 2px;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Big Progress Metric */
+.shipment-card__progress-wrap {
+    display: flex;
+    align-items: baseline;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.shipment-card__progress-num {
+    font-family: 'Poppins', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+}
+
+.shipment-card__progress-total {
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-muted, #94a3b8);
+    margin-left: 1px;
+}
+
+/* Route */
+.shipment-card__route {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-secondary, #64748b);
+    font-weight: 400;
+    margin-top: 8px;
+    min-width: 0;
+}
+
+.shipment-card__port {
+    font-family: 'Poppins', sans-serif;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.shipment-card__route-arrow {
+    color: #94a3b8;
+    flex-shrink: 0;
+}
+
+/* Doc Status Row (Natural horizontal flow with gap, clean border-top, no boxes/grids) */
+.shipment-card__docs-row {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 0.5px solid var(--border-subtle, #e2e8f0);
+}
+
+.shipment-card__doc-tag {
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    user-select: none;
+    line-height: 1;
+}
+
+/* ── Shipment Table: Legacy Row-based Layout ─── */
 .shipment-table {
     font-family: 'Poppins', sans-serif;
     background: #ffffff;
@@ -9,7 +178,6 @@
     overflow: hidden;
 }
 
-/* ── Column Header ── */
 .shipment-table__header {
     font-family: 'Poppins', sans-serif;
     display: grid;
@@ -33,7 +201,6 @@
     text-align: right;
 }
 
-/* ── Row ── */
 .shipment-row {
     font-family: 'Poppins', sans-serif;
     display: grid;
@@ -56,7 +223,6 @@
     box-shadow: inset 0 0 0 2px #94a3b8;
 }
 
-/* ── Column cells ── */
 .shipment-row__col {
     display: flex;
     flex-direction: column;
@@ -77,7 +243,6 @@
     justify-content: center;
 }
 
-/* ── Contract / Shipper ── */
 .shipment-row__contract-number {
     font-family: 'Poppins', sans-serif;
     font-size: 13px;
@@ -112,7 +277,6 @@
     text-overflow: ellipsis;
 }
 
-/* ── Route ── */
 .shipment-row__port {
     font-family: 'Poppins', sans-serif;
     font-size: 12px;
@@ -121,7 +285,6 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 140px;
 }
 
 .shipment-row__arrow {
@@ -129,7 +292,6 @@
     flex-shrink: 0;
 }
 
-/* ── Documents ── */
 .shipment-row__doc-statuses {
     display: flex;
     align-items: center;
@@ -161,7 +323,6 @@
     font-style: italic;
 }
 
-/* ── Progress ── */
 .shipment-row__progress-text {
     font-family: 'Poppins', sans-serif;
     font-size: 12px;
@@ -185,42 +346,4 @@
     width: 10px;
     height: 3px;
     border-radius: 1px;
-}
-
-/* ── Responsive: stack on small screens ── */
-@media (max-width: 768px) {
-    .shipment-table__header {
-        display: none;
-    }
-
-    .shipment-row {
-        grid-template-columns: 1fr auto;
-        grid-template-rows: auto auto;
-        gap: 4px 12px;
-        padding: 12px 14px;
-        min-height: auto;
-    }
-
-    /* Contract spans first column, row 1 */
-    .shipment-row__col--contract {
-        grid-column: 1;
-        grid-row: 1;
-    }
-
-    /* Progress top-right, row 1 */
-    .shipment-row__col--progress {
-        grid-column: 2;
-        grid-row: 1;
-    }
-
-    /* Route hidden on mobile */
-    .shipment-row__col--route {
-        display: none;
-    }
-
-    /* Docs spans full width, row 2 */
-    .shipment-row__col--docs {
-        grid-column: 1 / -1;
-        grid-row: 2;
-    }
 }
