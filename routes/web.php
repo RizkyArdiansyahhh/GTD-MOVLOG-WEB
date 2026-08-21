@@ -6,6 +6,7 @@ use App\Http\Controllers\Web\MonitoringBarangController;
 use App\Http\Controllers\Web\LaporanController;
 use App\Http\Controllers\Web\UserController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Web\SubmitBerkasController;
 use Inertia\Inertia;
 
 Route::get('/welcome', fn () => view('welcome'))->name('welcome');
@@ -38,4 +39,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('logout', [\App\Http\Controllers\Web\Auth\AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
+
+    Route::get('submit-dokumen', [SubmitBerkasController::class, 'index'])->name('submit-dokumen');
+    Route::post('/submit-berkas/finalize', [SubmitBerkasController::class, 'finalize'])->name('submit-berkas.finalize');
+    Route::get('/submit-berkas/status/{submission}', [SubmitBerkasController::class, 'status'])->name('submit-berkas.status');
 });
