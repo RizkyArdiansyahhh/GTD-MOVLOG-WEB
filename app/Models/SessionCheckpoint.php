@@ -14,7 +14,7 @@ class SessionCheckpoint extends Model
     use HasUlids;
 
     protected $fillable = [
-        'session_id',
+        'shipping_session_id',
         'checkpoint_id',
         'pic_user_id',
         'status',
@@ -41,7 +41,7 @@ class SessionCheckpoint extends Model
     {
         return $this->belongsTo(
             ShippingSession::class,
-            'session_id'
+            'shipping_session_id'
         );
     }
 

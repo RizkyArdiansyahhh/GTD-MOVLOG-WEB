@@ -1,6 +1,7 @@
 import { usePage } from '@inertiajs/react';
-import { Search, Bell, Menu } from 'lucide-react';
+import { Bell, Menu } from 'lucide-react';
 import type { PageProps } from '@/types';
+import GlobalSearchBar from '@/Components/GlobalSearch/GlobalSearchBar';
 
 // ─────────────────────────────────────────────
 // Notification badge count (mock – swap with real prop)
@@ -51,22 +52,8 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
 
             {/* ── Right side ── */}
             <div className="flex items-center gap-4">
-                {/* Search bar (hidden on mobile) */}
-                <div
-                    className="hidden md:flex items-center gap-2 rounded-full px-4 transition-all duration-150 focus-within:ring-2 focus-within:ring-yellow-300"
-                    style={{
-                        width: '260px',
-                        height: '40px',
-                        backgroundColor: '#F5F5F5',
-                    }}
-                >
-                    <Search size={18} className="text-gray-400 shrink-0" strokeWidth={1.8} />
-                    <input
-                        type="text"
-                        placeholder="Search"
-                        className="flex-1 bg-transparent text-sm text-gray-700 placeholder-gray-400 outline-none"
-                    />
-                </div>
+                {/* Global Search Bar (Responsive with Dropdown & Shortcuts) */}
+                <GlobalSearchBar />
 
                 {/* Notification bell */}
                 <button
