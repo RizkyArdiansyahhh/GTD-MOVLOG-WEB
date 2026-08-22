@@ -9,6 +9,7 @@ import {
     CheckCircle2,
     AlertTriangle,
     ChevronLeft,
+    X,
 } from 'lucide-react';
 import { useWizard } from '../../hooks/useWizard';
 
@@ -100,10 +101,182 @@ interface MergedCargoItem {
     price: string;
 }
 
+/**
+ * Simple, dependency-free confirmation modal.
+ * Shown right before the final POST so the user has a last chance to review.
+ */
+function ConfirmSubmitModal({
+    open,
+    onConfirm,
+    onCancel,
+    isSubmitting,
+    warnings,
+}: {
+    open: boolean;
+    onConfirm: () => void;
+    onCancel: () => void;
+    isSubmitting: boolean;
+    warnings: string[];
+}) {
+    if (!open) return null;
+
+    return (
+        <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="confirm-submit-title"
+            style={{
+                position: 'fixed',
+                inset: 0,
+                background: 'rgba(6, 40, 58, 0.45)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1000,
+                padding: 16,
+            }}
+            onClick={onCancel}
+        >
+            <div
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                    background: '#fff',
+                    borderRadius: 14,
+                    width: '100%',
+                    maxWidth: 440,
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+                    overflow: 'hidden',
+                }}
+            >
+                <div
+                    style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        justifyContent: 'space-between',
+                        padding: '20px 22px 0',
+                    }}
+                >
+                    <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                        <div
+                            style={{
+                                width: 38,
+                                height: 38,
+                                borderRadius: '50%',
+                                background: '#EFF6FF',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0,
+                            }}
+                        >
+                            <CheckCircle2 size={20} color="#06283A" />
+                        </div>
+                        <div>
+                            <p
+                                id="confirm-submit-title"
+                                style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#06283A' }}
+                            >
+                                Submit berkas PIB?
+                            </p>
+                            <p style={{ margin: '4px 0 0', fontSize: 13, color: '#6B7280', lineHeight: 1.5 }}>
+                                Pastikan seluruh data sudah benar. Setelah dikirim, dokumen tidak dapat diedit
+                                kembali dari step ini.
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={onCancel}
+                        aria-label="Tutup"
+                        style={{
+                            border: 'none',
+                            background: 'transparent',
+                            cursor: 'pointer',
+                            padding: 4,
+                            color: '#9CA3AF',
+                        }}
+                    >
+                        <X size={18} />
+                    </button>
+                </div>
+
+                {warnings.length > 0 && (
+                    <div
+                        style={{
+                            margin: '16px 22px 0',
+                            padding: '10px 12px',
+                            background: '#FFFBEB',
+                            border: '1px solid #FDE68A',
+                            borderRadius: 8,
+                        }}
+                    >
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                            <AlertTriangle size={16} color="#B45309" style={{ flexShrink: 0, marginTop: 1 }} />
+                            <div>
+                                <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: '#92400E' }}>
+                                    Periksa kembali sebelum submit
+                                </p>
+                                <ul style={{ margin: '4px 0 0', paddingLeft: 16, fontSize: 12, color: '#92400E' }}>
+                                    {warnings.map((w, i) => (
+                                        <li key={i} style={{ marginBottom: 2 }}>
+                                            {w}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <div style={{ display: 'flex', gap: 10, padding: 22 }}>
+                    <button
+                        type="button"
+                        onClick={onCancel}
+                        disabled={isSubmitting}
+                        style={{
+                            flex: 1,
+                            padding: '10px 16px',
+                            borderRadius: 10,
+                            border: '1px solid #E2E8F0',
+                            background: '#fff',
+                            color: '#374151',
+                            fontSize: 13.5,
+                            fontWeight: 600,
+                            cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                        }}
+                    >
+                        Batal
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onConfirm}
+                        disabled={isSubmitting}
+                        style={{
+                            flex: 1,
+                            padding: '10px 16px',
+                            borderRadius: 10,
+                            border: 'none',
+                            background: 'linear-gradient(135deg, #06283A, #0A3D5C)',
+                            color: '#fff',
+                            fontSize: 13.5,
+                            fontWeight: 700,
+                            cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                            opacity: isSubmitting ? 0.7 : 1,
+                        }}
+                    >
+                        {isSubmitting ? 'Mengirim...' : 'Ya, Submit'}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export function PreviewPibStep() {
     const { wizardData, goBack, goToStep } = useWizard();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
+    const [showConfirm, setShowConfirm] = useState(false);
 
     const bol = wizardData.billOfLading;
     const ci = wizardData.commercialInvoice;
@@ -111,14 +284,24 @@ export function PreviewPibStep() {
     const coo = wizardData.certificateOfOrigin;
     const insurance = wizardData.insurance;
 
-    const allComplete = !!(bol?.data && ci?.data && pl?.data && coo?.data && insurance?.data);
+    // --- Completeness check -------------------------------------------------
+    // Beyond "data exists", also check that key identifying fields aren't empty,
+    // so a step can't silently pass as "done" with blank required fields.
+    const isBolComplete = !!(bol?.data && bol.data.documentDetail?.number && bol.data.documentDetail?.date);
+    const isCiComplete = !!(ci?.data && ci.data.documentDetail?.number && ci.data.cargoDetail?.length);
+    const isPlComplete = !!(pl?.data && pl.data.documentDetail?.number && pl.data.cargoDetail?.length);
+    const isCooComplete = !!(coo?.data && coo.data.documentDetail?.number && coo.data.documentDetail?.date);
+    const isInsuranceComplete = !!insurance?.data;
+
+    const allComplete =
+        isBolComplete && isCiComplete && isPlComplete && isCooComplete && isInsuranceComplete;
 
     const incompleteSteps = [
-        { label: 'Bill of Lading', index: 0, done: !!bol?.data },
-        { label: 'Commercial Invoice', index: 1, done: !!ci?.data },
-        { label: 'Packing List', index: 2, done: !!pl?.data },
-        { label: 'Certificate of Origin', index: 3, done: !!coo?.data },
-        { label: 'Insurance', index: 4, done: !!insurance?.data },
+        { label: 'Bill of Lading', index: 0, done: isBolComplete },
+        { label: 'Commercial Invoice', index: 1, done: isCiComplete },
+        { label: 'Packing List', index: 2, done: isPlComplete },
+        { label: 'Certificate of Origin', index: 3, done: isCooComplete },
+        { label: 'Insurance', index: 4, done: isInsuranceComplete },
     ].filter((s) => !s.done);
 
     const shipper = bol?.data?.shipper ?? ci?.data?.shipper ?? null;
@@ -132,6 +315,15 @@ export function PreviewPibStep() {
         const total = pl.data.cargoDetail.reduce((acc, item) => acc + (parseFloat(item.netWeight) || 0), 0);
         return total === 0 ? '' : String(total);
     }, [pl?.data]);
+
+    // --- Cargo merge (by index, with mismatch detection) ---------------------
+    // CI and PL cargo lists are matched positionally. If the item counts differ,
+    // netWeight can attach to the wrong item, so we flag it as a warning instead
+    // of silently merging bad data.
+    const cargoCountMismatch =
+        !!ci?.data?.cargoDetail?.length &&
+        !!pl?.data?.cargoDetail?.length &&
+        ci.data.cargoDetail.length !== pl.data.cargoDetail.length;
 
     const mergedCargo: MergedCargoItem[] = useMemo(() => {
         if (!ci?.data?.cargoDetail?.length) return [];
@@ -151,8 +343,27 @@ export function PreviewPibStep() {
         });
     }, [ci?.data, pl?.data]);
 
-    const handleSubmit = () => {
+    // Warnings shown inside the confirmation modal (not blocking, just a heads-up)
+    const submitWarnings = useMemo(() => {
+        const warnings: string[] = [];
+        if (cargoCountMismatch) {
+            warnings.push(
+                `Jumlah item cargo di Commercial Invoice (${ci?.data?.cargoDetail?.length}) tidak sama dengan Packing List (${pl?.data?.cargoDetail?.length}). Net weight per item mungkin tidak sesuai.`
+            );
+        }
+        return warnings;
+    }, [cargoCountMismatch, ci?.data?.cargoDetail?.length, pl?.data?.cargoDetail?.length]);
+
+    // Step 1: user clicks "Submit Berkas" -> just opens the confirmation modal
+    const handleSubmitClick = () => {
         if (!allComplete || isSubmitting) return;
+        setSubmitError(null);
+        setShowConfirm(true);
+    };
+
+    // Step 2: user confirms inside the modal -> actual POST happens here
+    const handleConfirmSubmit = () => {
+        if (isSubmitting) return;
         setIsSubmitting(true);
         setSubmitError(null);
 
@@ -170,6 +381,7 @@ export function PreviewPibStep() {
             onError: () => {
                 setSubmitError('Gagal mengirim berkas. Silakan coba lagi.');
                 setIsSubmitting(false);
+                setShowConfirm(false);
             },
             // Tidak perlu onSuccess manual redirect — backend akan me-redirect
             // (Inertia otomatis mengikuti redirect response dari controller)
@@ -346,6 +558,27 @@ export function PreviewPibStep() {
                     <Package size={17} color="#06283A" />
                     <p style={cardTitleStyle}>15. Cargo Detail</p>
                 </div>
+
+                {cargoCountMismatch && (
+                    <div
+                        style={{
+                            display: 'flex',
+                            gap: 8,
+                            alignItems: 'flex-start',
+                            padding: '10px 20px',
+                            background: '#FFFBEB',
+                            borderBottom: '1px solid #F1F5F9',
+                        }}
+                    >
+                        <AlertTriangle size={14} color="#B45309" style={{ flexShrink: 0, marginTop: 2 }} />
+                        <span style={{ fontSize: 12, color: '#92400E' }}>
+                            Jumlah item CI ({ci?.data?.cargoDetail?.length}) dan PL (
+                            {pl?.data?.cargoDetail?.length}) berbeda — net weight per item mungkin tidak
+                            sesuai pasangannya.
+                        </span>
+                    </div>
+                )}
+
                 {mergedCargo.length === 0 ? (
                     <div style={{ padding: '16px 20px', fontSize: 13, color: '#94A3B8' }}>
                         Belum ada data cargo.
@@ -429,7 +662,7 @@ export function PreviewPibStep() {
 
                 <button
                     type="button"
-                    onClick={handleSubmit}
+                    onClick={handleSubmitClick}
                     disabled={!allComplete || isSubmitting}
                     style={{
                         display: 'inline-flex',
@@ -449,6 +682,14 @@ export function PreviewPibStep() {
                     {isSubmitting ? 'Mengirim...' : 'Submit Berkas'}
                 </button>
             </div>
+
+            <ConfirmSubmitModal
+                open={showConfirm}
+                onConfirm={handleConfirmSubmit}
+                onCancel={() => (!isSubmitting ? setShowConfirm(false) : undefined)}
+                isSubmitting={isSubmitting}
+                warnings={submitWarnings}
+            />
         </div>
     );
 }
