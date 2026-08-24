@@ -52,6 +52,7 @@ export default function VerifikasiBerkasIndex() {
                 const q = searchQuery.toLowerCase();
                 const matchContract = group.contractNumber.toLowerCase().includes(q);
                 const matchShipper = group.shipperName.toLowerCase().includes(q);
+                const matchCustomer = group.customerName.toLowerCase().includes(q);
                 const matchConsignee = group.consigneeName.toLowerCase().includes(q);
                 const matchPort =
                     group.portOfLoading.toLowerCase().includes(q) ||
@@ -59,7 +60,7 @@ export default function VerifikasiBerkasIndex() {
                 const matchDocNumber = group.documents.some((d) =>
                     d.documentNumber.toLowerCase().includes(q)
                 );
-                if (!matchContract && !matchShipper && !matchConsignee && !matchPort && !matchDocNumber) {
+                if (!matchContract && !matchCustomer && !matchShipper && !matchConsignee && !matchPort && !matchDocNumber) {
                     return false;
                 }
             }

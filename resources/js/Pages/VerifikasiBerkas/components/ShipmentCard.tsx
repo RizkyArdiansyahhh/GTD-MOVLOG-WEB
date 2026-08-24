@@ -49,12 +49,12 @@ export default function ShipmentCard({ shipment, onClick }: ShipmentCardProps) {
                 opacity: isCompleted ? 0.45 : 1,
             }}
         >
-            {/* Header: Kontrak / Shipper (Kiri) & Progress X/5 (Kanan) */}
+            {/* Header: Customer (Kiri) & Progress X/5 (Kanan) */}
             <div className="shipment-card__header">
                 <div className="shipment-card__contract-wrap">
                     <div className="shipment-card__contract-row">
-                        <span className="shipment-card__contract-number" title={shipment.contractNumber}>
-                            {shipment.contractNumber}
+                        <span className="shipment-card__contract-number" title={shipment.customerName}>
+                            {shipment.customerName}
                         </span>
                         {shipment.hasWarnings && (
                             <span
@@ -65,9 +65,6 @@ export default function ShipmentCard({ shipment, onClick }: ShipmentCardProps) {
                             </span>
                         )}
                     </div>
-                    <p className="shipment-card__shipper" title={shipment.shipperName}>
-                        {shipment.shipperName}
-                    </p>
                 </div>
 
                 <div className="shipment-card__progress-wrap">

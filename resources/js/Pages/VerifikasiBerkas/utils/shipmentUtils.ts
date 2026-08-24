@@ -89,6 +89,7 @@ export function groupDocumentsByShipment(
 
         groups.push({
             contractNumber,
+            customerName: uploadedDocs[0]?.uploadedBy || '-',
             shipperName: firstWithShipper?.shipper?.name || '-',
             consigneeName: firstWithConsignee?.consignee?.name || '-',
             portOfLoading: firstWithTransport?.transportDetail?.portOfLoading || '-',

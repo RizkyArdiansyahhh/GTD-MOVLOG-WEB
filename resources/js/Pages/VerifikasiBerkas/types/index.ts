@@ -113,6 +113,7 @@ export interface DocumentStats {
 
 export interface ShipmentGroup {
     contractNumber: string;
+    customerName: string;
     shipperName: string;
     consigneeName: string;
     portOfLoading: string;
