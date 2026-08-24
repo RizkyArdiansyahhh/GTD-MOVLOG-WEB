@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import {
     LayoutDashboard,
@@ -5,6 +6,7 @@ import {
     PackageSearch,
     MapPin,
     ClipboardList,
+    FileUp,
     FileCheck2,
     BarChart3,
     LogOut,
@@ -12,16 +14,6 @@ import {
 } from 'lucide-react';
 import type { PageProps } from '@/types';
 
-// ─────────────────────────────────────────────
-// Dummy current user fallback
-// ─────────────────────────────────────────────
-const dummyCurrentUser = {
-    id: '1',
-    name: 'Super Admin',
-    role: 'super-admin',
-};
-
-// ─────────────────────────────────────────────
 // ─────────────────────────────────────────────
 // Menu definition
 // ─────────────────────────────────────────────
@@ -35,13 +27,14 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-    { label: 'Dashboard',             href: '/',                  routeName: 'dashboard',          icon: LayoutDashboard },
-    { label: 'Kelola Akun',           href: '/kelola-akun',       routeName: 'kelola-akun',        icon: Users, roles: ['super-admin', 'Super Admin', 'Super-Admin'] },
-    { label: 'Monitoring Barang',     href: '/monitoring-barang',                                  icon: PackageSearch },
-    { label: 'Monitoring Checkpoint', href: '/monitoring-cp',                                     icon: MapPin },
-    { label: 'Kelola Sesi Pekerja',   href: '/sesi-pekerja',       routeName: 'sesi-pekerja',        icon: ClipboardList, roles: ['super-admin', 'Super Admin', 'Super-Admin'] },
-    { label: 'Verifikasi Berkas',     href: '/verifikasi-berkas', routeName: 'verifikasi-berkas',  icon: FileCheck2, roles: ['supervisor', 'Supervisor'] },
-    { label: 'Laporan',               href: '/laporan',                                           icon: BarChart3 },
+    { label: 'Dashboard', href: '/', routeName: 'dashboard', icon: LayoutDashboard },
+    { label: 'Kelola Akun', href: '/kelola-akun', routeName: 'kelola-akun', icon: Users, roles: ['super-admin'] },
+    { label: 'Monitoring Barang', href: '/monitoring-barang', icon: PackageSearch },
+    { label: 'Monitoring Checkpoint', href: '/monitoring-cp', icon: MapPin },
+    { label: 'Kelola Sesi Pekerja', href: '/sesi-pekerja', routeName: 'kelola-sesi', icon: ClipboardList, roles: ['super-admin'] },
+    { label: 'Submit Dokumen', href: '/submit-dokumen', routeName: 'submit-dokumen', icon: FileUp },
+    { label: 'Verifikasi Berkas', href: '/verifikasi-berkas', routeName: 'verifikasi-berkas', icon: FileCheck2, roles: ['supervisor'] },
+    { label: 'Laporan', href: '/laporan', icon: BarChart3 },
 ];
 
 /** Navbar height – must match the value in Navbar.tsx */
@@ -57,10 +50,19 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     const currentPath = page.url;
     const authUser = page.props.auth?.user;
 
-    // Get active user roles (normalized to lowercase)
-    const userRoles = (authUser?.roles && authUser.roles.length > 0)
-        ? authUser.roles.map((r: any) => (typeof r === 'string' ? r : r?.name || String(r)).toLowerCase())
-        : [dummyCurrentUser.role.toLowerCase()];
+    // Get active user roles (normalized to lowercase) without dummy fallback
+    const userRoles = useMemo(() => {
+        if (!authUser?.roles) {
+            return [];
+        }
+        const rolesArray = Array.isArray(authUser.roles)
+            ? authUser.roles
+            : Array.from(authUser.roles as any);
+
+        return rolesArray.map((r: any) =>
+            (typeof r === 'string' ? r : r?.name || String(r)).toLowerCase()
+        );
+    }, [authUser]);
 
     const getItemHref = (item: MenuItem): string => {
         if (item.routeName && typeof (window as any).route === 'function') {
@@ -101,7 +103,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             <nav className="flex-1 flex flex-col gap-1 overflow-y-auto">
                 {menuItems.map((item) => {
                     // ── Conditional rendering: skip restricted items if role doesn't match ──
-                    if (item.roles) {
+                    if (item.roles && item.roles.length > 0) {
                         const allowedRoles = item.roles.map((r) => r.toLowerCase());
                         const hasPermission = allowedRoles.some((role) => userRoles.includes(role));
                         if (!hasPermission) {
@@ -157,10 +159,14 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         <>
             {/* ── Desktop sidebar (lg+): fixed, always visible ── */}
             <aside
-                className="hidden lg:flex fixed left-4 bottom-4 z-40 flex-col"
+                className="hidden lg:flex fixed left-0 bottom-0 z-40 flex-col"
                 style={{
-                    width: '260px',
-                    top: `${NAVBAR_HEIGHT + 16}px`,
+                    width: '276px',
+                    top: 'var(--navbar-h)',
+                    paddingTop: '16px',
+                    paddingLeft: '16px',
+                    paddingBottom: '16px',
+                    backgroundColor: '#F5F7FC',
                 }}
             >
                 {sidebarContent}
@@ -186,3 +192,4 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         </>
     );
 }
+

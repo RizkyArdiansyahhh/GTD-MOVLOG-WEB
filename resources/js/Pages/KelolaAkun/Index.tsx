@@ -75,12 +75,10 @@ export default function Index() {
     const [localUsers, setLocalUsers] = useState<KelolaAkunUser[]>(seederUsers);
     const baseUsers: KelolaAkunUser[] = hasServerData ? users.data : localUsers;
 
-    // Local state for filters
     const [search, setSearch] = useState(filters?.search ?? '');
     const [roleFilter, setRoleFilter] = useState(filters?.role ?? 'Semua Role');
     const [statusFilter, setStatusFilter] = useState(filters?.status ?? 'Semua Status');
     const [currentPage, setCurrentPage] = useState(users?.current_page ?? 1);
-    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
     // State for Status Confirmation Modal, Delete Confirmation Modal & Toast
     const [modalUser, setModalUser] = useState<KelolaAkunUser | null>(null);
@@ -195,7 +193,6 @@ export default function Index() {
         if (hasServerData) {
             router.get('/kelola-akun', { search, role: roleFilter, status: statusFilter, page: String(page) }, { preserveState: true, preserveScroll: true });
         }
-        setSelectedIds(new Set());
     };
 
     // Status toggle handlers
@@ -331,34 +328,6 @@ export default function Index() {
     const paginatedUsers = hasServerData ? filteredUsers : filteredUsers.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
     const totalItems = hasServerData ? (users.total ?? filteredUsers.length) : filteredUsers.length;
 
-    // Selection
-    const handleToggleSelect = (id: string) => {
-        setSelectedIds((prev) => {
-            const next = new Set(prev);
-            if (next.has(id)) next.delete(id);
-            else next.add(id);
-            return next;
-        });
-    };
-
-    const handleToggleSelectAll = () => {
-        const allCurrentIds = paginatedUsers.map((u) => u.id);
-        const allSelected = allCurrentIds.every((id) => selectedIds.has(id));
-        if (allSelected) {
-            setSelectedIds((prev) => {
-                const next = new Set(prev);
-                allCurrentIds.forEach((id) => next.delete(id));
-                return next;
-            });
-        } else {
-            setSelectedIds((prev) => {
-                const next = new Set(prev);
-                allCurrentIds.forEach((id) => next.add(id));
-                return next;
-            });
-        }
-    };
-
     return (
         <DashboardLayout>
             <Head title="Kelola Akun — Global Trans Djaya" />
@@ -475,9 +444,6 @@ export default function Index() {
                     {/* ── User Table ── */}
                     <UserTable
                         users={paginatedUsers}
-                        selectedIds={selectedIds}
-                        onToggleSelect={handleToggleSelect}
-                        onToggleSelectAll={handleToggleSelectAll}
                         onStatusToggleClick={handleStatusToggleClick}
                         onEditClick={(u) => router.get(`/users/${u.id}/edit`)}
                         onDeleteClick={handleDeleteClick}

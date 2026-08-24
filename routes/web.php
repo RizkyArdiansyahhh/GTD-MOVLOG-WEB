@@ -47,15 +47,31 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/', fn () => Inertia::render('Dashboard/Index'))
         ->name('dashboard');
 
-    // Kelola Akun
-    Route::get('kelola-akun', [KelolaAkunController::class, 'index'])
-        ->name('kelola-akun');
-    Route::get('kelola-akun/tambah', [KelolaAkunController::class, 'create'])
-        ->name('kelola-akun.create');
-    Route::post('kelola-akun/tambah', [KelolaAkunController::class, 'store'])
-        ->name('kelola-akun.store');
-    Route::patch('kelola-akun/{user}/status', [KelolaAkunController::class, 'toggleStatus'])
-        ->name('kelola-akun.toggle-status');
+    // ─── Super Admin Routes ───────────────────────────────────────────
+    Route::middleware('role:super-admin')->group(function () {
+        // Kelola Akun
+        Route::get('kelola-akun', [KelolaAkunController::class, 'index'])
+            ->name('kelola-akun');
+        Route::get('kelola-akun/tambah', [KelolaAkunController::class, 'create'])
+            ->name('kelola-akun.create');
+        Route::post('kelola-akun/tambah', [KelolaAkunController::class, 'store'])
+            ->name('kelola-akun.store');
+        Route::patch('kelola-akun/{user}/status', [KelolaAkunController::class, 'toggleStatus'])
+            ->name('kelola-akun.toggle-status');
+
+        // Kelola Sesi Pekerja
+        Route::get('sesi-pekerja', [SesiPekerjaController::class, 'index'])
+            ->name('kelola-sesi');
+        Route::get('sesi-pekerja/tambah', [SesiPekerjaController::class, 'create'])
+            ->name('kelola-sesi.create');
+    });
+
+    // ─── Supervisor Routes ────────────────────────────────────────────
+    Route::middleware('role:supervisor')->group(function () {
+        // Verifikasi Berkas
+        Route::get('verifikasi-berkas', [VerifikasiBerkasController::class, 'index'])
+            ->name('verifikasi-berkas');
+    });
 
     // User Management
     Route::resource('users', UserController::class);
@@ -77,6 +93,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('sesi-pekerja.stages.assign');
     Route::post('sesi-pekerja/{session}/stages/{stage}/complete', [SesiPekerjaController::class, 'completeStage'])
         ->name('sesi-pekerja.stages.complete');
+    Route::get('verifikasi-berkas/{contractNumber}', [VerifikasiBerkasController::class, 'show'])
+        ->name('verifikasi-berkas.show');
 
     // Logout
     Route::post('logout', [\App\Http\Controllers\Web\Auth\AuthenticatedSessionController::class, 'destroy'])
