@@ -79,6 +79,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Verifikasi Berkas
     Route::get('verifikasi-berkas', [VerifikasiBerkasController::class, 'index'])
         ->name('verifikasi-berkas');
+
+    // Kelola Sesi Pekerja
+    Route::get('sesi-pekerja', [SesiPekerjaController::class, 'index'])
+        ->name('sesi-pekerja');
+    Route::get('sesi-pekerja/tambah', [SesiPekerjaController::class, 'create'])
+        ->name('sesi-pekerja.create');
+    Route::post('sesi-pekerja', [SesiPekerjaController::class, 'store'])
+        ->name('sesi-pekerja.store');
+    Route::get('sesi-pekerja/{session}', [SesiPekerjaController::class, 'show'])
+        ->name('sesi-pekerja.show');
+    Route::post('sesi-pekerja/{session}/stages/{stage}/assign', [SesiPekerjaController::class, 'assignStage'])
+        ->name('sesi-pekerja.stages.assign');
+    Route::post('sesi-pekerja/{session}/stages/{stage}/complete', [SesiPekerjaController::class, 'completeStage'])
+        ->name('sesi-pekerja.stages.complete');
     Route::get('verifikasi-berkas/{contractNumber}', [VerifikasiBerkasController::class, 'show'])
         ->name('verifikasi-berkas.show');
 
