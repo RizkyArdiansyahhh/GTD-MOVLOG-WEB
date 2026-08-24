@@ -10,16 +10,23 @@ services:
     container_name: lms_app
     restart: unless-stopped
     working_dir: /var/www/html
+
+    ports:
+      - "5174:5174"
+
     volumes:
       - .:/var/www/html
       - ./docker/app/php.ini:/usr/local/etc/php/conf.d/custom.ini
+
     environment:
-      - PHP_OPCACHE_VALIDATE_TIMESTAMPS=0
+      - PHP_OPCACHE_VALIDATE_TIMESTAMPS=1
+
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+
     networks:
       - lms_network
 
