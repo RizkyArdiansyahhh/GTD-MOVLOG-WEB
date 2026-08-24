@@ -1,7 +1,15 @@
 // Global type declarations for the LMS application
 
+export interface Customer {
+    id: string;
+    company_name: string;
+    pic_name?: string | null;
+    email?: string | null;
+    phone?: string | null;
+}
+
 export interface User {
-    id: number;
+    id: string | number;
     name: string;
     email: string;
     status: string;
@@ -10,6 +18,7 @@ export interface User {
     avatar_url: string;
     roles: string[];
     permissions: string[];
+    customer?: Customer | null;
     created_at: string;
     updated_at: string;
 }
