@@ -1,4 +1,11 @@
-import type { BillOfLadingData, CommercialInvoiceData, PackingListData, CertificateOfOriginData, PdfFile } from '../types/submitBerkas';
+import type {
+    BillOfLadingData,
+    CommercialInvoiceData,
+    PackingListData,
+    CertificateOfOriginData,
+    InsuranceData,
+    PdfFile,
+} from '../types/SubmitBerkas';
 
 /**
  * Data contoh untuk keperluan testing/development — supaya form nggak perlu
@@ -197,60 +204,102 @@ export const MOCK_PL_DATA: PackingListData = {
             volumeDimension: '62.3',
         },
     ],
+};
 
-    export const MOCK_COO_PDF: PdfFile = {
-        name: 'Certificate_of_Origin_Sample.pdf',
-        sizeLabel: '650 KB',
-    };
+export const MOCK_COO_PDF: PdfFile = {
+    name: 'Certificate_of_Origin_Sample.pdf',
+    sizeLabel: '650 KB',
+};
 
-    export const MOCK_COO_DATA: CertificateOfOriginData = {
-        documentDetail: {
-            number: 'COO-2024-0077',
-            date: '2024-11-07',
+export const MOCK_COO_DATA: CertificateOfOriginData = {
+    documentDetail: {
+        number: 'COO-2024-0077',
+        date: '2024-11-07',
+    },
+    shipper: {
+        name: 'PT Alat Berat Nusantara',
+        address: 'Jl. Industri Raya No. 12, Surabaya, Indonesia',
+        taxId: '01.234.567.8-901.000',
+    },
+    consignee: {
+        name: 'PT Tambang Kalimantan Jaya',
+        address: 'Jl. Tambang Utama No. 5, Kalimantan Timur, Indonesia',
+        taxId: '02.345.678.9-012.000',
+    },
+    transportDetail: {
+        portOfLoading: 'Tanjung Priok',
+        portOfDischarge: 'Balikpapan',
+        shippName: 'MV Borneo Star',
+        voyage: 'V.221E',
+    },
+    cargoDetail: [
+        {
+            id: 'mock-coo-item-1',
+            descriptionOfGoods: 'Excavator CAT 320',
+            quantityOfPackage: '1',
+            packageUnitMeasurement: 'Unit',
+            type: 'Hydraulic Excavator',
+            hsCodePol: '8429.52.00',
+            netWeight: '21800',
+            grossWeight: '22500',
+            volume: '85.5',
         },
-        shipper: {
-            name: 'PT Alat Berat Nusantara',
-            address: 'Jl. Industri Raya No. 12, Surabaya, Indonesia',
-            taxId: '01.234.567.8-901.000',
+        {
+            id: 'mock-coo-item-2',
+            descriptionOfGoods: 'Bulldozer CAT D6R',
+            quantityOfPackage: '1',
+            packageUnitMeasurement: 'Unit',
+            type: 'Track-Type Tractor',
+            hsCodePol: '8429.11.00',
+            netWeight: '17900',
+            grossWeight: '18400',
+            volume: '62.3',
         },
-        consignee: {
-            name: 'PT Tambang Kalimantan Jaya',
-            address: 'Jl. Tambang Utama No. 5, Kalimantan Timur, Indonesia',
-            taxId: '02.345.678.9-012.000',
+    ],
+    commercialInvoiceRef: {
+        number: 'CI-2024-0077',
+        date: '2024-11-06',
+    },
+};
+
+export const MOCK_INSURANCE_PDF: PdfFile = {
+    name: 'Insurance_Sample.pdf',
+    sizeLabel: '540 KB',
+};
+
+export const MOCK_INSURANCE_DATA: InsuranceData = {
+    documentReference: {
+        commercialInvoiceNumber: 'CI-2024-0077',
+        billOfLadingNumber: 'BL-2024-0091',
+        shipmentContractNumber: 'SC-2024-0456',
+    },
+    transportDetail: {
+        portOfLoading: 'Tanjung Priok',
+        portOfDischarge: 'Balikpapan',
+        shippName: 'MV Borneo Star',
+        voyage: 'V.221E',
+    },
+    cargoDetail: [
+        {
+            id: 'mock-ins-item-1',
+            descriptionOfGoods: 'Excavator CAT 320',
+            hsCodePol: '8429.52.00',
         },
-        transportDetail: {
-            portOfLoading: 'Tanjung Priok',
-            portOfDischarge: 'Balikpapan',
-            shippName: 'MV Borneo Star',
-            voyage: 'V.221E',
+        {
+            id: 'mock-ins-item-2',
+            descriptionOfGoods: 'Bulldozer CAT D6R',
+            hsCodePol: '8429.11.00',
         },
-        cargoDetail: [
-            {
-                id: 'mock-coo-item-1',
-                descriptionOfGoods: 'Excavator CAT 320',
-                quantityOfPackage: '1',
-                packageUnitMeasurement: 'Unit',
-                type: 'Hydraulic Excavator',
-                hsCodePol: '8429.52.00',
-                netWeight: '21800',
-                grossWeight: '22500',
-                volume: '85.5',
-            },
-            {
-                id: 'mock-coo-item-2',
-                descriptionOfGoods: 'Bulldozer CAT D6R',
-                quantityOfPackage: '1',
-                packageUnitMeasurement: 'Unit',
-                type: 'Track-Type Tractor',
-                hsCodePol: '8429.11.00',
-                netWeight: '17900',
-                grossWeight: '18400',
-                volume: '62.3',
-            },
-        ],
-        commercialInvoiceRef: {
-            number: 'CI-2024-0077',
-            date: '2024-11-06',
-        },
-    };
+    ],
+    quantity: {
+        totalGrossWeight: '40900',
+        totalGrossWeightUnit: 'kg',
+        totalPackages: '2',
+        totalPackagesUnit: 'Unit',
+        totalVolume: '147.8',
+        totalVolumeUnit: 'm³',
+    },
+    insurance: {
+        amountInsured: '800',
+    },
 };

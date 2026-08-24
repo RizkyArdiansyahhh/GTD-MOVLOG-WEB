@@ -1,4 +1,4 @@
-import type { StepDefinition } from '../types/submitBerkas';
+import type { StepDefinition } from '../types/SubmitBerkas';
 
 export const STEP_DEFINITIONS: StepDefinition[] = [
   { key: 'billOfLading', order: 0, label: 'Bill of Lading' },

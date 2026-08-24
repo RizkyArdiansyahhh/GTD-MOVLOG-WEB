@@ -5,7 +5,7 @@ import type {
   StepStatus,
   WizardData,
   WizardStepKey,
-} from '../types/submitBerkas';
+} from '../types/SubmitBerkas';
 
 /** Keys for the 5 form+upload steps (excludes previewPib, which has no StepRecord). */
 type FormStepKey = keyof WizardData;
@@ -26,7 +26,7 @@ interface WizardContextValue {
   stepStatuses: StepStatus[];
 
   /** Save the given step's form data + pdf, mark it completed, and unlock the next step. */
-  saveStepData: <T,>(key: FormStepKey, data: T, pdf: PdfFile | null) => void;
+  saveStepData: <T, >(key: FormStepKey, data: T, pdf: PdfFile | null) => void;
 
   /** Move to the next step (only works if the current step is completed). */
   goNext: () => void;

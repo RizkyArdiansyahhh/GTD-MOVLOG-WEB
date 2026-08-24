@@ -6,8 +6,8 @@ import { PdfUploadCard } from '../PdfUploadCard';
 import { CargoDetailList } from '../CargoDetailList';
 import { StepNavigation } from '../StepNavigation';
 import { useWizard } from '../../hooks/useWizard';
-import { MOCK_PL_DATA, MOCK_PL_PDF } from '../../Constants/Mockdata';
-import type { PackingListData, PdfFile, PlCargoItem, TermOfShipment } from '../../types/submitBerkas';
+import { MOCK_PL_DATA, MOCK_PL_PDF } from '../../constants/mockData';
+import type { PackingListData, PdfFile, PlCargoItem, TermOfShipment } from '../../types/SubmitBerkas';
 
 const CURRENCIES = ['USD', 'IDR', 'EUR', 'CNY', 'SGD'];
 const PACKAGE_UNITS = ['Unit', 'Pcs', 'Box', 'Pallet'];

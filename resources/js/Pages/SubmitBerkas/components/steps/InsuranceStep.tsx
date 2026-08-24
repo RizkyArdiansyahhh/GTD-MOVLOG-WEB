@@ -6,8 +6,8 @@ import { PdfUploadCard } from '../PdfUploadCard';
 import { CargoDetailList } from '../CargoDetailList';
 import { StepNavigation } from '../StepNavigation';
 import { useWizard } from '../../hooks/useWizard';
-import { MOCK_INSURANCE_DATA, MOCK_INSURANCE_PDF } from '../../Constants/Mockdata';
-import type { InsuranceCargoItem, InsuranceData, PdfFile } from '../../types/submitBerkas';
+import { MOCK_INSURANCE_DATA, MOCK_INSURANCE_PDF } from '../../constants/mockData';
+import type { InsuranceCargoItem, InsuranceData, PdfFile } from '../../types/SubmitBerkas';
 
 const CURRENCIES = ['USD', 'IDR', 'EUR', 'CNY', 'SGD'];
 const WEIGHT_UNITS = ['kg', 'ton'];

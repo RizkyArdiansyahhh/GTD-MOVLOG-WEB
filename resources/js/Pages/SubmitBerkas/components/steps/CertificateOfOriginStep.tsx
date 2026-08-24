@@ -6,8 +6,8 @@ import { PdfUploadCard } from '../PdfUploadCard';
 import { CargoDetailList } from '../CargoDetailList';
 import { StepNavigation } from '../StepNavigation';
 import { useWizard } from '../../hooks/useWizard';
-import { MOCK_COO_DATA, MOCK_COO_PDF } from '../../Constants/Mockdata';
-import type { CertificateOfOriginData, CooCargoItem, PdfFile } from '../../types/submitBerkas';
+import { MOCK_COO_DATA, MOCK_COO_PDF } from '../../constants/mockData';
+import type { CertificateOfOriginData, CooCargoItem, PdfFile } from '../../types/SubmitBerkas';
 
 const PACKAGE_UNITS = ['Unit', 'Pcs', 'Box', 'Pallet'];
 

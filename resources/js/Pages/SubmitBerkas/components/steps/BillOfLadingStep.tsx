@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { router } from '@inertiajs/react';
 import { FileText, Users, Bell, Ship, Boxes, Scale } from 'lucide-react';
 import { FormSection, FieldGroup, Field, FieldWithUnit } from '../FormSection';
-import { MOCK_BOL_DATA, MOCK_BOL_PDF } from '../../Constants/Mockdata';
+import { MOCK_BOL_DATA, MOCK_BOL_PDF } from '../../constants/mockData';
 import { PdfUploadCard } from '../PdfUploadCard';
 import { CargoDetailList } from '../CargoDetailList';
 import { StepNavigation } from '../StepNavigation';
 import { useWizard } from '../../hooks/useWizard';
-import type { BillOfLadingData, BolCargoItem, PdfFile } from '../../types/submitBerkas';
+import type { BillOfLadingData, BolCargoItem, PdfFile } from '../../types/SubmitBerkas';
 
 const WEIGHT_UNITS = ['kg', 'ton'];
 const PACKAGE_UNITS = ['Unit', 'Pcs', 'Box', 'Pallet'];

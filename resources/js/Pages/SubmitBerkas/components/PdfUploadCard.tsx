@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { FileText, Upload, X } from 'lucide-react';
-import type { PdfFile } from '../types/submitBerkas';
+import type { PdfFile } from '../types/SubmitBerkas';
 
 interface PdfUploadCardProps {
   file: PdfFile | null;
