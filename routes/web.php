@@ -76,6 +76,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // User Management
     Route::resource('users', UserController::class);
 
+    // Verifikasi Berkas
+    Route::get('verifikasi-berkas', [VerifikasiBerkasController::class, 'index'])
+        ->name('verifikasi-berkas');
+    Route::get('verifikasi-berkas/{contractNumber}', [VerifikasiBerkasController::class, 'show'])
+        ->name('verifikasi-berkas.show');
+
     // Logout
     Route::post('logout', [\App\Http\Controllers\Web\Auth\AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
