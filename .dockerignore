@@ -1,0 +1,26 @@
+# Git
+.git
+.gitignore
+
+# Dependencies
+node_modules
+vendor
+
+# Laravel
+storage
+bootstrap/cache
+
+# Environment
+.env
+.env.*
+
+# IDE
+.vscode
+.idea
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

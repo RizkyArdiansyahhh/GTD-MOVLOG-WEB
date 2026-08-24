@@ -43,7 +43,7 @@ return new class extends Migration
                 ->cascadeOnUpdate()
                 ->nullOnDelete();
 
-            $table->string('status');
+            $table->string('status')->default('DRAFT');
 
             $table->timestamps();
 
