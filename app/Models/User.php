@@ -75,6 +75,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if the user account is active.
+     */
+    public function isActive(): bool
+    {
+        return $this->status === UserStatus::Active;
+    }
+
+    /**
      * Get the public URL for the user's avatar.
      *
      * Returns the storage URL if an avatar exists, otherwise null.

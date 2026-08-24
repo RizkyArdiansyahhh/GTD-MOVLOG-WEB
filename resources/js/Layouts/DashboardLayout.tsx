@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 
@@ -22,29 +22,29 @@ interface DashboardLayoutProps {
  *  └──────────┴───────────────────────────────────┘
  */
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-    const NAVBAR_HEIGHT = 64;
-    const SIDEBAR_WIDTH = 260;
-    const GAP = 16;
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     return (
         <div
             className="min-h-screen"
-            style={{ backgroundColor: '#F5F7FC', fontFamily: "'Poppins', sans-serif" }}
+            style={{ backgroundColor: '#F5F7FC', fontFamily: "'Poppins', sans-serif", '--navbar-h': '64px', '--content-gap': '0px', } as React.CSSProperties}
         >
             {/* ── Fixed Navbar (full-width top) ── */}
-            <Navbar />
+            <Navbar onToggleSidebar={() => setSidebarOpen((prev) => !prev)} />
 
             {/* ── Fixed Sidebar (below navbar) ── */}
-            <Sidebar />
+            <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
             {/* ── Main content area ── */}
+            {/*
+              Desktop (lg+): sidebar visible → offset marginLeft = 260 + 16*2 + 16 = 308px
+              Mobile/Tablet (< lg): sidebar hidden → marginLeft = 0, add horizontal padding
+            */}
             <main
-                className="flex-1"
+                className="flex-1 relative overflow-hidden ml-0 lg:ml-[292px] px-4 lg:px-0 lg:pr-4 pb-8"
                 style={{
-                    marginTop: `${NAVBAR_HEIGHT + GAP}px`,
-                    marginLeft: `${SIDEBAR_WIDTH + GAP * 2 + GAP}px`, // sidebar + left offset + gap
-                    minHeight: `calc(100vh - ${NAVBAR_HEIGHT + GAP}px)`,
-                    padding: `0 ${GAP}px ${GAP * 2}px 0`,
+                    paddingTop: 'calc(var(--navbar-h) + 16px)',
+                    minHeight: '100vh',
                 }}
             >
                 {children}

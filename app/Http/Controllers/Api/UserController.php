@@ -65,7 +65,7 @@ class UserController extends Controller
      * GET /api/v1/users/{user}
      * Show a specific user.
      */
-    public function show(int $user): JsonResponse
+    public function show(string $user): JsonResponse
     {
         $this->authorize('view', \App\Models\User::findOrFail($user));
 
@@ -78,7 +78,7 @@ class UserController extends Controller
      * PUT /api/v1/users/{user}
      * Update an existing user.
      */
-    public function update(UpdateUserRequest $request, int $user): JsonResponse
+    public function update(UpdateUserRequest $request, string $user): JsonResponse
     {
         $userData = $this->userService->update($user, UserDTO::from($request->validated()));
 
@@ -89,11 +89,12 @@ class UserController extends Controller
      * DELETE /api/v1/users/{user}
      * Delete a user.
      */
-    public function destroy(int $user): JsonResponse
+    public function destroy(Request $request, string $user): JsonResponse
     {
-        $this->authorize('delete', \App\Models\User::findOrFail($user));
+        $userModel = \App\Models\User::findOrFail($user);
+        $this->authorize('delete', $userModel);
 
-        $this->userService->delete($user);
+        $this->userService->delete($user, $request->user());
 
         return $this->noContent();
     }
