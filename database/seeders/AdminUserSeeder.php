@@ -92,5 +92,19 @@ class AdminUserSeeder extends Seeder
             ]
         );
         $customer->assignRole(UserRole::Customer->value);
+
+        $this->command->info('✅ Default users seeded successfully.');
+
+        $this->command->table(
+            ['Email', 'Password', 'Role'],
+            [
+                ['superadmin@lms.local', 'Admin@1234', UserRole::SuperAdmin->label()],
+                ['supervisor@lms.local', 'Admin@1234', UserRole::Supervisor->label()],
+                ['staff@lms.local', 'Admin@1234', UserRole::Staff->label()],
+                ['fieldworker@lms.local', 'Admin@1234', UserRole::FieldWorker->label()],
+                ['rudi.h@lms.local', 'Admin@1234', UserRole::FieldWorker->label()],
+                ['customer@lms.local', 'Admin@1234', UserRole::Customer->label()],
+            ]
+        );
     }
 }
