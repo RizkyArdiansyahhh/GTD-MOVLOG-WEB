@@ -1,11 +1,32 @@
 export type SupportedDocumentType =
-    | 'Insurance'
-    | 'Certificate of Origin (COO)'
-    | 'Packing List'
     | 'Commercial Invoice'
-    | 'Bill of Lading';
+    | 'Bill of Lading'
+    | 'Packing List'
+    | 'Insurance'
+    | 'Certificate of Origin (COO)';
 
-export type VerificationStatus = 'Pending' | 'Approved' | 'Rejected';
+export const REQUIRED_DOCUMENT_TYPES: SupportedDocumentType[] = [
+    'Commercial Invoice',
+    'Bill of Lading',
+    'Packing List',
+    'Insurance',
+    'Certificate of Origin (COO)',
+];
+
+export const TOTAL_REQUIRED_DOCUMENTS = REQUIRED_DOCUMENT_TYPES.length; // 5
+
+export type VerificationStatus =
+    | 'Pending'
+    | 'Approved'
+    | 'Rejected'
+    | 'WaitingForResubmission'; // Prepared for future integration with Submit Dokumen module
+
+export enum VerificationStatusEnum {
+    PENDING = 'Pending',
+    APPROVED = 'Approved',
+    REJECTED = 'Rejected',
+    WAITING_FOR_RESUBMISSION = 'WaitingForResubmission',
+}
 
 export interface CompanyEntity {
     name: string;
@@ -48,6 +69,9 @@ export interface VerificationDocument {
     shipmentReference: string;
     status: VerificationStatus;
     notes?: string;
+    rejectionReason?: string;
+    verifiedBy?: string;
+    verifiedAt?: string;
     previewUrl?: string;
     thumbnail?: string;
 
@@ -87,3 +111,26 @@ export interface DocumentStats {
     totalRejected: number;
 }
 
+export interface ShipmentGroup {
+    contractNumber: string;
+    customerName: string;
+    shipperName: string;
+    consigneeName: string;
+    portOfLoading: string;
+    portOfDischarge: string;
+    documents: VerificationDocument[];
+    approvedCount: number;
+    pendingCount: number;
+    rejectedCount: number;
+    totalDocuments: number;
+    oldestPendingDate: string | null;
+    hasWarnings: boolean;
+}
+
+export interface FieldMismatchWarning {
+    field: string;
+    documentType: string;
+    expected: string;
+    actual: string;
+    referenceDocType: string;
+}

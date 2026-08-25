@@ -1,6 +1,7 @@
+import { Link } from '@inertiajs/react';
 import type { WorkSession } from '../types';
 import ProgressTimeline from './ProgressTimeline';
-import { User } from 'lucide-react';
+import { Eye } from 'lucide-react';
 
 interface SesiTableProps {
     sessions: WorkSession[];
@@ -49,7 +50,13 @@ export default function SesiTable({ sessions }: SesiTableProps) {
                             className="px-4 text-[12px] font-semibold uppercase tracking-wider text-[#64748B] whitespace-nowrap"
                             style={{ width: '180px' }}
                         >
-                            Petugas
+                            PIC Tahap Aktif
+                        </th>
+                        <th
+                            className="px-4 text-[12px] font-semibold uppercase tracking-wider text-[#64748B] whitespace-nowrap"
+                            style={{ width: '80px' }}
+                        >
+                            Aksi
                         </th>
                     </tr>
                 </thead>
@@ -62,7 +69,7 @@ export default function SesiTable({ sessions }: SesiTableProps) {
                         >
                             {/* 1. ID Sesi */}
                             <td className="px-4 py-2 font-mono text-sm font-bold text-[#06283A] whitespace-nowrap">
-                                {session.id}
+                                {session.sessionId || session.id}
                             </td>
 
                             {/* 2. Nama Unit */}
@@ -74,19 +81,36 @@ export default function SesiTable({ sessions }: SesiTableProps) {
 
                             {/* 3. Progress Logistik */}
                             <td className="px-4 py-2">
-                                <ProgressTimeline currentStage={session.currentStage} />
+                                <ProgressTimeline stages={session.stages} currentStage={session.currentStage} />
                             </td>
 
-                            {/* 4. Petugas */}
+                            {/* 4. PIC Tahap Aktif */}
                             <td className="px-4 py-2 whitespace-nowrap">
                                 <div className="flex items-center gap-2">
-                                    <div className="w-7 h-7 rounded-full bg-amber-100 border border-amber-300/50 flex items-center justify-center text-[#06283A] font-bold text-xs">
-                                        {session.petugas.split(' ').map((n) => n[0]).join('')}
-                                    </div>
-                                    <span className="text-sm font-medium text-slate-700">
-                                        {session.petugas}
-                                    </span>
+                                    {session.petugas && session.petugas !== '-' ? (
+                                        <>
+                                            <div className="w-7 h-7 rounded-full bg-amber-100 border border-amber-300/50 flex items-center justify-center text-[#06283A] font-bold text-xs">
+                                                {session.petugas.split(' ').map((n) => n[0]).join('')}
+                                            </div>
+                                            <span className="text-sm font-medium text-slate-700">
+                                                {session.petugas}
+                                            </span>
+                                        </>
+                                    ) : (
+                                        <span className="text-xs text-slate-400">-</span>
+                                    )}
                                 </div>
+                            </td>
+
+                            {/* 5. Aksi */}
+                            <td className="px-4 py-2">
+                                <Link
+                                    href={`/sesi-pekerja/${session.id}`}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#E2E8F0] bg-white text-xs font-semibold text-[#06283A] hover:bg-amber-50 hover:border-amber-200 transition-all"
+                                >
+                                    <Eye size={14} />
+                                    Detail
+                                </Link>
                             </td>
                         </tr>
                     ))}

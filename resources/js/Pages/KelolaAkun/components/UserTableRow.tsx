@@ -5,8 +5,6 @@ import UserActionButtons from './UserActionButtons';
 
 interface UserTableRowProps {
     user: KelolaAkunUser;
-    selected: boolean;
-    onToggleSelect: (id: string) => void;
     onStatusToggleClick: (user: KelolaAkunUser) => void;
     onEditClick?: (user: KelolaAkunUser) => void;
     onDeleteClick?: (user: KelolaAkunUser) => void;
@@ -15,8 +13,6 @@ interface UserTableRowProps {
 
 export default function UserTableRow({
     user,
-    selected,
-    onToggleSelect,
     onStatusToggleClick,
     onEditClick,
     onDeleteClick,
@@ -24,19 +20,8 @@ export default function UserTableRow({
 }: UserTableRowProps) {
     return (
         <tr className="border-b border-gray-50 hover:bg-gray-50/60 transition-colors duration-100">
-            {/* Checkbox */}
-            <td className="px-4 py-3.5 whitespace-nowrap">
-                <input
-                    type="checkbox"
-                    checked={selected}
-                    onChange={() => onToggleSelect(user.id)}
-                    className="rounded border-gray-300 text-amber-500 focus:ring-amber-300 cursor-pointer"
-                    style={{ width: 16, height: 16, accentColor: '#F5B800' }}
-                />
-            </td>
-
             {/* Pengguna (Avatar + Nama + Email) */}
-            <td className="px-4 py-3.5 whitespace-nowrap">
+            <td className="px-6 py-3.5 whitespace-nowrap">
                 <div className="flex items-center gap-3">
                     <img
                         src={user.avatarUrl}
@@ -76,7 +61,7 @@ export default function UserTableRow({
             </td>
 
             {/* Aksi */}
-            <td className="px-4 py-3.5 whitespace-nowrap">
+            <td className="px-6 py-3.5 whitespace-nowrap">
                 <UserActionButtons
                     userId={user.id}
                     onEdit={onEditClick ? () => onEditClick(user) : undefined}

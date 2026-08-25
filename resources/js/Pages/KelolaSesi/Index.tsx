@@ -1,29 +1,38 @@
 import { useState, useMemo } from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { Plus, Search } from 'lucide-react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { mockWorkSessions } from './mockData';
-import type { WorkSession } from './types';
+import type { WorkSession, FieldWorker } from './types';
 import SesiTable from './components/SesiTable';
 import SesiPagination from './components/SesiPagination';
 
 const ITEMS_PER_PAGE = 6;
 
-export default function KelolaSesiIndex() {
+interface KelolaSesiIndexProps {
+    fieldWorkers?: FieldWorker[];
+    sessions?: WorkSession[];
+}
+
+export default function KelolaSesiIndex({ sessions, fieldWorkers }: KelolaSesiIndexProps) {
+    const pageProps = usePage<{ flash?: { success?: string } }>().props;
+    const flash = pageProps.flash;
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
 
+    const activeSessions = sessions && sessions.length > 0 ? sessions : mockWorkSessions;
+
     // Filter sessions based on search query (ID Sesi or Nama Unit or Petugas)
     const filteredSessions = useMemo(() => {
-        if (!searchQuery.trim()) return mockWorkSessions;
+        if (!searchQuery.trim()) return activeSessions;
         const q = searchQuery.toLowerCase().trim();
-        return mockWorkSessions.filter(
+        return activeSessions.filter(
             (s) =>
-                s.id.toLowerCase().includes(q) ||
+                (s.sessionId || s.id).toLowerCase().includes(q) ||
                 s.unitName.toLowerCase().includes(q) ||
                 s.petugas.toLowerCase().includes(q)
         );
-    }, [searchQuery]);
+    }, [searchQuery, activeSessions]);
 
     // Paginate sessions
     const totalPages = Math.max(1, Math.ceil(filteredSessions.length / ITEMS_PER_PAGE));
@@ -69,6 +78,13 @@ export default function KelolaSesiIndex() {
                         <span>Buat Sesi Baru</span>
                     </Link>
                 </div>
+
+                {/* ── Flash Message ── */}
+                {flash?.success && (
+                    <div className="px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-sm font-medium text-emerald-700">
+                        {flash.success}
+                    </div>
+                )}
 
                 {/* ── Single Large Card Container ── */}
                 <div className="bg-white border border-[#E2E8F0] shadow-sm rounded-2xl p-6 space-y-5">

@@ -20,12 +20,14 @@ export default function DocumentStatusModal({
     isSubmitting = false,
 }: DocumentStatusModalProps) {
     const [notes, setNotes] = useState('');
+    const [error, setError] = useState('');
 
     useEffect(() => {
         if (document) {
-            setNotes(document.notes || '');
+            setNotes(document.rejectionReason || document.notes || '');
+            setError('');
         }
-    }, [document]);
+    }, [document, targetStatus]);
 
     if (!isOpen || !document || !targetStatus) return null;
 
@@ -33,7 +35,12 @@ export default function DocumentStatusModal({
 
     const handleFormSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onConfirm(document, targetStatus, notes);
+        if (!isApproval && !notes.trim()) {
+            setError('Alasan penolakan wajib diisi.');
+            return;
+        }
+        setError('');
+        onConfirm(document, targetStatus, notes.trim());
     };
 
     return (
@@ -90,15 +97,28 @@ export default function DocumentStatusModal({
                         <textarea
                             rows={3}
                             value={notes}
-                            onChange={(e) => setNotes(e.target.value)}
+                            onChange={(e) => {
+                                setNotes(e.target.value);
+                                if (error) setError('');
+                            }}
                             placeholder={
                                 isApproval
                                     ? 'Tambahkan catatan persetujuan jika ada...'
-                                    : 'Berikan alasan jelas penolakan dokumen...'
+                                    : 'Berikan alasan jelas penolakan dokumen (Wajib)...'
                             }
                             required={!isApproval}
-                            className="w-full rounded-lg border border-gray-300 text-xs p-2.5 focus:border-amber-400 focus:ring-2 focus:ring-amber-200 outline-none transition-all placeholder:text-gray-400"
+                            className={[
+                                'w-full rounded-lg border text-xs p-2.5 outline-none transition-all placeholder:text-gray-400',
+                                error
+                                    ? 'border-rose-500 focus:border-rose-500 focus:ring-2 focus:ring-rose-200'
+                                    : 'border-gray-300 focus:border-amber-400 focus:ring-2 focus:ring-amber-200',
+                            ].join(' ')}
                         />
+                        {error && (
+                            <p className="text-[11px] font-semibold text-rose-600 mt-1">
+                                {error}
+                            </p>
+                        )}
                     </div>
 
                     {!isApproval && (

@@ -1,6 +1,7 @@
 import { type ReactNode, useState } from 'react';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
+import Toast from '@/Components/Toast';
 
 interface DashboardLayoutProps {
     children: ReactNode;
@@ -31,6 +32,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         >
             {/* ── Fixed Navbar (full-width top) ── */}
             <Navbar onToggleSidebar={() => setSidebarOpen((prev) => !prev)} />
+
+            {/* ── Toast notifications ── */}
+            <Toast />
 
             {/* ── Fixed Sidebar (below navbar) ── */}
             <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
