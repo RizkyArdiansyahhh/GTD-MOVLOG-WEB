@@ -12,7 +12,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('session_units', function (Blueprint $table) {
-
             $table->ulid('id')->primary();
 
             $table->foreignUlid('shipping_session_id')
@@ -21,9 +20,7 @@ return new class extends Migration
                 ->cascadeOnDelete();
 
             $table->string('unit_name');
-
             $table->unsignedInteger('quantity')->default(1);
-
             $table->text('notes')->nullable();
 
             $table->timestamps();

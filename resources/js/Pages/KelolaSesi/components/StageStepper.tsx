@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Check, Lock, AlertCircle, ChevronDown, ChevronUp, Clock, Users, User } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, Clock, User, Users } from 'lucide-react';
 import { router } from '@inertiajs/react';
-import type { SessionStage, FieldWorker, StageType } from '../types';
+import type { SessionStage, FieldWorker } from '../types';
 import { STAGE_LABELS } from '../types';
 import FieldWorkerSelect from './FieldWorkerSelect';
 import WorkerMultiSelect from './WorkerMultiSelect';
@@ -17,12 +17,16 @@ export default function StageStepper({ sessionId, stages, fieldWorkers }: StageS
         <div className="space-y-0">
             {stages.map((stage, idx) => (
                 <StageItem
-                    key={stage.id}
+                    key={stage.id || idx}
                     stage={stage}
                     sessionId={sessionId}
                     fieldWorkers={fieldWorkers}
                     isLast={idx === stages.length - 1}
-                    prevStageName={idx > 0 ? STAGE_LABELS[stages[idx - 1].stage_type] : null}
+                    prevStageName={
+                        idx > 0
+                            ? (STAGE_LABELS[stages[idx - 1].stage_type] || stages[idx - 1].stage_name || stages[idx - 1].stage_type)
+                            : null
+                    }
                 />
             ))}
         </div>
@@ -39,28 +43,27 @@ interface StageItemProps {
 
 function StageItem({ stage, sessionId, fieldWorkers, isLast, prevStageName }: StageItemProps) {
     const [picUserId, setPicUserId] = useState(stage.pic_user?.id || '');
-    const [workerIds, setWorkerIds] = useState<string[]>(stage.workers.map((w) => w.id));
+    const [workerIds, setWorkerIds] = useState<string[]>(
+        stage.workers ? stage.workers.map((w) => w.id) : []
+    );
     const [isPrePlanOpen, setIsPrePlanOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const label = STAGE_LABELS[stage.stage_type];
+    const label = STAGE_LABELS[stage.stage_type] || stage.stage_name || stage.stage_type.toUpperCase();
     const isSelesai = stage.status === 'selesai';
     const isAktif = stage.status === 'aktif';
     const isPending = stage.status === 'pending';
 
-    const needsAssignment = isAktif && (!stage.pic_user || stage.workers.length === 0);
-    const canComplete = isAktif && stage.pic_user !== null && stage.workers.length > 0;
+    const needsAssignment = isAktif && !stage.pic_user;
+    const canComplete = isAktif && stage.pic_user !== null;
 
     const handleAssign = () => {
-        if (!picUserId || workerIds.length === 0) return;
+        if (!picUserId) return;
         setIsSubmitting(true);
         router.post(
             `/sesi-pekerja/${sessionId}/stages/${stage.id}/assign`,
             { pic_user_id: picUserId, worker_ids: workerIds },
-            {
-                onFinish: () => setIsSubmitting(false),
-                preserveScroll: true,
-            }
+            { onFinish: () => setIsSubmitting(false), preserveScroll: true }
         );
     };
 
@@ -69,215 +72,320 @@ function StageItem({ stage, sessionId, fieldWorkers, isLast, prevStageName }: St
         router.post(
             `/sesi-pekerja/${sessionId}/stages/${stage.id}/complete`,
             {},
-            {
-                onFinish: () => setIsSubmitting(false),
-                preserveScroll: true,
-            }
+            { onFinish: () => setIsSubmitting(false), preserveScroll: true }
         );
     };
 
+    // ── Node & connector styles ─────────────────────────────────────────────
+    const nodeStyle: React.CSSProperties = isSelesai
+        ? {
+              width: '22px',
+              height: '22px',
+              borderRadius: '50%',
+              backgroundColor: '#10B981',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+          }
+        : isAktif
+        ? {
+              width: '22px',
+              height: '22px',
+              borderRadius: '50%',
+              backgroundColor: '#F5B800',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              boxShadow: '0 0 0 4px rgba(245, 184, 0, 0.22)',
+          }
+        : {
+              width: '22px',
+              height: '22px',
+              borderRadius: '50%',
+              backgroundColor: 'transparent',
+              border: '1.5px solid #CBD5E1',
+              flexShrink: 0,
+          };
+
+    const connectorColor = isSelesai ? '#10B981' : '#E2E8F0';
+
     return (
-        <div className="flex gap-4">
-            {/* Timeline Column */}
-            <div className="flex flex-col items-center shrink-0" style={{ width: '32px' }}>
-                {/* Node */}
-                <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all ${
-                        isSelesai
-                            ? 'bg-emerald-500 text-white'
-                            : isAktif
-                            ? 'bg-[#F5B800] text-white ring-4 ring-amber-100'
-                            : 'bg-slate-200 text-slate-400'
-                    }`}
-                >
-                    {isSelesai ? (
-                        <Check size={16} strokeWidth={3} />
-                    ) : isAktif ? (
-                        <span className="text-xs font-bold">{stage.stage_order}</span>
-                    ) : (
-                        <Lock size={14} />
+        <div
+            className="flex gap-4"
+            style={{ opacity: isPending ? 0.5 : 1, transition: 'opacity 0.2s' }}
+        >
+            {/* ── Timeline Column ── */}
+            <div className="flex flex-col items-center shrink-0" style={{ width: '22px' }}>
+                {/* Circle node */}
+                <div style={nodeStyle}>
+                    {isSelesai && <Check size={13} strokeWidth={3} color="white" />}
+                    {isAktif && (
+                        <span
+                            style={{
+                                width: '6px',
+                                height: '6px',
+                                borderRadius: '50%',
+                                backgroundColor: 'white',
+                                display: 'block',
+                            }}
+                        />
                     )}
                 </div>
-                {/* Connector */}
+
+                {/* Vertical connector line */}
                 {!isLast && (
                     <div
-                        className="w-0.5 flex-1 min-h-[24px]"
                         style={{
-                            backgroundColor: isSelesai ? '#10B981' : '#E2E8F0',
+                            width: '2px',
+                            backgroundColor: connectorColor,
+                            flexGrow: 1,
+                            minHeight: '36px',
+                            marginTop: '4px',
+                            transition: 'background-color 0.2s',
                         }}
                     />
                 )}
             </div>
 
-            {/* Content Column */}
-            <div className={`flex-1 pb-6 ${isLast ? 'pb-0' : ''}`}>
-                {/* Header */}
-                <div className="flex items-center gap-2 mb-2">
-                    <h3
-                        className={`text-sm font-bold ${
-                            isSelesai
-                                ? 'text-emerald-700'
-                                : isAktif
-                                ? 'text-[#06283A]'
-                                : 'text-slate-400'
-                        }`}
-                    >
-                        {label}
+            {/* ── Content area — no card wrapper ── */}
+            <div className={`grow ${isLast ? 'pb-0' : 'pb-6'}`}>
+                {/* Header: Stage Name + Status text */}
+                <div className="flex items-start justify-between gap-3" style={{ minHeight: '22px' }}>
+                    <h3 className="text-sm font-semibold text-[#06283A] leading-5">
+                        Tahap {stage.stage_order}: {label}
                     </h3>
-                    {isSelesai && (
-                        <span className="px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-[10px] font-semibold text-emerald-700 uppercase">
-                            Selesai
-                        </span>
-                    )}
-                    {isAktif && (
-                        <span className="px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-[10px] font-semibold text-amber-700 uppercase">
-                            Aktif
-                        </span>
-                    )}
-                    {isAktif && needsAssignment && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-50 border border-red-200 text-[10px] font-semibold text-red-600">
-                            <AlertCircle size={10} />
-                            Perlu di-assign
-                        </span>
-                    )}
-                    {isPending && (
-                        <span className="px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[10px] font-semibold text-slate-500 uppercase">
-                            Terkunci
-                        </span>
-                    )}
+
+                    {/* Status as plain text — no pill */}
+                    <span
+                        className="text-xs shrink-0 mt-0.5"
+                        style={{
+                            color: isSelesai
+                                ? '#10B981'
+                                : isAktif
+                                ? '#D97706'
+                                : '#94A3B8',
+                            fontWeight: isAktif ? 500 : 400,
+                        }}
+                    >
+                        {isSelesai ? 'Selesai' : isAktif ? 'Sedang Berjalan' : 'Menunggu'}
+                    </span>
                 </div>
 
-                {/* ── SELESAI: Read-only summary ── */}
+                {/* ── STATE: SELESAI ── */}
                 {isSelesai && (
-                    <div className="bg-emerald-50/50 border border-emerald-100 rounded-xl p-3 space-y-2">
-                        <div className="flex items-center gap-2 text-xs text-emerald-700">
-                            <User size={12} />
-                            <span className="font-semibold">PIC:</span>
-                            <span>{stage.pic_user?.name || '-'}</span>
+                    <div className="mt-2 text-xs text-slate-500 space-y-1">
+                        <div className="flex items-center gap-1.5">
+                            <User size={12} className="text-slate-400" />
+                            <span>
+                                PIC:{' '}
+                                <strong className="text-slate-700 font-medium">
+                                    {stage.pic_user?.name || '-'}
+                                </strong>
+                            </span>
                         </div>
-                        {stage.workers.length > 0 && (
-                            <div className="flex items-start gap-2 text-xs text-emerald-700">
-                                <Users size={12} className="mt-0.5" />
-                                <span className="font-semibold shrink-0">Worker:</span>
-                                <span>{stage.workers.map((w) => w.name).join(', ')}</span>
+                        {stage.workers && stage.workers.length > 0 && (
+                            <div className="flex items-center gap-1.5 text-slate-400">
+                                <Users size={12} className="text-slate-400" />
+                                <span>Workers: {stage.workers.map((w) => w.name).join(', ')}</span>
                             </div>
                         )}
                         {stage.completed_at && (
-                            <div className="flex items-center gap-2 text-[10px] text-emerald-600">
-                                <Clock size={10} />
-                                <span>Selesai: {new Date(stage.completed_at).toLocaleString('id-ID')}</span>
+                            <div className="flex items-center gap-1.5 text-slate-400">
+                                <Clock size={12} />
+                                <span>
+                                    Selesai:{' '}
+                                    {new Date(stage.completed_at).toLocaleString('id-ID', {
+                                        day: 'numeric',
+                                        month: 'short',
+                                        year: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                    })}
+                                </span>
                             </div>
                         )}
                     </div>
                 )}
 
-                {/* ── AKTIF: Inline assignment form ── */}
+                {/* ── STATE: AKTIF ── */}
                 {isAktif && (
-                    <div className="bg-amber-50/30 border border-amber-100 rounded-xl p-4 space-y-4">
-                        {/* Show current assignment or form */}
-                        <div className="space-y-3">
-                            <div>
-                                <label className="block text-xs font-semibold uppercase text-slate-600 mb-1.5">
+                    <div className="mt-3 space-y-3">
+                        {/* Inline warning text — replaces alert box */}
+                        {needsAssignment && (
+                            <p className="text-xs" style={{ color: '#D97706' }}>
+                                Tentukan petugas PIC untuk tahap ini agar pekerjaan dapat diselesaikan.
+                            </p>
+                        )}
+
+                        {/* Current PIC & Workers summary */}
+                        {stage.pic_user && (
+                            <div className="text-xs space-y-1 text-slate-500">
+                                <div className="flex items-center gap-1.5">
+                                    <User size={12} className="text-slate-400" />
+                                    <span>
+                                        PIC:{' '}
+                                        <strong className="text-slate-700 font-medium">
+                                            {stage.pic_user.name}
+                                        </strong>
+                                    </span>
+                                </div>
+                                {stage.workers && stage.workers.length > 0 && (
+                                    <div className="flex items-center gap-1.5">
+                                        <Users size={12} className="text-slate-400" />
+                                        <span>
+                                            Workers: {stage.workers.map((w) => w.name).join(', ')}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Assignment / Reassignment Form — thin border on form only */}
+                        <div
+                            className="space-y-3 p-3.5 rounded-xl bg-white"
+                            style={{ border: '0.5px solid #E2E8F0' }}
+                        >
+                            <div className="text-xs font-semibold text-[#06283A]">
+                                {stage.pic_user
+                                    ? 'Ubah Petugas (PIC & Worker)'
+                                    : 'Tugaskan Petugas (PIC & Worker)'}
+                            </div>
+
+                            <div className="space-y-1">
+                                <label className="block text-[11px] font-semibold text-slate-600 uppercase">
                                     Petugas PIC <span className="text-red-500">*</span>
                                 </label>
                                 <FieldWorkerSelect
                                     fieldWorkers={fieldWorkers}
                                     value={picUserId}
-                                    onChange={(id) => setPicUserId(id)}
-                                    disabled={isSubmitting}
-                                    required
+                                    onChange={setPicUserId}
+                                    placeholder="-- Pilih Petugas PIC --"
                                 />
                             </div>
-                            <div>
-                                <label className="block text-xs font-semibold uppercase text-slate-600 mb-1.5">
-                                    Worker <span className="text-red-500">*</span>
+
+                            <div className="space-y-1">
+                                <label className="block text-[11px] font-semibold text-slate-600 uppercase">
+                                    Anggota Worker (Opsional)
                                 </label>
                                 <WorkerMultiSelect
                                     fieldWorkers={fieldWorkers}
                                     value={workerIds}
                                     onChange={setWorkerIds}
-                                    disabled={isSubmitting}
-                                    placeholder="Pilih worker untuk tahap ini..."
+                                    placeholder="-- Pilih Pekerja Lapangan Tambahan --"
                                 />
                             </div>
+
                         </div>
 
-                        {/* Action Buttons */}
-                        <div className="flex items-center gap-3 pt-2 border-t border-amber-100">
-                            <button
-                                type="button"
-                                onClick={handleAssign}
-                                disabled={isSubmitting || !picUserId || workerIds.length === 0}
-                                className="px-4 py-2 rounded-lg text-xs font-semibold border border-[#E2E8F0] bg-white text-[#06283A] hover:bg-slate-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {isSubmitting ? 'Menyimpan...' : 'Simpan Assignment'}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleComplete}
-                                disabled={isSubmitting || !canComplete}
-                                className="px-4 py-2 rounded-lg text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                style={{
-                                    backgroundColor: canComplete ? '#F5B800' : '#E2E8F0',
-                                    color: canComplete ? '#06283A' : '#94A3B8',
-                                }}
-                            >
-                                {isSubmitting ? 'Memproses...' : `Selesaikan Tahap ${label}`}
-                            </button>
+                        {/* Validation hint + action buttons — right-aligned row */}
+                        <div className="space-y-2">
+                            {!canComplete && (
+                                <p className="text-xs text-right" style={{ color: '#D97706' }}>
+                                    Lengkapi assignment PIC terlebih dahulu untuk menyelesaikan tahap ini.
+                                </p>
+                            )}
+                            <div className="flex justify-end gap-2">
+                                <button
+                                    type="button"
+                                    onClick={handleAssign}
+                                    disabled={!picUserId || isSubmitting}
+                                    style={{
+                                        fontSize: '12px',
+                                        fontWeight: 500,
+                                        padding: '7px 14px',
+                                        borderRadius: '6px',
+                                        background: '#F8FAFC',
+                                        color: '#475569',
+                                        border: '1px solid #E2E8F0',
+                                        cursor: !picUserId || isSubmitting ? 'not-allowed' : 'pointer',
+                                        opacity: !picUserId || isSubmitting ? 0.4 : 1,
+                                        transition: 'opacity 0.15s',
+                                    }}
+                                >
+                                    {isSubmitting ? 'Menyimpan...' : 'Simpan Penugasan'}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleComplete}
+                                    disabled={!canComplete || isSubmitting}
+                                    style={{
+                                        fontSize: '12px',
+                                        fontWeight: 500,
+                                        padding: '7px 14px',
+                                        borderRadius: '6px',
+                                        background: '#10B981',
+                                        color: 'white',
+                                        border: 'none',
+                                        cursor: !canComplete || isSubmitting ? 'not-allowed' : 'pointer',
+                                        opacity: !canComplete || isSubmitting ? 0.4 : 1,
+                                        transition: 'opacity 0.15s',
+                                    }}
+                                >
+                                    {isSubmitting ? 'Memproses...' : 'Selesaikan Tahap'}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}
 
-                {/* ── PENDING: Locked state ── */}
+                {/* ── STATE: PENDING ── */}
                 {isPending && (
-                    <div className="space-y-2">
-                        <p className="text-xs text-slate-400 flex items-center gap-1.5">
-                            <Lock size={12} />
-                            Terkunci — menunggu tahap {prevStageName || 'sebelumnya'} selesai
+                    <div className="mt-1">
+                        <p className="text-xs text-slate-400">
+                            {stage.pic_user
+                                ? `Pra-penugasan: PIC ${stage.pic_user.name} — aktif otomatis setelah ${prevStageName || 'tahap sebelumnya'} selesai.`
+                                : `Pra-tugaskan PIC & worker (opsional) — aktif otomatis setelah ${prevStageName || 'tahap sebelumnya'} selesai.`}
                         </p>
-
                         <button
                             type="button"
-                            onClick={() => setIsPrePlanOpen((prev) => !prev)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#E2E8F0] bg-white text-xs font-medium text-slate-600 hover:bg-slate-50 transition-all"
+                            onClick={() => setIsPrePlanOpen(!isPrePlanOpen)}
+                            className="mt-1.5 flex items-center gap-1 text-xs text-slate-400 hover:text-[#06283A] transition-colors"
                         >
-                            {isPrePlanOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                            {isPrePlanOpen ? 'Tutup' : 'Isi sekarang (pre-plan)'}
+                            <span>{isPrePlanOpen ? 'Tutup' : 'Pra-tugaskan'}</span>
+                            {isPrePlanOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                         </button>
 
                         {isPrePlanOpen && (
-                            <div className="bg-slate-50/60 border border-[#E2E8F0] rounded-xl p-4 space-y-3 mt-2">
-                                <div>
-                                    <label className="block text-xs font-semibold uppercase text-slate-600 mb-1.5">
+                            <div
+                                className="mt-3 p-3.5 rounded-xl bg-white space-y-3"
+                                style={{ border: '0.5px solid #E2E8F0' }}
+                            >
+                                <div className="space-y-1">
+                                    <label className="block text-[11px] font-semibold text-slate-600 uppercase">
                                         Petugas PIC
                                     </label>
                                     <FieldWorkerSelect
                                         fieldWorkers={fieldWorkers}
                                         value={picUserId}
-                                        onChange={(id) => setPicUserId(id)}
-                                        disabled={isSubmitting}
+                                        onChange={setPicUserId}
+                                        placeholder="-- Pilih Petugas PIC --"
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-xs font-semibold uppercase text-slate-600 mb-1.5">
-                                        Worker
+
+                                <div className="space-y-1">
+                                    <label className="block text-[11px] font-semibold text-slate-600 uppercase">
+                                        Anggota Worker
                                     </label>
                                     <WorkerMultiSelect
                                         fieldWorkers={fieldWorkers}
                                         value={workerIds}
                                         onChange={setWorkerIds}
-                                        disabled={isSubmitting}
-                                        placeholder="Pilih worker..."
+                                        placeholder="-- Pilih Pekerja Lapangan Tambahan --"
                                     />
                                 </div>
-                                <button
-                                    type="button"
-                                    onClick={handleAssign}
-                                    disabled={isSubmitting || !picUserId || workerIds.length === 0}
-                                    className="px-4 py-2 rounded-lg text-xs font-semibold border border-[#E2E8F0] bg-white text-[#06283A] hover:bg-slate-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {isSubmitting ? 'Menyimpan...' : 'Simpan Pre-plan'}
-                                </button>
+
+                                <div className="flex justify-end pt-1">
+                                    <button
+                                        type="button"
+                                        onClick={handleAssign}
+                                        disabled={!picUserId || isSubmitting}
+                                        className="px-3.5 py-2 rounded-xl text-xs font-bold bg-[#06283A] text-white hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
+                                    >
+                                        {isSubmitting ? 'Menyimpan...' : 'Simpan Pra-Penugasan'}
+                                    </button>
+                                </div>
                             </div>
                         )}
                     </div>

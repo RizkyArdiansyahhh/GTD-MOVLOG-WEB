@@ -3,41 +3,52 @@ import { ChevronDown, Search, Check, User, AlertCircle } from 'lucide-react';
 import type { FieldWorker } from '../types';
 
 interface FieldWorkerSelectProps {
-    fieldWorkers: FieldWorker[];
+    fieldWorkers?: FieldWorker[];
+    workers?: FieldWorker[];
     value: string;
     onChange: (id: string) => void;
     disabled?: boolean;
     required?: boolean;
+    placeholder?: string;
+    label?: string;
 }
 
 export default function FieldWorkerSelect({
     fieldWorkers = [],
+    workers = [],
     value,
     onChange,
     disabled = false,
+    placeholder = 'Pilih Petugas Penanggung Jawab...',
 }: FieldWorkerSelectProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const containerRef = useRef<HTMLDivElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
 
+    const availableWorkers = useMemo(() => {
+        if (Array.isArray(fieldWorkers) && fieldWorkers.length > 0) return fieldWorkers;
+        if (Array.isArray(workers) && workers.length > 0) return workers;
+        return [];
+    }, [fieldWorkers, workers]);
+
     // Get selected worker object by user ID
     const selectedWorker = useMemo(() => {
-        return fieldWorkers.find((w) => w.id === value) || null;
-    }, [fieldWorkers, value]);
+        return availableWorkers.find((w) => w.id === value) || null;
+    }, [availableWorkers, value]);
 
     // Filter workers based on search query
     const filteredWorkers = useMemo(() => {
-        if (!searchQuery.trim()) return fieldWorkers;
+        if (!searchQuery.trim()) return availableWorkers;
         const q = searchQuery.toLowerCase().trim();
-        return fieldWorkers.filter(
+        return availableWorkers.filter(
             (w) =>
                 w.name.toLowerCase().includes(q) ||
                 (w.email && w.email.toLowerCase().includes(q)) ||
                 (w.phone && w.phone.toLowerCase().includes(q)) ||
                 (w.employee_id && w.employee_id.toLowerCase().includes(q))
         );
-    }, [fieldWorkers, searchQuery]);
+    }, [availableWorkers, searchQuery]);
 
     // Close dropdown on click outside
     useEffect(() => {
@@ -63,8 +74,7 @@ export default function FieldWorkerSelect({
         setSearchQuery('');
     };
 
-    // Requirement 7: Empty state when no field worker is available
-    const isEmpty = fieldWorkers.length === 0;
+    const isEmpty = availableWorkers.length === 0;
 
     if (isEmpty) {
         return (
@@ -102,16 +112,17 @@ export default function FieldWorkerSelect({
                     <div className="flex flex-col min-w-0 pr-2">
                         <span className="font-semibold text-[#06283A] truncate">{selectedWorker.name}</span>
                         <span className="text-[11px] text-slate-500 truncate">
-                            {selectedWorker.role_label || 'Field Worker'} •{' '}
+                            <span>{selectedWorker.role_label || 'Field Worker'}</span>
+                            <span className="mx-1 text-slate-300">&middot;</span>
                             <span className="text-emerald-600 font-medium">
                                 {selectedWorker.status_label || 'Active'}
                             </span>
-                            {selectedWorker.employee_id ? ` • ${selectedWorker.employee_id}` : ''}
+                            {selectedWorker.employee_id && (<><span className="mx-1 text-slate-300">&middot;</span><span>{selectedWorker.employee_id}</span></>)}
                         </span>
                     </div>
                 ) : (
                     <span className="text-slate-400 truncate">
-                        Pilih Petugas Penanggung Jawab...
+                        {placeholder}
                     </span>
                 )}
                 <ChevronDown
@@ -170,11 +181,12 @@ export default function FieldWorkerSelect({
                                                     {worker.name}
                                                 </span>
                                                 <span className="text-xs text-slate-500 truncate">
-                                                    {worker.role_label || 'Field Worker'} •{' '}
-                                                    <span className="text-emerald-600 font-medium">
-                                                        {worker.status_label || 'Active'}
-                                                    </span>
-                                                    {worker.employee_id ? ` • ${worker.employee_id}` : ''}
+                                                    <span>{worker.role_label || 'Field Worker'}</span>
+                                                    <span className="mx-1 text-slate-300">&middot;</span>
+                                                    <span className="text-emerald-600 font-medium">{worker.status_label || 'Active'}</span>
+                                                    {worker.employee_id && (
+                                                        <><span className="mx-1 text-slate-300">&middot;</span><span>{worker.employee_id}</span></>
+                                                    )}
                                                 </span>
                                             </div>
                                         </div>

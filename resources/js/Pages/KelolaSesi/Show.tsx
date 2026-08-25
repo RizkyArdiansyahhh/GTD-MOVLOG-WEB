@@ -10,10 +10,9 @@ interface ShowProps {
 }
 
 export default function KelolaSesiShow({ session: propSession, fieldWorkers: propFieldWorkers }: ShowProps) {
-    const pageProps = usePage<{ session?: WorkSession; fieldWorkers?: FieldWorker[]; flash?: { success?: string } }>().props;
+    const pageProps = usePage<{ session?: WorkSession; fieldWorkers?: FieldWorker[] }>().props;
     const session = propSession || pageProps.session;
     const fieldWorkers = propFieldWorkers || pageProps.fieldWorkers || [];
-    const flash = pageProps.flash;
 
     if (!session) {
         return (
@@ -51,42 +50,28 @@ export default function KelolaSesiShow({ session: propSession, fieldWorkers: pro
                     </div>
                 </div>
 
-                {/* ── Flash Message ── */}
-                {flash?.success && (
-                    <div className="px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-sm font-medium text-emerald-700">
-                        {flash.success}
-                    </div>
-                )}
-
                 {/* ── Session Info Card ── */}
                 <div className="bg-white border border-[#E2E8F0] shadow-sm rounded-2xl p-6 space-y-4">
                     {/* Units */}
                     <div>
-                        <div className="flex items-center gap-2 mb-3">
+                        <div className="flex items-center gap-2 mb-2">
                             <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200/60 flex items-center justify-center text-[#F5B800]">
                                 <Package size={16} />
                             </div>
                             <h2 className="text-sm font-bold text-[#06283A]">Unit Alat Berat</h2>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            {session.units && session.units.length > 0 ? (
-                                session.units.map((unit, idx) => (
-                                    <div
-                                        key={unit.id || idx}
-                                        className="flex items-center justify-between px-3 py-2 bg-slate-50/60 border border-[#E2E8F0] rounded-lg"
-                                    >
-                                        <span className="text-sm font-medium text-[#06283A]">
-                                            {unit.unit_name}
-                                        </span>
-                                        <span className="text-xs font-semibold text-slate-500 bg-white px-2 py-0.5 rounded-md border border-slate-200">
-                                            ×{unit.quantity}
-                                        </span>
-                                    </div>
-                                ))
-                            ) : (
-                                <p className="text-xs text-slate-400 col-span-2">Belum ada unit.</p>
-                            )}
-                        </div>
+                        {session.units && session.units.length > 0 ? (
+                            <p className="text-sm text-slate-600">
+                                {session.units.map((unit, idx) => (
+                                    <span key={unit.id || idx}>
+                                        {idx > 0 && <span className="mx-1.5 text-slate-300">&middot;</span>}
+                                        {unit.unit_name}{' '}<span className="text-slate-400">&times;{unit.quantity}</span>
+                                    </span>
+                                ))}
+                            </p>
+                        ) : (
+                            <p className="text-xs text-slate-400">Belum ada unit.</p>
+                        )}
                     </div>
 
                     {/* Notes */}

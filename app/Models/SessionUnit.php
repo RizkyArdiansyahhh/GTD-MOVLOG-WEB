@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -20,7 +22,7 @@ class SessionUnit extends Model
     protected function casts(): array
     {
         return [
-            'quantity'   => 'integer',
+            'quantity' => 'integer',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
@@ -28,6 +30,9 @@ class SessionUnit extends Model
 
     public function shippingSession(): BelongsTo
     {
-        return $this->belongsTo(ShippingSession::class, 'shipping_session_id');
+        return $this->belongsTo(
+            ShippingSession::class,
+            'shipping_session_id'
+        );
     }
 }
