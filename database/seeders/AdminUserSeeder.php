@@ -17,13 +17,10 @@ use Illuminate\Support\Facades\Hash;
  */
 class AdminUserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // ─── Super Admin ───────────────────────────────────────────────
-        $superAdmin = User::firstOrCreate(
+        // --- Super Admin -----------------------------------------------
+        $superAdmin = User::updateOrCreate(
             ['email' => 'superadmin@lms.local'],
             [
                 'name'              => 'Super Admin',
@@ -32,59 +29,68 @@ class AdminUserSeeder extends Seeder
                 'email_verified_at' => now(),
             ]
         );
-
         $superAdmin->assignRole(UserRole::SuperAdmin->value);
 
-        // ─── Supervisor ────────────────────────────────────────────────
-        $supervisor = User::firstOrCreate(
+        // --- Supervisor ------------------------------------------------
+        $supervisor = User::updateOrCreate(
             ['email' => 'supervisor@lms.local'],
             [
-                'name'              => 'Supervisor',
+                'name'              => 'Supervisor Operasional',
                 'password'          => Hash::make('Admin@1234'),
                 'status'            => UserStatus::Active->value,
                 'email_verified_at' => now(),
             ]
         );
-
         $supervisor->assignRole(UserRole::Supervisor->value);
 
-        // ─── Staff ─────────────────────────────────────────────────────
-        $staff = User::firstOrCreate(
+        // --- Staff -----------------------------------------------------
+        $staff = User::updateOrCreate(
             ['email' => 'staff@lms.local'],
             [
-                'name'              => 'Staff',
+                'name'              => 'Staff Logistik',
                 'password'          => Hash::make('Admin@1234'),
                 'status'            => UserStatus::Active->value,
                 'email_verified_at' => now(),
             ]
         );
-
         $staff->assignRole(UserRole::Staff->value);
 
-        // ─── Field Worker ──────────────────────────────────────────────
-        $fieldWorker = User::firstOrCreate(
+        // --- Field Worker (Budi Santoso) ------------------------------
+        $fieldWorker = User::updateOrCreate(
             ['email' => 'fieldworker@lms.local'],
             [
-                'name'              => 'Field Worker',
+                'name'              => 'Budi Santoso',
+                'phone'             => '+62 812 3456 7890',
                 'password'          => Hash::make('Admin@1234'),
                 'status'            => UserStatus::Active->value,
                 'email_verified_at' => now(),
             ]
         );
-
         $fieldWorker->assignRole(UserRole::FieldWorker->value);
 
-        // ─── Customer ──────────────────────────────────────────────────
-        $customer = User::firstOrCreate(
-            ['email' => 'customer@lms.local'],
+        // --- Field Worker 2 (Rudi Hermawan) ---------------------------
+        $fieldWorker2 = User::updateOrCreate(
+            ['email' => 'rudi.h@lms.local'],
             [
-                'name'              => 'Customer',
+                'name'              => 'Rudi Hermawan',
+                'phone'             => '+62 813 9876 5432',
                 'password'          => Hash::make('Admin@1234'),
                 'status'            => UserStatus::Active->value,
                 'email_verified_at' => now(),
             ]
         );
+        $fieldWorker2->assignRole(UserRole::FieldWorker->value);
 
+        // --- Customer --------------------------------------------------
+        $customer = User::updateOrCreate(
+            ['email' => 'customer@lms.local'],
+            [
+                'name'              => 'PT Customer A (Hendra W)',
+                'password'          => Hash::make('Admin@1234'),
+                'status'            => UserStatus::Active->value,
+                'email_verified_at' => now(),
+            ]
+        );
         $customer->assignRole(UserRole::Customer->value);
 
         $this->command->info('✅ Default users seeded successfully.');
@@ -96,6 +102,7 @@ class AdminUserSeeder extends Seeder
                 ['supervisor@lms.local', 'Admin@1234', UserRole::Supervisor->label()],
                 ['staff@lms.local', 'Admin@1234', UserRole::Staff->label()],
                 ['fieldworker@lms.local', 'Admin@1234', UserRole::FieldWorker->label()],
+                ['rudi.h@lms.local', 'Admin@1234', UserRole::FieldWorker->label()],
                 ['customer@lms.local', 'Admin@1234', UserRole::Customer->label()],
             ]
         );

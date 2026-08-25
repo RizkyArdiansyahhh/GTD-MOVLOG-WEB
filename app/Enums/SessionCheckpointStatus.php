@@ -15,7 +15,7 @@ enum SessionCheckpointStatus: string
     {
         return match ($this) {
             self::PENDING => 'Menunggu',
-            self::IN_PROGRESS => 'Aktif',
+            self::IN_PROGRESS => 'Sedang Berjalan',
             self::COMPLETED => 'Selesai',
             self::SKIPPED => 'Dilewati',
         };

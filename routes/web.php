@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Web\GlobalSearchController;
 use App\Http\Controllers\Web\KelolaAkunController;
 use App\Http\Controllers\Web\SesiPekerjaController;
 use App\Http\Controllers\Web\UserController;
@@ -11,7 +12,7 @@ use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes — Admin Dashboard (Inertia.js + React + TypeScript)
+| Web Routes Ã¢â‚¬â€ Admin Dashboard (Inertia.js + React + TypeScript)
 |--------------------------------------------------------------------------
 | All routes here serve Inertia responses for the web admin panel.
 |
@@ -25,7 +26,7 @@ use Inertia\Inertia;
 // If you want a landing page that renders welcome.blade.php, you can keep this:
 Route::get('/welcome', fn () => view('welcome'))->name('welcome');
 
-// ─── Guest routes ─────────────────────────────────────────────────────────
+// --- Guest routes ---------------------------------------------------------
 Route::middleware('guest')->group(function () {
     Route::get('login', fn () => Inertia::render('Auth/Login'))
         ->name('login');
@@ -40,14 +41,27 @@ Route::middleware('guest')->group(function () {
         ->name('register.store');
 });
 
-// ─── Authenticated routes ──────────────────────────────────────────────────
+// --- Authenticated routes --------------------------------------------------
 Route::middleware(['auth', 'verified'])->group(function () {
 
     // Dashboard
-    Route::get('/', fn () => Inertia::render('Dashboard/Index'))
-        ->name('dashboard');
+    Route::get('/', function () {
+        $stats = [
+            'total_users'        => \App\Models\User::count(),
+            'total_shipments'    => \App\Models\ShippingSession::count(),
+            'active_drivers'     => \App\Models\User::whereHas('roles', fn ($q) => $q->where('name', 'field-worker'))->count(),
+            'pending_deliveries' => \App\Models\ShippingSession::whereIn('status', ['in_transit', 'pending'])->count(),
+        ];
+        return Inertia::render('Dashboard/Index', ['stats' => $stats]);
+    })->name('dashboard');
 
-    // ─── Super Admin Routes ───────────────────────────────────────────
+    // Global Search Endpoints
+    Route::get('global-search/quick', [GlobalSearchController::class, 'quick'])
+        ->name('global-search.quick');
+    Route::get('search', [GlobalSearchController::class, 'index'])
+        ->name('global-search.index');
+
+    // --- Super Admin Routes -------------------------------------------
     Route::middleware('role:super-admin')->group(function () {
         // Kelola Akun
         Route::get('kelola-akun', [KelolaAkunController::class, 'index'])
@@ -66,7 +80,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('kelola-sesi.create');
     });
 
-    // ─── Supervisor Routes ────────────────────────────────────────────
+    // --- Supervisor Routes --------------------------------------------
     Route::middleware('role:supervisor')->group(function () {
         // Verifikasi Berkas
         Route::get('verifikasi-berkas', [VerifikasiBerkasController::class, 'index'])
