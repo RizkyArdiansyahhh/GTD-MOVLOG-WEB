@@ -14,6 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Checkpoint;
 use App\Models\Customer;
 use App\Models\SessionCheckpoint;
+use App\Models\SessionUnit;
 use App\Models\ShippingSession;
 use App\Models\User;
 use App\Services\SessionCheckpointService;
@@ -47,11 +48,12 @@ class SesiPekerjaController extends Controller
 
         $masterCheckpoints = Checkpoint::orderBy('sequence', 'asc')->get();
 
-        // Load sessions with session checkpoints and current checkpoint
+        // Load sessions with session checkpoints, current checkpoint, and units
         $sessions = ShippingSession::with([
             'sessionCheckpoints.checkpoint',
             'sessionCheckpoints.picUser',
             'currentCheckpoint',
+            'units',
         ])
             ->latest()
             ->get()
@@ -61,28 +63,40 @@ class SesiPekerjaController extends Controller
                 $activeStage = collect($stages)->firstWhere('status', 'aktif');
 
                 $currentStageName = $activeStage['stage_name']
-                    ?? $session->currentCheckpoint?->name
                     ?? ($session->status === ShippingSessionStatus::DELIVERED ? 'Site' : 'Kapal');
 
                 $petugas = $activeStage['pic_user']['name'] ?? '-';
 
-                return [
-                    'id'           => (string) $session->id,
-                    'sessionId'    => $session->assignment_no ?? (string) $session->id,
-                    'unitName'     => $session->cargo_name ?? '-',
-                    'currentStage' => $currentStageName,
-                    'petugas'      => $petugas,
-                    'createdAt'    => $session->created_at?->format('Y-m-d H:i'),
-                    'units'        => [
+                $unitSummary = $session->units->isNotEmpty()
+                    ? $session->units->map(fn (SessionUnit $u) => $u->unit_name . ($u->quantity > 1 ? " (×{$u->quantity})" : ''))->join(', ')
+                    : ($session->cargo_name ?? '-');
+
+                $unitsList = $session->units->isNotEmpty()
+                    ? $session->units->map(fn (SessionUnit $u) => [
+                        'id'        => (string) $u->id,
+                        'unit_name' => $u->unit_name,
+                        'quantity'  => (int) $u->quantity,
+                        'notes'     => $u->notes,
+                    ])->values()->toArray()
+                    : [
                         [
                             'id'        => (string) $session->id,
                             'unit_name' => $session->cargo_name ?? '-',
                             'quantity'  => (int) $session->total_quantity,
                             'notes'     => null,
                         ],
-                    ],
+                    ];
+
+                return [
+                    'id'           => (string) $session->id,
+                    'sessionId'    => $session->assignment_no ?? (string) $session->id,
+                    'unitName'     => $unitSummary,
+                    'currentStage' => $currentStageName,
+                    'petugas'      => $petugas,
+                    'createdAt'    => $session->created_at?->format('Y-m-d H:i'),
+                    'units'        => $unitsList,
                     'stages'       => $stages,
-                    'notes'        => null,
+                    'notes'        => $session->notes,
                 ];
             });
 
@@ -136,18 +150,30 @@ class SesiPekerjaController extends Controller
         ]);
 
         $firstUnitName = $validated['units'][0]['unit_name'] ?? 'Unit';
+        $joinedUnitNames = collect($validated['units'])->pluck('unit_name')->join(', ');
         $totalQuantity = collect($validated['units'])->sum('quantity');
 
         // Create shipping session
         $session = ShippingSession::create([
             'assignment_no'  => $validated['id_sesi'],
-            'cargo_name'     => $firstUnitName,
+            'cargo_name'     => $joinedUnitNames ?: $firstUnitName,
             'total_quantity' => $totalQuantity,
             'unit'           => 'unit',
             'status'         => ShippingSessionStatus::PENDING,
+            'notes'          => $validated['notes'] ?? null,
             'created_by'     => $request->user()->id,
             'customer_id'    => $this->getDefaultCustomerId(),
         ]);
+
+        // Create SessionUnit rows for all units
+        foreach ($validated['units'] as $unitData) {
+            SessionUnit::create([
+                'shipping_session_id' => $session->id,
+                'unit_name'           => trim((string) $unitData['unit_name']),
+                'quantity'            => (int) $unitData['quantity'],
+                'notes'               => null,
+            ]);
+        }
 
         // Initialize session checkpoints (Kapal -> Tongkang -> Pelabuhan -> Site)
         $this->sessionCheckpointService->createCheckpointsForSession($session, [
@@ -171,6 +197,7 @@ class SesiPekerjaController extends Controller
             'sessionCheckpoints.checkpoint',
             'sessionCheckpoints.picUser',
             'currentCheckpoint',
+            'units',
         ]);
 
         $masterCheckpoints = Checkpoint::orderBy('sequence', 'asc')->get();
@@ -178,20 +205,29 @@ class SesiPekerjaController extends Controller
 
         $fieldWorkers = $this->getActiveFieldWorkers();
 
+        $unitsList = $session->units->isNotEmpty()
+            ? $session->units->map(fn (SessionUnit $u) => [
+                'id'        => (string) $u->id,
+                'unit_name' => $u->unit_name,
+                'quantity'  => (int) $u->quantity,
+                'notes'     => $u->notes,
+            ])->values()->toArray()
+            : [
+                [
+                    'id'        => (string) $session->id,
+                    'unit_name' => $session->cargo_name ?? '-',
+                    'quantity'  => (int) $session->total_quantity,
+                    'notes'     => null,
+                ],
+            ];
+
         return Inertia::render('KelolaSesi/Show', [
             'session' => [
                 'id'        => (string) $session->id,
                 'sessionId' => $session->assignment_no ?? (string) $session->id,
-                'notes'     => null,
+                'notes'     => $session->notes,
                 'createdAt' => $session->created_at?->format('Y-m-d H:i'),
-                'units'     => [
-                    [
-                        'id'        => (string) $session->id,
-                        'unit_name' => $session->cargo_name ?? '-',
-                        'quantity'  => (int) $session->total_quantity,
-                        'notes'     => null,
-                    ],
-                ],
+                'units'     => $unitsList,
                 'stages'    => $stages,
             ],
             'fieldWorkers' => $fieldWorkers,
@@ -278,7 +314,10 @@ class SesiPekerjaController extends Controller
     {
         $existingSessionCheckpoints = $session->sessionCheckpoints->keyBy('checkpoint_id');
 
-        return $masterCheckpoints->map(function ($checkpoint, $index) use ($session, $existingSessionCheckpoints) {
+        $stageTypes = ['kapal', 'tongkang', 'pelabuhan', 'site'];
+        $stageLabels = ['Kapal', 'Tongkang', 'Pelabuhan', 'Site'];
+
+        return $masterCheckpoints->map(function ($checkpoint, $index) use ($session, $existingSessionCheckpoints, $stageTypes, $stageLabels) {
             /** @var SessionCheckpoint|null $sc */
             $sc = $existingSessionCheckpoints->get($checkpoint->id);
 
@@ -297,17 +336,18 @@ class SesiPekerjaController extends Controller
             }
 
             $statusStr = match ($sc->status) {
-                SessionCheckpointStatus::IN_PROGRESS => 'aktif',
                 SessionCheckpointStatus::COMPLETED   => 'selesai',
+                SessionCheckpointStatus::IN_PROGRESS => 'aktif',
                 default                              => 'pending',
             };
 
-            $stageTypeName = strtolower($checkpoint->name ?? 'kapal');
+            $stageType = $stageTypes[$index] ?? 'kapal';
+            $stageName = $stageLabels[$index] ?? ($checkpoint->name ?? 'Tahap ' . ($index + 1));
 
             return [
                 'id'           => (string) $sc->id,
-                'stage_type'   => $stageTypeName,
-                'stage_name'   => $checkpoint->name ?? '',
+                'stage_type'   => $stageType,
+                'stage_name'   => $stageName,
                 'stage_order'  => (int) ($checkpoint->sequence ?? ($index + 1)),
                 'status'       => $statusStr,
                 'pic_user'     => $sc->picUser ? [

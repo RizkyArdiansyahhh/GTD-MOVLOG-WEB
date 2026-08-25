@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import { type ReactNode } from 'react';
 import type { PageProps } from '@/types';
+import Toast from '@/Components/Toast';
 
 interface AppLayoutProps {
     children: ReactNode;
@@ -20,6 +21,9 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
 
     return (
         <div className="flex h-screen bg-slate-950 text-white overflow-hidden">
+            {/* ── Toast notifications ── */}
+            <Toast />
+
             {/* Sidebar */}
             <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0">
                 {/* Logo */}
@@ -81,18 +85,6 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
                         </span>
                     </div>
                 </header>
-
-                {/* Flash Messages */}
-                {flash?.success && (
-                    <div className="mx-6 mt-4 px-4 py-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm">
-                        ✅ {flash.success}
-                    </div>
-                )}
-                {flash?.error && (
-                    <div className="mx-6 mt-4 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
-                        ❌ {flash.error}
-                    </div>
-                )}
 
                 {/* Page Content */}
                 <main className="flex-1 overflow-y-auto p-6">

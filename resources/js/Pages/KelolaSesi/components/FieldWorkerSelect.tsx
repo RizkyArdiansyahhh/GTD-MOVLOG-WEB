@@ -112,11 +112,12 @@ export default function FieldWorkerSelect({
                     <div className="flex flex-col min-w-0 pr-2">
                         <span className="font-semibold text-[#06283A] truncate">{selectedWorker.name}</span>
                         <span className="text-[11px] text-slate-500 truncate">
-                            {selectedWorker.role_label || 'Field Worker'} �{' '}
+                            <span>{selectedWorker.role_label || 'Field Worker'}</span>
+                            <span className="mx-1 text-slate-300">&middot;</span>
                             <span className="text-emerald-600 font-medium">
                                 {selectedWorker.status_label || 'Active'}
                             </span>
-                            {selectedWorker.employee_id ? ` � ${selectedWorker.employee_id}` : ''}
+                            {selectedWorker.employee_id && (<><span className="mx-1 text-slate-300">&middot;</span><span>{selectedWorker.employee_id}</span></>)}
                         </span>
                     </div>
                 ) : (
@@ -180,11 +181,12 @@ export default function FieldWorkerSelect({
                                                     {worker.name}
                                                 </span>
                                                 <span className="text-xs text-slate-500 truncate">
-                                                    {worker.role_label || 'Field Worker'} �{' '}
-                                                    <span className="text-emerald-600 font-medium">
-                                                        {worker.status_label || 'Active'}
-                                                    </span>
-                                                    {worker.employee_id ? ` � ${worker.employee_id}` : ''}
+                                                    <span>{worker.role_label || 'Field Worker'}</span>
+                                                    <span className="mx-1 text-slate-300">&middot;</span>
+                                                    <span className="text-emerald-600 font-medium">{worker.status_label || 'Active'}</span>
+                                                    {worker.employee_id && (
+                                                        <><span className="mx-1 text-slate-300">&middot;</span><span>{worker.employee_id}</span></>
+                                                    )}
                                                 </span>
                                             </div>
                                         </div>

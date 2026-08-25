@@ -81,7 +81,7 @@ export default function SesiTable({ sessions }: SesiTableProps) {
 
                             {/* 3. Progress Logistik */}
                             <td className="px-4 py-2">
-                                <ProgressTimeline currentStage={session.currentStage} />
+                                <ProgressTimeline stages={session.stages} currentStage={session.currentStage} />
                             </td>
 
                             {/* 4. PIC Tahap Aktif */}

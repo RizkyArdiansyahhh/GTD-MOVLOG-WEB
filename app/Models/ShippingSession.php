@@ -25,6 +25,7 @@ class ShippingSession extends Model
         'destination',
         'current_checkpoint_id',
         'status',
+        'notes',
     ];
 
     protected function casts(): array
@@ -70,5 +71,10 @@ class ShippingSession extends Model
     {
         return $this->hasOne(SessionCheckpoint::class, 'shipping_session_id')
             ->where('status', SessionCheckpointStatus::IN_PROGRESS);
+    }
+
+    public function units(): HasMany
+    {
+        return $this->hasMany(SessionUnit::class, 'shipping_session_id');
     }
 }
