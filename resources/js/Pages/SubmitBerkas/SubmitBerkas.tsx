@@ -5,6 +5,7 @@ import { WizardProvider } from './context/WizardContext';
 import { useWizard } from './hooks/useWizard';
 import { WizardHeader } from './components/WizardHeader';
 import { Stepper } from './components/Stepper';
+import CustomerSelectModal from './components/CustomerSelectModal';
 import { BillOfLadingStep } from './components/steps/BillOfLadingStep';
 import { CommercialInvoiceStep } from './components/steps/CommercialInvoiceStep';
 import { PackingListStep } from './components/steps/PackingListStep';
@@ -12,11 +13,16 @@ import { STEP_DEFINITIONS } from './constants/steps';
 import { CertificateOfOriginStep } from './components/steps/CertificateOfOriginStep';
 import { InsuranceStep } from './components/steps/InsuranceStep';
 import { PreviewPibStep } from './components/steps/PreviewPibStep';
+import type { Customer } from './types/SubmitBerkas';
 
-
-function WizardContent() {
-  const { currentStepIndex } = useWizard();
+function WizardContent({ customers }: { customers: Customer[] }) {
+  const { currentStepIndex, selectedCustomer, setSelectedCustomer } = useWizard();
   const currentStep = STEP_DEFINITIONS[currentStepIndex];
+
+  // Pass props `customers` ke CustomerSelectModal
+  if (!selectedCustomer) {
+    return <CustomerSelectModal onConfirm={setSelectedCustomer} customers={customers} />;
+  }
 
   return (
     <div
@@ -30,7 +36,7 @@ function WizardContent() {
         boxSizing: 'border-box',
       }}
     >
-      <WizardHeader />
+      <WizardHeader customerName={selectedCustomer.companyName} />
       <Stepper />
 
       {currentStepIndex === 0 && <BillOfLadingStep />}
@@ -61,12 +67,14 @@ function WizardContent() {
   );
 }
 
-export default function SubmitBerkas() {
+// 1. Terima props `customers` dari Inertia controller
+export default function SubmitBerkas({ customers = [] }: { customers: Customer[] }) {
   return (
     <DashboardLayout title="Submit Berkas">
       <Head title="Submit Berkas" />
       <WizardProvider>
-        <WizardContent />
+        {/* 2. Teruskan props `customers` ke WizardContent */}
+        <WizardContent customers={customers} />
       </WizardProvider>
     </DashboardLayout>
   );

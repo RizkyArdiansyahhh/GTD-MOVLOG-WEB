@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { FileText, Users, Ship, Calculator, AlertCircle, AlertTriangle, X } from 'lucide-react';
 import { FormSection, FieldGroup, Field, FieldWithUnit } from '../FormSection';
 import { RecommendedFieldHint } from '../RecommendedFieldHint';
@@ -12,6 +13,9 @@ import type { CiCargoItem, CommercialInvoiceData, PdfFile, TermOfShipment } from
 const CURRENCIES = ['USD', 'IDR', 'EUR', 'CNY', 'SGD'];
 const PACKAGE_UNITS = ['Unit', 'Pcs', 'Box', 'Pallet'];
 const GOODS_UNITS = ['Unit', 'Pcs', 'Box', 'Pallet'];
+
+/** ID tipe dokumen untuk Commercial Invoice (CI) di database */
+const DOCUMENT_TYPE_ID_CI = "2";
 
 const currencySelectStyle: React.CSSProperties = {
   width: '100%',
@@ -249,7 +253,7 @@ function sumCargoField(items: CiCargoItem[], key: 'quantityOfPackage' | 'quantit
 }
 
 export function CommercialInvoiceStep() {
-  const { wizardData, saveStepData, goNext, goBack } = useWizard();
+  const { wizardData, saveStepData, goNext, goBack, assignmentNoRef, selectedCustomer } = useWizard();
 
   const bolData = wizardData.billOfLading?.data ?? null;
   const savedData = wizardData.commercialInvoice?.data;
@@ -308,6 +312,8 @@ export function CommercialInvoiceStep() {
     if (!data.shipper.name.trim()) next.shipperName = 'Nama shipper wajib diisi.';
     if (!data.consignee.name.trim()) next.consigneeName = 'Nama consignee wajib diisi.';
     if (!pdf) next.pdf = 'Dokumen PDF wajib diupload.';
+    if (!selectedCustomer?.id) next.general = 'Customer wajib dipilih terlebih dahulu.';
+    if (!assignmentNoRef) next.general = 'Assignment Reference tidak ditemukan.';
 
     const changed: string[] = [];
 
@@ -366,10 +372,32 @@ export function CommercialInvoiceStep() {
   const handleSaveContinue = async () => {
     if (!validate()) return;
     setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    saveStepData('commercialInvoice', data, pdf);
-    setIsSaving(false);
-    goNext();
+
+    try {
+      // 1. Kirim data ke API backend per-step (POST /submit-berkas/step)
+      await axios.post('/submit-berkas/step', {
+        assignment_no_ref: assignmentNoRef,
+        customer_id: selectedCustomer?.id,
+        document_type_id: DOCUMENT_TYPE_ID_CI,
+        document_data: data,
+        file_name: pdf?.name ?? null,
+        file_path: pdf?.url ?? null,
+      });
+
+      // 2. Simpan di React state local via WizardContext
+      saveStepData('commercialInvoice', data, pdf);
+
+      // 3. Lanjut ke step berikutnya
+      goNext();
+    } catch (error: any) {
+      console.error('Gagal menyimpan step Commercial Invoice:', error);
+      setErrors((prev) => ({
+        ...prev,
+        general: error.response?.data?.message || 'Gagal menyimpan data ke server. Silakan coba lagi.',
+      }));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -379,6 +407,11 @@ export function CommercialInvoiceStep() {
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        {errors.general && (
+          <div style={{ padding: '10px 14px', borderRadius: 8, background: '#FEE2E2', color: '#DC2626', fontSize: 13 }}>
+            {errors.general}
+          </div>
+        )}
 
         <button
           type="button"

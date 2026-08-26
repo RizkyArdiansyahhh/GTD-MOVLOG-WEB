@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { FileText, Users, Ship, Award, AlertCircle, AlertTriangle, X } from 'lucide-react';
+import axios from 'axios';
+import { FileText, Users, Ship, AlertCircle, AlertTriangle, X } from 'lucide-react';
 import { FormSection, FieldGroup, Field } from '../FormSection';
 import { RecommendedFieldHint } from '../RecommendedFieldHint';
 import { PdfUploadCard } from '../PdfUploadCard';
@@ -10,6 +11,9 @@ import { MOCK_COO_DATA, MOCK_COO_PDF } from '../../constants/mockData';
 import type { CertificateOfOriginData, CooCargoItem, PdfFile } from '../../types/SubmitBerkas';
 
 const PACKAGE_UNITS = ['Unit', 'Pcs', 'Box', 'Pallet'];
+
+/** ID tipe dokumen untuk Certificate of Origin (COO) di database */
+const DOCUMENT_TYPE_ID_COO = 4;
 
 const selectStyle: React.CSSProperties = {
     width: '100%',
@@ -234,7 +238,7 @@ function createEmptyData(): CertificateOfOriginData {
 }
 
 export function CertificateOfOriginStep() {
-    const { wizardData, saveStepData, goNext, goBack } = useWizard();
+    const { wizardData, saveStepData, goNext, goBack, assignmentNoRef, selectedCustomer } = useWizard();
 
     // Sumber rekomendasi: CI diprioritaskan (karena butuh commercialInvoiceRef), fallback ke BL
     const ciData = wizardData.commercialInvoice?.data ?? null;
@@ -311,6 +315,8 @@ export function CertificateOfOriginStep() {
             next.ciRefNumber = 'Nomor referensi Commercial Invoice wajib diisi.';
         }
         if (!pdf) next.pdf = 'Dokumen PDF wajib diupload.';
+        if (!selectedCustomer?.id) next.general = 'Customer wajib dipilih terlebih dahulu.';
+        if (!assignmentNoRef) next.general = 'Assignment Reference tidak ditemukan.';
 
         // ── Cross-Document Change Detection ──
         const changed: string[] = [];
@@ -387,10 +393,32 @@ export function CertificateOfOriginStep() {
     const handleSaveContinue = async () => {
         if (!validate()) return;
         setIsSaving(true);
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        saveStepData('certificateOfOrigin', data, pdf);
-        setIsSaving(false);
-        goNext();
+
+        try {
+            // 1. Kirim data ke API backend per-step (POST /submit-berkas/step)
+            await axios.post('/submit-berkas/step', {
+                assignment_no_ref: assignmentNoRef,
+                customer_id: selectedCustomer?.id,
+                document_type_id: DOCUMENT_TYPE_ID_COO,
+                document_data: data,
+                file_name: pdf?.name ?? null,
+                file_path: pdf?.url ?? null,
+            });
+
+            // 2. Simpan di React state local via WizardContext
+            saveStepData('certificateOfOrigin', data, pdf);
+
+            // 3. Lanjut ke step berikutnya
+            goNext();
+        } catch (error: any) {
+            console.error('Gagal menyimpan step Certificate of Origin:', error);
+            setErrors((prev) => ({
+                ...prev,
+                general: error.response?.data?.message || 'Gagal menyimpan data ke server. Silakan coba lagi.',
+            }));
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
@@ -404,6 +432,11 @@ export function CertificateOfOriginStep() {
             )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                {errors.general && (
+                    <div style={{ padding: '10px 14px', borderRadius: 8, background: '#FEE2E2', color: '#DC2626', fontSize: 13 }}>
+                        {errors.general}
+                    </div>
+                )}
 
                 <button
                     type="button"

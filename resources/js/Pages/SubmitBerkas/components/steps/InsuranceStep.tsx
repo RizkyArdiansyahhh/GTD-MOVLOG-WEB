@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { FileText, Ship, Package, ShieldCheck, AlertCircle, AlertTriangle, X } from 'lucide-react';
 import { FormSection, FieldGroup, Field, FieldWithUnit } from '../FormSection';
 import { RecommendedFieldHint } from '../RecommendedFieldHint';
@@ -9,30 +10,12 @@ import { useWizard } from '../../hooks/useWizard';
 import { MOCK_INSURANCE_DATA, MOCK_INSURANCE_PDF } from '../../constants/mockData';
 import type { InsuranceCargoItem, InsuranceData, PdfFile } from '../../types/SubmitBerkas';
 
-const CURRENCIES = ['USD', 'IDR', 'EUR', 'CNY', 'SGD'];
 const WEIGHT_UNITS = ['kg', 'ton'];
 const VOLUME_UNITS = ['m³', 'cbm'];
 const PACKAGE_UNITS = ['Unit', 'Pcs', 'Box', 'Pallet'];
 
-const currencySelectStyle: React.CSSProperties = {
-    width: '100%',
-    height: 40,
-    border: '1px solid #E2E8F0',
-    borderRadius: 8,
-    padding: '0 12px',
-    fontSize: 13,
-    color: '#06283A',
-    background: '#fff',
-    cursor: 'pointer',
-};
-
-const fieldLabelStyle: React.CSSProperties = {
-    display: 'block',
-    fontSize: 12,
-    color: '#6B7280',
-    marginBottom: 6,
-    fontWeight: 500,
-};
+/** ID tipe dokumen untuk Insurance di database */
+const DOCUMENT_TYPE_ID_INSURANCE = 5;
 
 /* ── Inline warning di bawah section yang berubah ── */
 function ChangeWarningAlert({ message }: { message: string }) {
@@ -236,7 +219,7 @@ function createEmptyData(): InsuranceData {
 }
 
 export function InsuranceStep() {
-    const { wizardData, saveStepData, goNext, goBack } = useWizard();
+    const { wizardData, saveStepData, goNext, goBack, assignmentNoRef, selectedCustomer } = useWizard();
 
     const bolData = wizardData.billOfLading?.data ?? null;
     const ciData = wizardData.commercialInvoice?.data ?? null;
@@ -298,6 +281,8 @@ export function InsuranceStep() {
             next.amountInsured = 'Jumlah pertanggungan (amount insured) wajib diisi.';
         }
         if (!pdf) next.pdf = 'Dokumen PDF wajib diupload.';
+        if (!selectedCustomer?.id) next.general = 'Customer wajib dipilih terlebih dahulu.';
+        if (!assignmentNoRef) next.general = 'Assignment Reference tidak ditemukan.';
 
         // ── Cross-Document Change Detection ──
         const changed: string[] = [];
@@ -364,10 +349,32 @@ export function InsuranceStep() {
     const handleSaveContinue = async () => {
         if (!validate()) return;
         setIsSaving(true);
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        saveStepData('insurance', data, pdf);
-        setIsSaving(false);
-        goNext();
+
+        try {
+            // 1. Kirim data ke API backend per-step (POST /submit-berkas/step)
+            await axios.post('/submit-berkas/step', {
+                assignment_no_ref: assignmentNoRef,
+                customer_id: selectedCustomer?.id,
+                document_type_id: DOCUMENT_TYPE_ID_INSURANCE,
+                document_data: data,
+                file_name: pdf?.name ?? null,
+                file_path: pdf?.url ?? null,
+            });
+
+            // 2. Simpan di React state local via WizardContext
+            saveStepData('insurance', data, pdf);
+
+            // 3. Lanjut ke step berikutnya (PreviewPibStep)
+            goNext();
+        } catch (error: any) {
+            console.error('Gagal menyimpan step Insurance:', error);
+            setErrors((prev) => ({
+                ...prev,
+                general: error.response?.data?.message || 'Gagal menyimpan data ke server. Silakan coba lagi.',
+            }));
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
@@ -377,6 +384,11 @@ export function InsuranceStep() {
             )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                {errors.general && (
+                    <div style={{ padding: '10px 14px', borderRadius: 8, background: '#FEE2E2', color: '#DC2626', fontSize: 13 }}>
+                        {errors.general}
+                    </div>
+                )}
 
                 <button
                     type="button"

@@ -1,5 +1,5 @@
 /* ════════════════════════════════════════════════════════
-   SHARED / COMMON TYPES
+    SHARED / COMMON TYPES
    ════════════════════════════════════════════════════════ */
 
 export interface PartyDetail {
@@ -20,11 +20,21 @@ export type TermOfShipment = 'FOB' | 'CIF';
 export interface PdfFile {
   name: string;
   sizeLabel: string; // e.g. "2.4 MB"
-  url?: string;       // populated once "uploaded" (mock or real)
+  url?: string;      // populated once "uploaded" (mock or real)
+  file?: File;       // <-- Ditambahkan untuk menyimpan objek File fisik asli
+}
+
+export interface Customer {
+  id: string;
+  companyName: string;
+  address: string;
+  phone: string;
+  email: string;
+  picName: string;
 }
 
 /* ════════════════════════════════════════════════════════
-   STEP 1 — BILL OF LADING
+    STEP 1 — BILL OF LADING
    ════════════════════════════════════════════════════════ */
 
 export interface BolCargoItem {
@@ -57,7 +67,7 @@ export interface BillOfLadingData {
 }
 
 /* ════════════════════════════════════════════════════════
-   STEP 2 — COMMERCIAL INVOICE
+    STEP 2 — COMMERCIAL INVOICE
    ════════════════════════════════════════════════════════ */
 
 export interface CiCargoItem {
@@ -101,7 +111,7 @@ export interface CommercialInvoiceData {
 }
 
 /* ════════════════════════════════════════════════════════
-   STEP 3 — PACKING LIST
+    STEP 3 — PACKING LIST
    ════════════════════════════════════════════════════════ */
 
 export interface PlCargoItem {
@@ -136,7 +146,7 @@ export interface PackingListData {
 }
 
 /* ════════════════════════════════════════════════════════
-   STEP 4 — CERTIFICATE OF ORIGIN (COO)
+    STEP 4 — CERTIFICATE OF ORIGIN (COO)
    ════════════════════════════════════════════════════════ */
 
 export interface CooCargoItem {
@@ -167,7 +177,7 @@ export interface CertificateOfOriginData {
 }
 
 /* ════════════════════════════════════════════════════════
-   STEP 5 — INSURANCE
+    STEP 5 — INSURANCE
    ════════════════════════════════════════════════════════ */
 
 export interface InsuranceCargoItem {
@@ -198,7 +208,7 @@ export interface InsuranceData {
 }
 
 /* ════════════════════════════════════════════════════════
-   WIZARD-LEVEL TYPES
+    WIZARD-LEVEL TYPES
    ════════════════════════════════════════════════════════ */
 
 export type WizardStepKey =
@@ -218,6 +228,8 @@ export interface StepRecord<T> {
 }
 
 export interface WizardData {
+  assignmentNoRef: string;
+  customerId: string;
   billOfLading: StepRecord<BillOfLadingData> | null;
   commercialInvoice: StepRecord<CommercialInvoiceData> | null;
   packingList: StepRecord<PackingListData> | null;

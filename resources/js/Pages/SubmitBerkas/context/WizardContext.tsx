@@ -1,10 +1,11 @@
 import React, { createContext, useCallback, useMemo, useState } from 'react';
+import axios from 'axios';
 import { STEP_DEFINITIONS, TOTAL_STEPS } from '../constants/steps';
 import type {
+  Customer,
   PdfFile,
   StepStatus,
   WizardData,
-  WizardStepKey,
 } from '../types/SubmitBerkas';
 
 /** Keys for the 5 form+upload steps (excludes previewPib, which has no StepRecord). */
@@ -24,6 +25,19 @@ interface WizardContextValue {
   highestUnlockedIndex: number;
   wizardData: WizardData;
   stepStatuses: StepStatus[];
+
+  /**
+   * Assignment reference code dari backend (misal: ASG-20260824-A1B2C3).
+   */
+  assignmentNoRef: string | null;
+
+  /**
+   * Customer yang menjadi acuan seluruh proses submit (BL–Insurance).
+   * Wajib dipilih/dibuat sebelum wizard step form dapat diakses.
+   */
+  selectedCustomer: Customer | null;
+  /** Set customer aktif dan generate assignment_no_ref dari backend. */
+  setSelectedCustomer: (customer: Customer | null) => Promise<void>;
 
   /** Save the given step's form data + pdf, mark it completed, and unlock the next step. */
   saveStepData: <T, >(key: FormStepKey, data: T, pdf: PdfFile | null) => void;
@@ -51,6 +65,32 @@ const EMPTY_WIZARD_DATA: WizardData = {
 export function WizardProvider({ children }: { children: React.ReactNode }) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [wizardData, setWizardData] = useState<WizardData>(EMPTY_WIZARD_DATA);
+  const [selectedCustomer, setSelectedCustomerState] = useState<Customer | null>(null);
+  const [assignmentNoRef, setAssignmentNoRef] = useState<string | null>(null);
+
+  /**
+   * Mengatur customer aktif dan meminta `assignment_no_ref` baru ke backend.
+   */
+  const setSelectedCustomer = useCallback(async (customer: Customer | null) => {
+    setSelectedCustomerState(customer);
+
+    if (!customer) {
+      setAssignmentNoRef(null);
+      return;
+    }
+
+    try {
+      const response = await axios.post('/submit-berkas/start', {
+        customer_id: customer.id,
+      });
+
+      if (response.data && response.data.assignment_no_ref) {
+        setAssignmentNoRef(response.data.assignment_no_ref);
+      }
+    } catch (error) {
+      console.error('Gagal melakukan inisialisasi assignment:', error);
+    }
+  }, []);
 
   // Highest index reachable via the stepper (grows as steps are completed).
   const highestUnlockedIndex = useMemo(() => {
@@ -108,6 +148,9 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
     highestUnlockedIndex,
     wizardData,
     stepStatuses,
+    assignmentNoRef,
+    selectedCustomer,
+    setSelectedCustomer,
     saveStepData,
     goNext,
     goBack,

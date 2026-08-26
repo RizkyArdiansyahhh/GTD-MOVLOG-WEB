@@ -3,38 +3,118 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\SaveDocumentStepRequest;
+use App\Models\Customer;
+use App\Services\DocumentSubmissionService;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class SubmitBerkasController extends Controller
 {
+    public function __construct(
+        private DocumentSubmissionService $documentSubmissionService
+    ) {}
+
+    /**
+     * Tampilkan halaman wizard SubmitBerkas beserta daftar customer.
+     */
     public function index(): Response
     {
-        return Inertia::render('SubmitBerkas/SubmitBerkas');
+        return Inertia::render('SubmitBerkas/SubmitBerkas', [
+            'customers' => Customer::latest()->get(),
+        ]);
     }
 
-        public function finalize(Request $request)
+    /**
+     * Simpan customer baru dari CustomerSelectModal.
+     */
+    public function storeCustomer(Request $request)
     {
-        $submission = Submission::create([
-            'user_id' => auth()->id(),
-            'status' => 'pending',
-            'data' => $request->all(), // atau field terpisah sesuai schema kamu
-            'submitted_at' => now(),
+        $validated = $request->validate([
+            'company_name' => 'required|string|max:255',
+            'address'      => 'nullable|string',
+            'phone'        => 'nullable|string|max:50',
+            'email'        => 'nullable|email|max:255',
+            'pic_name'     => 'nullable|string|max:255',
         ]);
 
-        return redirect()->route('submit-berkas.status', $submission->id);
+        $customer = Customer::create($validated);
+
+        return response()->json([
+            'message'  => 'Customer berhasil ditambahkan',
+            'customer' => $customer,
+        ], 201);
     }
 
-        public function status(Submission $submission)
+    /**
+     * Generate assignment_no_ref baru.
+     */
+    public function startAssignment(Request $request)
     {
+        $ref = $this->documentSubmissionService->generateAssignmentRef();
+        return response()->json([
+            'assignment_no_ref' => $ref,
+        ]);
+    }
+
+    /**
+     * Simpan satu dokumen per-step.
+     */
+    public function saveStep(SaveDocumentStepRequest $request)
+    {
+        $data = $request->validated();
+
+        // Proses upload file jika ada file pdf terlampir
+        if ($request->hasFile('pdf')) {
+            $file = $request->file('pdf');
+            $path = $file->store('documents/' . $data['assignment_no_ref'], 'public');
+            
+            $data['file_name'] = $file->getClientOriginalName();
+            $data['file_path'] = $path;
+        }
+
+        $document = $this->documentSubmissionService->saveStep(
+            $data,
+            auth()->id()
+        );
+
+        return response()->json($document);
+    }
+
+
+    /**
+     * Ambil seluruh dokumen dalam satu assignment.
+     */
+    public function show(string $assignmentNoRef)
+    {
+        $documents = $this->documentSubmissionService->getByAssignmentRef($assignmentNoRef);
+
+        return response()->json($documents);
+    }
+
+    /**
+     * Finalisasi submission di Preview PIB.
+     */
+    public function finalize(string $assignmentNoRef)
+    {
+        $this->documentSubmissionService->submitFinal($assignmentNoRef);
+
+        return redirect()
+            ->route('submit-berkas.status', $assignmentNoRef)
+            ->with('success', 'Berkas berhasil disubmit dan menunggu verifikasi.');
+    }
+
+    /**
+     * Halaman status hasil submission.
+     */
+    public function status(string $assignmentNoRef): Response
+    {
+        $documents = $this->documentSubmissionService->getByAssignmentRef($assignmentNoRef);
+
         return Inertia::render('SubmitBerkas/Status', [
-            'submission' => [
-                'id' => $submission->id,
-                'status' => $submission->status,
-                'submittedAt' => $submission->submitted_at->format('d M Y, H:i'),
-                'rejectionReason' => $submission->rejection_reason,
-                'data' => $submission->data,
-            ],
+            'assignmentNoRef' => $assignmentNoRef,
+            'documents' => $documents,
         ]);
     }
 }

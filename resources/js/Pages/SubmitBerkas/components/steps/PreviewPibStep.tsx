@@ -273,7 +273,7 @@ function ConfirmSubmitModal({
 }
 
 export function PreviewPibStep() {
-    const { wizardData, goBack, goToStep } = useWizard();
+    const { wizardData, goBack, goToStep, assignmentNoRef } = useWizard();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [showConfirm, setShowConfirm] = useState(false);
@@ -285,8 +285,6 @@ export function PreviewPibStep() {
     const insurance = wizardData.insurance;
 
     // --- Completeness check -------------------------------------------------
-    // Beyond "data exists", also check that key identifying fields aren't empty,
-    // so a step can't silently pass as "done" with blank required fields.
     const isBolComplete = !!(bol?.data && bol.data.documentDetail?.number && bol.data.documentDetail?.date);
     const isCiComplete = !!(ci?.data && ci.data.documentDetail?.number && ci.data.cargoDetail?.length);
     const isPlComplete = !!(pl?.data && pl.data.documentDetail?.number && pl.data.cargoDetail?.length);
@@ -294,7 +292,7 @@ export function PreviewPibStep() {
     const isInsuranceComplete = !!insurance?.data;
 
     const allComplete =
-        isBolComplete && isCiComplete && isPlComplete && isCooComplete && isInsuranceComplete;
+        isBolComplete && isCiComplete && isPlComplete && isCooComplete && isInsuranceComplete && !!assignmentNoRef;
 
     const incompleteSteps = [
         { label: 'Bill of Lading', index: 0, done: isBolComplete },
@@ -317,9 +315,6 @@ export function PreviewPibStep() {
     }, [pl?.data]);
 
     // --- Cargo merge (by index, with mismatch detection) ---------------------
-    // CI and PL cargo lists are matched positionally. If the item counts differ,
-    // netWeight can attach to the wrong item, so we flag it as a warning instead
-    // of silently merging bad data.
     const cargoCountMismatch =
         !!ci?.data?.cargoDetail?.length &&
         !!pl?.data?.cargoDetail?.length &&
@@ -343,7 +338,7 @@ export function PreviewPibStep() {
         });
     }, [ci?.data, pl?.data]);
 
-    // Warnings shown inside the confirmation modal (not blocking, just a heads-up)
+    // Warnings shown inside the confirmation modal
     const submitWarnings = useMemo(() => {
         const warnings: string[] = [];
         if (cargoCountMismatch) {
@@ -354,44 +349,35 @@ export function PreviewPibStep() {
         return warnings;
     }, [cargoCountMismatch, ci?.data?.cargoDetail?.length, pl?.data?.cargoDetail?.length]);
 
-    // Step 1: user clicks "Submit Berkas" -> just opens the confirmation modal
+    // Step 1: user clicks "Submit Berkas" -> opens confirmation modal
     const handleSubmitClick = () => {
         if (!allComplete || isSubmitting) return;
         setSubmitError(null);
         setShowConfirm(true);
     };
 
-    // Step 2: user confirms inside the modal -> actual POST happens here
+    // Step 2: user confirms inside modal -> actual POST request via Inertia.js
     const handleConfirmSubmit = () => {
-        if (isSubmitting) return;
+        if (isSubmitting || !assignmentNoRef) return;
         setIsSubmitting(true);
         setSubmitError(null);
 
-        const payload = JSON.parse(
-            JSON.stringify({
-                billOfLading: bol,
-                commercialInvoice: ci,
-                packingList: pl,
-                certificateOfOrigin: coo,
-                insurance: insurance,
-            })
-        );
-
-        router.post('/submit-berkas/finalize', payload, {
-            onError: () => {
-                setSubmitError('Gagal mengirim berkas. Silakan coba lagi.');
+        // Mengirim request POST ke route finalize backend dengan path parameter assignmentNoRef
+        router.post(`/submit-berkas/${assignmentNoRef}/finalize`, {}, {
+            onError: (errors) => {
+                const message = typeof errors === 'string'
+                    ? errors
+                    : errors?.message || 'Gagal mengirim berkas. Silakan coba lagi.';
+                setSubmitError(message);
                 setIsSubmitting(false);
                 setShowConfirm(false);
             },
-            // Tidak perlu onSuccess manual redirect — backend akan me-redirect
-            // (Inertia otomatis mengikuti redirect response dari controller)
             onFinish: () => setIsSubmitting(false),
         });
     };
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-
             {incompleteSteps.length > 0 && (
                 <div
                     style={{

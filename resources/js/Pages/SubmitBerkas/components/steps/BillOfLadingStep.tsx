@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { router } from '@inertiajs/react';
+import axios from 'axios';
 import { FileText, Users, Bell, Ship, Boxes, Scale } from 'lucide-react';
 import { FormSection, FieldGroup, Field, FieldWithUnit } from '../FormSection';
 import { MOCK_BOL_DATA, MOCK_BOL_PDF } from '../../constants/mockData';
@@ -51,7 +52,9 @@ function createEmptyData(): BillOfLadingData {
 }
 
 export function BillOfLadingStep() {
-  const { wizardData, saveStepData, goNext } = useWizard();
+  // Ambil state dan helper termasuk assignmentNoRef & selectedCustomer langsung dari useWizard()
+  const { wizardData, saveStepData, goNext, assignmentNoRef, selectedCustomer } = useWizard();
+
   const [data, setData] = useState<BillOfLadingData>(
     wizardData.billOfLading?.data ?? createEmptyData(),
   );
@@ -85,18 +88,57 @@ export function BillOfLadingStep() {
     return Object.keys(next).length === 0;
   };
 
+
   const handleSaveContinue = async () => {
     if (!validate()) return;
+    // Validasi context sebelum request dikirim
+    if (!assignmentNoRef || !selectedCustomer?.id) {
+      setErrors((prev) => ({
+        ...prev,
+        general: 'Data customer atau nomor assignment belum tersedia. Silakan pilih customer terlebih dahulu.',
+      }));
+      return;
+    }
     setIsSaving(true);
-    // Simulasi delay penyimpanan (mock) — ganti dengan panggilan API asli nanti.
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    saveStepData('billOfLading', data, pdf);
-    setIsSaving(false);
-    goNext();
+    try {
+      await axios.post('/submit-berkas/step', {
+        assignment_no_ref: assignmentNoRef,
+        customer_id: selectedCustomer?.id,
+        document_type_id: '1',
+        document_data: data,
+        file_name: pdf?.name ?? 'Bill_of_Lading.pdf',
+        file_path: pdf?.url ?? (pdf ? `/documents/${assignmentNoRef}/${pdf.name}` : '/documents/sample.pdf'), // <-- Fallback jika url kosong
+      });
+
+      saveStepData('billOfLading', data, pdf);
+      goNext();
+    } catch (error: any) {
+      console.error('Gagal menyimpan step Bill of Lading:', error);
+
+      // Ekstrak pesan detail error dari object errors Laravel
+      const validationErrors = error.response?.data?.errors;
+      let errorMessage = error.response?.data?.message || 'Gagal menyimpan data ke server.';
+      if (validationErrors && typeof validationErrors === 'object') {
+        const errorList = Object.values(validationErrors).flat();
+        errorMessage = errorList.join(' | ');
+      }
+      setErrors((prev) => ({
+        ...prev,
+        general: errorMessage,
+      }));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {errors.general && (
+        <div style={{ padding: '10px 14px', background: '#FEE2E2', color: '#991B1B', borderRadius: 8, fontSize: 13 }}>
+          {errors.general}
+        </div>
+      )}
+
       <button
         type="button"
         onClick={() => {
