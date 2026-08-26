@@ -28,7 +28,7 @@ class UserDTO extends Data
         public readonly string $email,
 
         #[Min(8), Max(255)]
-        public readonly string|Optional $password,
+        public readonly string|null|Optional $password = null,
 
         public readonly UserStatus $status,
 

@@ -12,7 +12,7 @@ class Document extends Model
     use HasUlids;
 
     protected $fillable = [
-        'session_id',
+        'shipping_session_id',
         'document_type_id',
         'document_data',
         'file_name',
@@ -44,7 +44,7 @@ class Document extends Model
     {
         return $this->belongsTo(
             ShippingSession::class,
-            'session_id'
+            'shipping_session_id'
         );
     }
 

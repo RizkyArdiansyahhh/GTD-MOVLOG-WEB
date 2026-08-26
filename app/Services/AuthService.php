@@ -38,12 +38,14 @@ class AuthService extends BaseService
 
         if (! $user->isActive()) {
             throw ValidationException::withMessages([
-                'email' => ['Your account has been deactivated. Please contact support.'],
+                'email' => ['Akun Anda saat ini dinonaktifkan. Silakan hubungi Administrator untuk informasi lebih lanjut.'],
             ]);
         }
 
         // Revoke all previous tokens for the device
         $user->tokens()->where('name', $deviceName)->delete();
+
+        $user->touch();
 
         $token = $user->createToken($deviceName)->plainTextToken;
 
