@@ -225,6 +225,7 @@ export interface StepRecord<T> {
   data: T;
   pdf: PdfFile | null;
   completed: boolean;
+  remarks: string | null;
 }
 
 export interface WizardData {
@@ -253,6 +254,7 @@ export interface AssignmentSummary {
   total_documents: number;
   completed_documents?: number;
   status: 'DRAFT' | 'PENDING' | 'VERIFIED' | 'REJECTED';
+  remarks?: string | null;
   created_at: string;
   updated_at?: string;
 }

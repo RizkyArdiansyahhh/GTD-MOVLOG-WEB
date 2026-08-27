@@ -353,7 +353,7 @@ export function BillOfLadingStep() {
 
       <StepNavigation
         backLabel="Kembali"
-        onBack={() => router.visit('/')}
+        onBack={() => router.visit('/submit-berkas')}
         onSaveContinue={handleSaveContinue}
         isSaving={isSaving}
       />

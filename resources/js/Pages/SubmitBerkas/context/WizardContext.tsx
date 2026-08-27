@@ -32,8 +32,9 @@ interface WizardContextValue {
   goBack: () => void;
   goToStep: (index: number) => void;
   isStepUnlocked: (index: number) => boolean;
-  /** Reset seluruh state wizard ke kondisi awal (dipanggil setelah finalisasi berhasil). */
   resetWizard: () => void;
+  /** Hydrate seluruh step wizard dari data database penugasan yang sudah ada (untuk mode revisi/lanjutkan draft). */
+  hydrateFromExisting: (existingDocs: any[], customer: Customer, assignmentRef: string) => void;
 }
 
 export const WizardContext = createContext<WizardContextValue | null>(null);
@@ -84,6 +85,41 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
     setWizardData(EMPTY_WIZARD_DATA);
     setSelectedCustomerState(null);
     setAssignmentNoRef(null);
+  }, []);
+
+  /**
+   * Hydrate data dokumen dari database ke dalam WizardContext.
+   */
+  const hydrateFromExisting = useCallback((existingDocs: any[], customer: Customer, assignmentRef: string) => {
+    setSelectedCustomerState(customer);
+    setAssignmentNoRef(assignmentRef);
+
+    const newWizardData: WizardData = {
+      billOfLading: null,
+      commercialInvoice: null,
+      packingList: null,
+      certificateOfOrigin: null,
+      insurance: null,
+    };
+
+    existingDocs.forEach((doc) => {
+      const typeId = Number(doc.document_type_id);
+      const record = {
+        data: doc.document_data,
+        pdf: doc.file_name ? { name: doc.file_name, sizeLabel: 'PDF', url: doc.file_path } : null,
+        completed: true,
+        remarks: doc.remarks ?? null,
+      };
+
+      if (typeId === 1) newWizardData.billOfLading = record as any;
+      if (typeId === 2) newWizardData.commercialInvoice = record as any;
+      if (typeId === 3) newWizardData.packingList = record as any;
+      if (typeId === 4) newWizardData.certificateOfOrigin = record as any;
+      if (typeId === 5) newWizardData.insurance = record as any;
+    });
+
+    setWizardData(newWizardData);
+    setCurrentStepIndex(0);
   }, []);
 
   // Highest index reachable via the stepper (grows as steps are completed).
@@ -151,6 +187,7 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
     goToStep,
     isStepUnlocked,
     resetWizard,
+    hydrateFromExisting,
   };
 
   return <WizardContext.Provider value={value}>{children}</WizardContext.Provider>;

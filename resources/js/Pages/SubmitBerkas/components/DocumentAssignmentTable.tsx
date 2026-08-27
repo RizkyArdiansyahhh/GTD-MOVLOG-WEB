@@ -3,23 +3,24 @@ import {
     FileText,
     Clock,
     CheckCircle2,
-    XCircle,
+    AlertCircle,
     Search,
     Inbox,
     Building2,
     Calendar,
-    ArrowUpRight
+    Edit3,
+    Eye
 } from 'lucide-react';
 import type { AssignmentSummary } from '../types/SubmitBerkas';
 
 interface DocumentAssignmentTableProps {
     assignments: AssignmentSummary[];
-    onSelectAssignment?: (ref: string) => void;
+    onOpenAssignment?: (assignment: AssignmentSummary) => void;
 }
 
-export function DocumentAssignmentTable({ assignments = [], onSelectAssignment }: DocumentAssignmentTableProps) {
+export function DocumentAssignmentTable({ assignments = [], onOpenAssignment }: DocumentAssignmentTableProps) {
     const [searchQuery, setSearchQuery] = useState('');
-    const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'DRAFT' | 'VERIFIED'>('ALL');
+    const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'DRAFT' | 'VERIFIED' | 'REJECTED'>('ALL');
 
     const filteredData = useMemo(() => {
         return assignments.filter((item) => {
@@ -34,6 +35,24 @@ export function DocumentAssignmentTable({ assignments = [], onSelectAssignment }
 
     const renderStatusBadge = (status: string) => {
         switch (status) {
+            case 'REJECTED':
+                return (
+                    <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 5,
+                        padding: '4px 10px',
+                        borderRadius: 20,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        background: '#FEF2F2',
+                        color: '#DC2626',
+                        border: '1px solid #FECACA'
+                    }}>
+                        <AlertCircle size={12} />
+                        PERLU REVISI
+                    </span>
+                );
             case 'PENDING':
                 return (
                     <span style={{
@@ -68,24 +87,6 @@ export function DocumentAssignmentTable({ assignments = [], onSelectAssignment }
                     }}>
                         <CheckCircle2 size={12} />
                         VERIFIED
-                    </span>
-                );
-            case 'REJECTED':
-                return (
-                    <span style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 5,
-                        padding: '4px 10px',
-                        borderRadius: 20,
-                        fontSize: 12,
-                        fontWeight: 700,
-                        background: '#FEE2E2',
-                        color: '#991B1B',
-                        border: '1px solid #FECACA'
-                    }}>
-                        <XCircle size={12} />
-                        REJECTED
                     </span>
                 );
             default:
@@ -127,7 +128,7 @@ export function DocumentAssignmentTable({ assignments = [], onSelectAssignment }
                         Daftar Berkas Penugasan
                     </h2>
                     <p style={{ margin: '4px 0 0', fontSize: 13, color: '#64748B' }}>
-                        Riwayat pengajuan berkas pengiriman yang sedang diproses maupun telah disubmit
+                        Klik baris atau tombol aksi untuk melihat atau merevisi berkas
                     </p>
                 </div>
 
@@ -173,6 +174,7 @@ export function DocumentAssignmentTable({ assignments = [], onSelectAssignment }
                         }}
                     >
                         <option value="ALL">Semua Status</option>
+                        <option value="REJECTED">Perlu Revisi</option>
                         <option value="PENDING">Pending</option>
                         <option value="DRAFT">Draft</option>
                         <option value="VERIFIED">Verified</option>
@@ -223,13 +225,20 @@ export function DocumentAssignmentTable({ assignments = [], onSelectAssignment }
                                 <th style={{ padding: '12px 16px', fontWeight: 600 }}>Dokumen</th>
                                 <th style={{ padding: '12px 16px', fontWeight: 600 }}>Status</th>
                                 <th style={{ padding: '12px 16px', fontWeight: 600 }}>Waktu Submit</th>
+                                <th style={{ padding: '12px 16px', fontWeight: 600, textAlign: 'center' }}>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             {filteredData.map((item) => (
                                 <tr
                                     key={item.assignment_no_ref}
-                                    style={{ borderBottom: '1px solid #F1F5F9', fontSize: 13, transition: 'background 0.2s' }}
+                                    onClick={() => onOpenAssignment && onOpenAssignment(item)}
+                                    style={{
+                                        borderBottom: '1px solid #F1F5F9',
+                                        fontSize: 13,
+                                        cursor: onOpenAssignment ? 'pointer' : 'default',
+                                        transition: 'background 0.2s'
+                                    }}
                                     className="hover:bg-slate-50"
                                 >
                                     <td style={{ padding: '14px 16px' }}>
@@ -265,6 +274,81 @@ export function DocumentAssignmentTable({ assignments = [], onSelectAssignment }
                                                 minute: '2-digit'
                                             }) : '-'}
                                         </div>
+                                    </td>
+                                    <td style={{ padding: '14px 16px', textAlign: 'center' }}>
+                                        {item.status === 'REJECTED' ? (
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onOpenAssignment && onOpenAssignment(item);
+                                                }}
+                                                style={{
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: 4,
+                                                    padding: '6px 12px',
+                                                    borderRadius: 8,
+                                                    border: '1px solid #FCA5A5',
+                                                    background: '#FEF2F2',
+                                                    color: '#DC2626',
+                                                    fontSize: 12,
+                                                    fontWeight: 700,
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                <Edit3 size={13} />
+                                                Revisi
+                                            </button>
+                                        ) : item.status === 'DRAFT' ? (
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onOpenAssignment && onOpenAssignment(item);
+                                                }}
+                                                style={{
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: 4,
+                                                    padding: '6px 12px',
+                                                    borderRadius: 8,
+                                                    border: '1px solid #CBD5E1',
+                                                    background: '#F8FAFC',
+                                                    color: '#0284C7',
+                                                    fontSize: 12,
+                                                    fontWeight: 600,
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                <Edit3 size={13} />
+                                                Lanjutkan
+                                            </button>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onOpenAssignment && onOpenAssignment(item);
+                                                }}
+                                                style={{
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: 4,
+                                                    padding: '6px 12px',
+                                                    borderRadius: 8,
+                                                    border: '1px solid #E2E8F0',
+                                                    background: '#FFFFFF',
+                                                    color: '#64748B',
+                                                    fontSize: 12,
+                                                    fontWeight: 600,
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                <Eye size={13} />
+                                                Lihat
+                                            </button>
+                                        )}
                                     </td>
                                 </tr>
                             ))}

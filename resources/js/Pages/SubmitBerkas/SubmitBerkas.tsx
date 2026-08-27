@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Head, usePage } from '@inertiajs/react';
+import axios from 'axios';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { WizardProvider } from './context/WizardContext';
 import { useWizard } from './hooks/useWizard';
@@ -7,6 +8,7 @@ import { WizardHeader } from './components/WizardHeader';
 import { Stepper } from './components/Stepper';
 import { DocumentAssignmentTable } from './components/DocumentAssignmentTable';
 import { CustomerActionPanel } from './components/CustomerActionPanel';
+import { RevisionRemarksBanner } from './components/RevisionRemarksBanner';
 import CustomerSelectModal from './components/CustomerSelectModal';
 import { BillOfLadingStep } from './components/steps/BillOfLadingStep';
 import { CommercialInvoiceStep } from './components/steps/CommercialInvoiceStep';
@@ -14,7 +16,6 @@ import { PackingListStep } from './components/steps/PackingListStep';
 import { CertificateOfOriginStep } from './components/steps/CertificateOfOriginStep';
 import { InsuranceStep } from './components/steps/InsuranceStep';
 import { PreviewPibStep } from './components/steps/PreviewPibStep';
-import { STEP_DEFINITIONS } from './constants/steps';
 import type { Customer, AssignmentSummary } from './types/SubmitBerkas';
 
 interface SubmitBerkasPageProps {
@@ -35,16 +36,24 @@ function SubmitBerkasHubContent({
 }: HubContentProps) {
   const {
     currentStepIndex,
+    wizardData,
     selectedCustomer,
     setSelectedCustomer,
     resetWizard,
+    hydrateFromExisting,
   } = useWizard();
 
   const [isCreateCustomerOpen, setIsCreateCustomerOpen] = useState(false);
   const [isStartingAssignment, setIsStartingAssignment] = useState(false);
+  const [isLoadingAssignment, setIsLoadingAssignment] = useState(false);
 
   // Flash message dari backend
   const flash = usePage().props.flash as { success?: string; error?: string } | undefined;
+
+  // Mendapatkan remarks aktif untuk step saat ini (jika ada)
+  const currentStepKey = ['billOfLading', 'commercialInvoice', 'packingList', 'certificateOfOrigin', 'insurance'][currentStepIndex] as keyof typeof wizardData;
+  const currentStepRecord = wizardData[currentStepKey];
+  const currentStepRemarks = currentStepRecord?.remarks;
 
   const handleStartWizard = async () => {
     if (!selectedCustomer) return;
@@ -62,6 +71,31 @@ function SubmitBerkasHubContent({
   const handleCancelWizard = () => {
     setIsWizardActive(false);
     resetWizard();
+  };
+
+  // Handler saat baris tabel diklik untuk membuka/merevisi dokumen
+  const handleOpenAssignment = async (assignment: AssignmentSummary) => {
+    setIsLoadingAssignment(true);
+    try {
+      const response = await axios.get(`/submit-berkas/${assignment.assignment_no_ref}`);
+      const docs = response.data;
+
+      const targetCustomer: Customer = {
+        id: assignment.customer_id,
+        companyName: assignment.customer_name,
+        picName: assignment.customer_pic || '',
+        address: '',
+        phone: '',
+        email: '',
+      };
+
+      hydrateFromExisting(docs, targetCustomer, assignment.assignment_no_ref);
+      setIsWizardActive(true);
+    } catch (error) {
+      console.error('Gagal memuat dokumen penugasan:', error);
+    } finally {
+      setIsLoadingAssignment(false);
+    }
   };
 
   return (
@@ -100,6 +134,11 @@ function SubmitBerkasHubContent({
           />
           <Stepper />
 
+          {/* Banner Catatan Revisi jika ada */}
+          {currentStepRemarks && (
+            <RevisionRemarksBanner remarks={currentStepRemarks} />
+          )}
+
           {currentStepIndex === 0 && <BillOfLadingStep />}
           {currentStepIndex === 1 && <CommercialInvoiceStep />}
           {currentStepIndex === 2 && <PackingListStep />}
@@ -123,7 +162,10 @@ function SubmitBerkasHubContent({
           alignItems: 'start'
         }}>
           {/* Sisi Kiri (70%): Tabel Riwayat Berkas */}
-          <DocumentAssignmentTable assignments={assignments} />
+          <DocumentAssignmentTable
+            assignments={assignments}
+            onOpenAssignment={handleOpenAssignment}
+          />
 
           {/* Sisi Kanan (30%): Panel Aksi Customer */}
           <CustomerActionPanel
@@ -132,7 +174,7 @@ function SubmitBerkasHubContent({
             onSelectCustomer={(cust) => setSelectedCustomer(cust)}
             onOpenCreateModal={() => setIsCreateCustomerOpen(true)}
             onStartWizard={handleStartWizard}
-            isLoading={isStartingAssignment}
+            isLoading={isStartingAssignment || isLoadingAssignment}
           />
         </div>
       )}
