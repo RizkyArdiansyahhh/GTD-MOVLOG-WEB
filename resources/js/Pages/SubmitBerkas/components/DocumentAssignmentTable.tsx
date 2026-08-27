@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
     FileText,
     Clock,
@@ -9,7 +9,9 @@ import {
     Building2,
     Calendar,
     Edit3,
-    Eye
+    Eye,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 import type { AssignmentSummary } from '../types/SubmitBerkas';
 
@@ -18,10 +20,14 @@ interface DocumentAssignmentTableProps {
     onOpenAssignment?: (assignment: AssignmentSummary) => void;
 }
 
+const ITEMS_PER_PAGE = 5;
+
 export function DocumentAssignmentTable({ assignments = [], onOpenAssignment }: DocumentAssignmentTableProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'DRAFT' | 'VERIFIED' | 'REJECTED'>('ALL');
+    const [currentPage, setCurrentPage] = useState(1);
 
+    // Filter data berdasarkan query pencarian dan status filter
     const filteredData = useMemo(() => {
         return assignments.filter((item) => {
             const matchSearch =
@@ -32,6 +38,20 @@ export function DocumentAssignmentTable({ assignments = [], onOpenAssignment }: 
             return matchSearch && matchStatus;
         });
     }, [assignments, searchQuery, statusFilter]);
+
+    // Reset ke halaman 1 jika filter atau pencarian berubah
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, statusFilter]);
+
+    // Kalkulasi Pagination
+    const totalItems = filteredData.length;
+    const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE) || 1;
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, totalItems);
+    const paginatedData = useMemo(() => {
+        return filteredData.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    }, [filteredData, startIndex]);
 
     const renderStatusBadge = (status: string) => {
         switch (status) {
@@ -216,144 +236,230 @@ export function DocumentAssignmentTable({ assignments = [], onOpenAssignment }: 
                     </p>
                 </div>
             ) : (
-                <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                        <thead>
-                            <tr style={{ borderBottom: '1px solid #E2E8F0', color: '#64748B', fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                                <th style={{ padding: '12px 16px', fontWeight: 600 }}>No. Penugasan</th>
-                                <th style={{ padding: '12px 16px', fontWeight: 600 }}>Nama Customer</th>
-                                <th style={{ padding: '12px 16px', fontWeight: 600 }}>Dokumen</th>
-                                <th style={{ padding: '12px 16px', fontWeight: 600 }}>Status</th>
-                                <th style={{ padding: '12px 16px', fontWeight: 600 }}>Waktu Submit</th>
-                                <th style={{ padding: '12px 16px', fontWeight: 600, textAlign: 'center' }}>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredData.map((item) => (
-                                <tr
-                                    key={item.assignment_no_ref}
-                                    onClick={() => onOpenAssignment && onOpenAssignment(item)}
-                                    style={{
-                                        borderBottom: '1px solid #F1F5F9',
-                                        fontSize: 13,
-                                        cursor: onOpenAssignment ? 'pointer' : 'default',
-                                        transition: 'background 0.2s'
-                                    }}
-                                    className="hover:bg-slate-50"
-                                >
-                                    <td style={{ padding: '14px 16px' }}>
-                                        <span style={{ fontWeight: 700, color: '#06283A' }}>
-                                            {item.assignment_no_ref}
-                                        </span>
-                                    </td>
-                                    <td style={{ padding: '14px 16px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                            <Building2 size={15} color="#64748B" />
-                                            <div>
-                                                <div style={{ fontWeight: 600, color: '#1E293B' }}>{item.customer_name}</div>
-                                                {item.customer_pic && (
-                                                    <div style={{ fontSize: 11, color: '#94A3B8' }}>PIC: {item.customer_pic}</div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td style={{ padding: '14px 16px', color: '#475569', fontWeight: 600 }}>
-                                        <span style={{ color: '#0284C7' }}>{item.total_documents}</span> / 5 Berkas
-                                    </td>
-                                    <td style={{ padding: '14px 16px' }}>
-                                        {renderStatusBadge(item.status)}
-                                    </td>
-                                    <td style={{ padding: '14px 16px', color: '#64748B', fontSize: 12 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                                            <Calendar size={13} color="#94A3B8" />
-                                            {item.created_at ? new Date(item.created_at).toLocaleString('id-ID', {
-                                                day: 'numeric',
-                                                month: 'short',
-                                                year: 'numeric',
-                                                hour: '2-digit',
-                                                minute: '2-digit'
-                                            }) : '-'}
-                                        </div>
-                                    </td>
-                                    <td style={{ padding: '14px 16px', textAlign: 'center' }}>
-                                        {item.status === 'REJECTED' ? (
-                                            <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    onOpenAssignment && onOpenAssignment(item);
-                                                }}
-                                                style={{
-                                                    display: 'inline-flex',
-                                                    alignItems: 'center',
-                                                    gap: 4,
-                                                    padding: '6px 12px',
-                                                    borderRadius: 8,
-                                                    border: '1px solid #FCA5A5',
-                                                    background: '#FEF2F2',
-                                                    color: '#DC2626',
-                                                    fontSize: 12,
-                                                    fontWeight: 700,
-                                                    cursor: 'pointer'
-                                                }}
-                                            >
-                                                <Edit3 size={13} />
-                                                Revisi
-                                            </button>
-                                        ) : item.status === 'DRAFT' ? (
-                                            <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    onOpenAssignment && onOpenAssignment(item);
-                                                }}
-                                                style={{
-                                                    display: 'inline-flex',
-                                                    alignItems: 'center',
-                                                    gap: 4,
-                                                    padding: '6px 12px',
-                                                    borderRadius: 8,
-                                                    border: '1px solid #CBD5E1',
-                                                    background: '#F8FAFC',
-                                                    color: '#0284C7',
-                                                    fontSize: 12,
-                                                    fontWeight: 600,
-                                                    cursor: 'pointer'
-                                                }}
-                                            >
-                                                <Edit3 size={13} />
-                                                Lanjutkan
-                                            </button>
-                                        ) : (
-                                            <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    onOpenAssignment && onOpenAssignment(item);
-                                                }}
-                                                style={{
-                                                    display: 'inline-flex',
-                                                    alignItems: 'center',
-                                                    gap: 4,
-                                                    padding: '6px 12px',
-                                                    borderRadius: 8,
-                                                    border: '1px solid #E2E8F0',
-                                                    background: '#FFFFFF',
-                                                    color: '#64748B',
-                                                    fontSize: 12,
-                                                    fontWeight: 600,
-                                                    cursor: 'pointer'
-                                                }}
-                                            >
-                                                <Eye size={13} />
-                                                Lihat
-                                            </button>
-                                        )}
-                                    </td>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                            <thead>
+                                <tr style={{ borderBottom: '1px solid #E2E8F0', color: '#64748B', fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                                    <th style={{ padding: '12px 16px', fontWeight: 600 }}>No. Penugasan</th>
+                                    <th style={{ padding: '12px 16px', fontWeight: 600 }}>Nama Customer</th>
+                                    <th style={{ padding: '12px 16px', fontWeight: 600 }}>Dokumen</th>
+                                    <th style={{ padding: '12px 16px', fontWeight: 600 }}>Status</th>
+                                    <th style={{ padding: '12px 16px', fontWeight: 600 }}>Waktu Submit</th>
+                                    <th style={{ padding: '12px 16px', fontWeight: 600, textAlign: 'center' }}>Aksi</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {paginatedData.map((item) => (
+                                    <tr
+                                        key={item.assignment_no_ref}
+                                        onClick={() => onOpenAssignment && onOpenAssignment(item)}
+                                        style={{
+                                            borderBottom: '1px solid #F1F5F9',
+                                            fontSize: 13,
+                                            cursor: onOpenAssignment ? 'pointer' : 'default',
+                                            transition: 'background 0.2s'
+                                        }}
+                                        className="hover:bg-slate-50"
+                                    >
+                                        <td style={{ padding: '14px 16px' }}>
+                                            <span style={{ fontWeight: 700, color: '#06283A' }}>
+                                                {item.assignment_no_ref}
+                                            </span>
+                                        </td>
+                                        <td style={{ padding: '14px 16px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                <Building2 size={15} color="#64748B" />
+                                                <div>
+                                                    <div style={{ fontWeight: 600, color: '#1E293B' }}>{item.customer_name}</div>
+                                                    {item.customer_pic && (
+                                                        <div style={{ fontSize: 11, color: '#94A3B8' }}>PIC: {item.customer_pic}</div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style={{ padding: '14px 16px', color: '#475569', fontWeight: 600 }}>
+                                            <span style={{ color: '#0284C7' }}>{item.total_documents}</span> / 5 Berkas
+                                        </td>
+                                        <td style={{ padding: '14px 16px' }}>
+                                            {renderStatusBadge(item.status)}
+                                        </td>
+                                        <td style={{ padding: '14px 16px', color: '#64748B', fontSize: 12 }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                                                <Calendar size={13} color="#94A3B8" />
+                                                {item.created_at ? new Date(item.created_at).toLocaleString('id-ID', {
+                                                    day: 'numeric',
+                                                    month: 'short',
+                                                    year: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit'
+                                                }) : '-'}
+                                            </div>
+                                        </td>
+                                        <td style={{ padding: '14px 16px', textAlign: 'center' }}>
+                                            {item.status === 'REJECTED' ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        onOpenAssignment && onOpenAssignment(item);
+                                                    }}
+                                                    style={{
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        gap: 4,
+                                                        padding: '6px 12px',
+                                                        borderRadius: 8,
+                                                        border: '1px solid #FCA5A5',
+                                                        background: '#FEF2F2',
+                                                        color: '#DC2626',
+                                                        fontSize: 12,
+                                                        fontWeight: 700,
+                                                        cursor: 'pointer'
+                                                    }}
+                                                >
+                                                    <Edit3 size={13} />
+                                                    Revisi
+                                                </button>
+                                            ) : item.status === 'DRAFT' ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        onOpenAssignment && onOpenAssignment(item);
+                                                    }}
+                                                    style={{
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        gap: 4,
+                                                        padding: '6px 12px',
+                                                        borderRadius: 8,
+                                                        border: '1px solid #CBD5E1',
+                                                        background: '#F8FAFC',
+                                                        color: '#0284C7',
+                                                        fontSize: 12,
+                                                        fontWeight: 600,
+                                                        cursor: 'pointer'
+                                                    }}
+                                                >
+                                                    <Edit3 size={13} />
+                                                    Lanjutkan
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        onOpenAssignment && onOpenAssignment(item);
+                                                    }}
+                                                    style={{
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        gap: 4,
+                                                        padding: '6px 12px',
+                                                        borderRadius: 8,
+                                                        border: '1px solid #E2E8F0',
+                                                        background: '#FFFFFF',
+                                                        color: '#64748B',
+                                                        fontSize: 12,
+                                                        fontWeight: 600,
+                                                        cursor: 'pointer'
+                                                    }}
+                                                >
+                                                    <Eye size={13} />
+                                                    Lihat
+                                                </button>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Bar Navigasi Pagination (Hanya muncul jika total items > 5) */}
+                    {totalItems > ITEMS_PER_PAGE && (
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            paddingTop: 12,
+                            borderTop: '1px solid #F1F5F9',
+                            flexWrap: 'wrap',
+                            gap: 12
+                        }}>
+                            <div style={{ fontSize: 12, color: '#64748B' }}>
+                                Menampilkan <strong style={{ color: '#0F172A' }}>{startIndex + 1}</strong> - <strong style={{ color: '#0F172A' }}>{endIndex}</strong> dari <strong style={{ color: '#0F172A' }}>{totalItems}</strong> penugasan
+                            </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                                    disabled={currentPage === 1}
+                                    style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: 4,
+                                        padding: '6px 10px',
+                                        borderRadius: 8,
+                                        border: '1px solid #E2E8F0',
+                                        background: '#FFFFFF',
+                                        color: currentPage === 1 ? '#CBD5E1' : '#334155',
+                                        fontSize: 12,
+                                        fontWeight: 600,
+                                        cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+                                    }}
+                                >
+                                    <ChevronLeft size={14} />
+                                    Sebelumnya
+                                </button>
+
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                                    <button
+                                        key={pageNum}
+                                        type="button"
+                                        onClick={() => setCurrentPage(pageNum)}
+                                        style={{
+                                            width: 30,
+                                            height: 30,
+                                            borderRadius: 8,
+                                            border: currentPage === pageNum ? 'none' : '1px solid #E2E8F0',
+                                            background: currentPage === pageNum ? '#06283A' : '#FFFFFF',
+                                            color: currentPage === pageNum ? '#FFFFFF' : '#475569',
+                                            fontSize: 12,
+                                            fontWeight: 700,
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        {pageNum}
+                                    </button>
+                                ))}
+
+                                <button
+                                    type="button"
+                                    onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                                    disabled={currentPage === totalPages}
+                                    style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: 4,
+                                        padding: '6px 10px',
+                                        borderRadius: 8,
+                                        border: '1px solid #E2E8F0',
+                                        background: '#FFFFFF',
+                                        color: currentPage === totalPages ? '#CBD5E1' : '#334155',
+                                        fontSize: 12,
+                                        fontWeight: 600,
+                                        cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'
+                                    }}
+                                >
+                                    Berikutnya
+                                    <ChevronRight size={14} />
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
