@@ -1,15 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
-import { usePage } from '@inertiajs/react';
+import React, { useState } from 'react';
 import axios from 'axios';
-import { Search, Plus, Building2, ArrowLeft, Check } from 'lucide-react';
+import { Building2, X, Plus } from 'lucide-react';
 import type { Customer } from '../types/SubmitBerkas';
 
 interface CustomerSelectModalProps {
-    onConfirm: (customer: Customer) => void;
-    customers?: Customer[];
+    isOpen?: boolean;
+    onClose: () => void;
+    onCustomerCreated: (customer: Customer) => void;
 }
-
-type Mode = 'search' | 'create';
 
 interface NewCustomerForm {
     companyName: string;
@@ -27,282 +25,304 @@ const EMPTY_FORM: NewCustomerForm = {
     picName: '',
 };
 
-export default function CustomerSelectModal({ onConfirm, customers: propCustomers }: CustomerSelectModalProps) {
-    const pageProps = usePage<{ customers?: any[] }>().props;
-
-    // Evaluasi reaktif terhadap props yang masuk[cite: 3]
-    const effectiveList = useMemo(() => {
-        if (propCustomers && propCustomers.length > 0) return propCustomers;
-        if (pageProps.customers && pageProps.customers.length > 0) return pageProps.customers;
-        return [];
-    }, [propCustomers, pageProps.customers]);
-
-    const [mode, setMode] = useState<Mode>('search');
-    const [query, setQuery] = useState('');
-    const [customers, setCustomers] = useState<any[]>(effectiveList);
-    const [isLoading, setIsLoading] = useState(false);
+export default function CustomerSelectModal({
+    isOpen = true,
+    onClose,
+    onCustomerCreated
+}: CustomerSelectModalProps) {
     const [form, setForm] = useState<NewCustomerForm>(EMPTY_FORM);
     const [formError, setFormError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
 
-    // Sinkronkan state lokal saat effectiveList diperbarui[cite: 3]
-    useEffect(() => {
-        setCustomers(effectiveList);
-    }, [effectiveList]);
-
-    const filteredCustomers = useMemo(() => {
-        const q = query.trim().toLowerCase();
-        if (!q) return customers;
-        return customers.filter((c: any) => {
-            const name = c.companyName || c.company_name || '';
-            return name.toLowerCase().includes(q);
-        });
-    }, [customers, query]);
-
-    const handleSelect = (rawCustomer: any) => {
-        const normalizedCustomer: Customer = {
-            id: rawCustomer.id,
-            companyName: rawCustomer.companyName || rawCustomer.company_name || '',
-            address: rawCustomer.address || '',
-            phone: rawCustomer.phone || '',
-            email: rawCustomer.email || '',
-            picName: rawCustomer.picName || rawCustomer.pic_name || '',
-        };
-        onConfirm(normalizedCustomer);
-    };
+    if (!isOpen) return null;
 
     const handleFormChange = (field: keyof NewCustomerForm, value: string) => {
         setForm((prev) => ({ ...prev, [field]: value }));
+        if (formError) setFormError(null);
     };
 
-    const handleCreateCustomer = async () => {
+    const handleCreateCustomer = async (e: React.FormEvent) => {
+        e.preventDefault();
         if (!form.companyName.trim()) {
             setFormError('Nama perusahaan wajib diisi.');
             return;
         }
 
-        try {
-            setIsLoading(true);
-            setFormError(null);
+        setIsLoading(true);
+        setFormError(null);
 
-            // Ubah URL dari '/customers' menjadi '/submit-berkas/customers'
-            const response = await axios.post('/submit-berkas/customers', {
+        try {
+            const response = await axios.post('/submit-berkas/customer', {
                 company_name: form.companyName.trim(),
-                address: form.address.trim(),
-                phone: form.phone.trim(),
-                email: form.email.trim(),
-                pic_name: form.picName.trim(),
+                address: form.address.trim() || null,
+                phone: form.phone.trim() || null,
+                email: form.email.trim() || null,
+                pic_name: form.picName.trim() || null,
             });
 
-            const newCustomerData = response.data?.customer || response.data;
-            const normalized: Customer = {
-                id: newCustomerData.id,
-                companyName: newCustomerData.companyName || newCustomerData.company_name || form.companyName,
-                address: newCustomerData.address || form.address,
-                phone: newCustomerData.phone || form.phone,
-                email: newCustomerData.email || form.email,
-                picName: newCustomerData.picName || newCustomerData.pic_name || form.picName,
+            const saved = response.data.customer;
+            const newCustomer: Customer = {
+                id: saved.id,
+                companyName: saved.company_name || form.companyName.trim(),
+                address: saved.address || form.address.trim(),
+                phone: saved.phone || form.phone.trim(),
+                email: saved.email || form.email.trim(),
+                picName: saved.pic_name || form.picName.trim(),
             };
 
-            setCustomers((prev) => [normalized, ...prev]);
+            // Berikan customer baru ke parent component (masuk ke list)
+            onCustomerCreated(newCustomer);
             setForm(EMPTY_FORM);
-            onConfirm(normalized);
-        } catch (error: any) {
-            console.error('Gagal membuat customer baru:', error);
-            setFormError(
-                error.response?.data?.message || 'Gagal menyimpan customer ke database.'
-            );
+            onClose();
+        } catch (err: any) {
+            const msg =
+                err?.response?.data?.message ||
+                'Gagal menambahkan customer baru. Silakan coba lagi.';
+            setFormError(msg);
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4">
-            <div className="w-full max-w-lg rounded-2xl bg-white shadow-xl">
-                {/* Header */}
+        <div
+            role="dialog"
+            aria-modal="true"
+            style={{
+                position: 'fixed',
+                inset: 0,
+                background: 'rgba(6, 40, 58, 0.45)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1000,
+                padding: 16,
+            }}
+            onClick={onClose}
+        >
+            <div
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                    background: '#FFFFFF',
+                    borderRadius: 16,
+                    width: '100%',
+                    maxWidth: 480,
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+                    overflow: 'hidden',
+                }}
+            >
+                {/* Modal Header */}
                 <div
-                    className="flex items-center gap-3 rounded-t-2xl px-6 py-5"
-                    style={{ backgroundColor: '#06283A' }}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '18px 24px',
+                        borderBottom: '1px solid #F1F5F9',
+                        background: '#FAFBFC',
+                    }}
                 >
-                    <div
-                        className="flex h-10 w-10 items-center justify-center rounded-lg"
-                        style={{ backgroundColor: '#FFF4D6' }}
-                    >
-                        <Building2 size={20} style={{ color: '#B7791F' }} strokeWidth={2} />
-                    </div>
-                    <div>
-                        <h2 className="text-base font-bold text-white">Pilih Customer</h2>
-                        <p className="text-xs text-gray-300">
-                            Tentukan pemilik dokumen sebelum mulai mengisi berkas
-                        </p>
-                    </div>
-                </div>
-
-                {/* Body */}
-                <div className="px-6 py-5">
-                    {mode === 'search' ? (
-                        <>
-                            {/* Search input */}
-                            <div className="relative mb-4">
-                                <Search
-                                    size={18}
-                                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                                />
-                                <input
-                                    type="text"
-                                    value={query}
-                                    onChange={(e) => setQuery(e.target.value)}
-                                    placeholder="Cari nama perusahaan..."
-                                    className="w-full rounded-lg border border-gray-200 py-2.5 pl-10 pr-3 text-sm focus:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-100"
-                                    autoFocus
-                                />
-                            </div>
-
-                            {/* Result list */}
-                            <div className="mb-4 max-h-64 space-y-2 overflow-y-auto">
-                                {filteredCustomers.length === 0 ? (
-                                    <p className="py-6 text-center text-sm text-gray-400">
-                                        Customer tidak ditemukan.
-                                    </p>
-                                ) : (
-                                    filteredCustomers.map((customer: any) => {
-                                        const displayName = customer.companyName || customer.company_name || '-';
-                                        const displayPic = customer.picName || customer.pic_name || '-';
-
-                                        return (
-                                            <button
-                                                key={customer.id}
-                                                type="button"
-                                                onClick={() => handleSelect(customer)}
-                                                className="flex w-full items-center justify-between rounded-lg border border-gray-100 px-4 py-3 text-left transition-colors hover:border-yellow-300 hover:bg-yellow-50"
-                                            >
-                                                <div>
-                                                    <p className="text-sm font-semibold text-gray-800">
-                                                        {displayName}
-                                                    </p>
-                                                    <p className="text-xs text-gray-500">{displayPic}</p>
-                                                </div>
-                                                <Check
-                                                    size={16}
-                                                    className="text-transparent transition-colors group-hover:text-yellow-500"
-                                                />
-                                            </button>
-                                        );
-                                    })
-                                )}
-                            </div>
-
-                            {/* Add new customer trigger */}
-                            <button
-                                type="button"
-                                onClick={() => setMode('create')}
-                                className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-yellow-400 py-2.5 text-sm font-semibold transition-colors hover:bg-yellow-50"
-                                style={{ color: '#B7791F' }}
-                            >
-                                <Plus size={16} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div
+                            style={{
+                                width: 34,
+                                height: 34,
+                                borderRadius: 8,
+                                background: '#FFF8EC',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#B7791F',
+                            }}
+                        >
+                            <Building2 size={18} />
+                        </div>
+                        <div>
+                            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#06283A' }}>
                                 Tambah Customer Baru
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            {/* Back to search */}
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setMode('search');
-                                    setFormError(null);
-                                }}
-                                className="mb-4 flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-700"
-                            >
-                                <ArrowLeft size={14} />
-                                Kembali ke pencarian
-                            </button>
+                            </h3>
+                            <p style={{ margin: '2px 0 0', fontSize: 12, color: '#64748B' }}>
+                                Masukkan detail perusahaan untuk penugasan pengiriman
+                            </p>
+                        </div>
+                    </div>
 
-                            {/* New customer form */}
-                            <div className="space-y-3">
-                                <div>
-                                    <label className="mb-1 block text-xs font-medium text-gray-600">
-                                        Nama Perusahaan
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={form.companyName}
-                                        onChange={(e) => handleFormChange('companyName', e.target.value)}
-                                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-100"
-                                        placeholder="PT Contoh Logistik Indonesia"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="mb-1 block text-xs font-medium text-gray-600">
-                                        Alamat
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={form.address}
-                                        onChange={(e) => handleFormChange('address', e.target.value)}
-                                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-100"
-                                        placeholder="Jl. Contoh No. 1, Kota"
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label className="mb-1 block text-xs font-medium text-gray-600">
-                                            No. Telepon
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={form.phone}
-                                            onChange={(e) => handleFormChange('phone', e.target.value)}
-                                            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-100"
-                                            placeholder="021-xxxxxxx"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="mb-1 block text-xs font-medium text-gray-600">
-                                            Email
-                                        </label>
-                                        <input
-                                            type="email"
-                                            value={form.email}
-                                            onChange={(e) => handleFormChange('email', e.target.value)}
-                                            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-100"
-                                            placeholder="admin@perusahaan.co.id"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="mb-1 block text-xs font-medium text-gray-600">
-                                        Nama PIC
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={form.picName}
-                                        onChange={(e) => handleFormChange('picName', e.target.value)}
-                                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-100"
-                                        placeholder="Nama penanggung jawab"
-                                    />
-                                </div>
-
-                                {formError && (
-                                    <p className="text-xs font-medium text-red-500">{formError}</p>
-                                )}
-
-                                <button
-                                    type="button"
-                                    onClick={handleCreateCustomer}
-                                    disabled={isLoading}
-                                    className="mt-2 w-full rounded-lg py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-                                    style={{ backgroundColor: '#B7791F' }}
-                                >
-                                    {isLoading ? 'Menyimpan...' : 'Simpan & Gunakan Customer Ini'}
-                                </button>
-                            </div>
-                        </>
-                    )}
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: '#94A3B8',
+                            padding: 4,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <X size={20} />
+                    </button>
                 </div>
+
+                {/* Form Input */}
+                <form onSubmit={handleCreateCustomer} style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    <div>
+                        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#334155', marginBottom: 5 }}>
+                            Nama Perusahaan <span style={{ color: '#DC2626' }}>*</span>
+                        </label>
+                        <input
+                            type="text"
+                            required
+                            value={form.companyName}
+                            onChange={(e) => handleFormChange('companyName', e.target.value)}
+                            placeholder="Contoh: PT Sumber Logistik Bersama"
+                            style={{
+                                width: '100%',
+                                padding: '9px 12px',
+                                borderRadius: 8,
+                                border: '1px solid #E2E8F0',
+                                fontSize: 13,
+                                outline: 'none',
+                                boxSizing: 'border-box'
+                            }}
+                        />
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                        <div>
+                            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#334155', marginBottom: 5 }}>
+                                Nama PIC
+                            </label>
+                            <input
+                                type="text"
+                                value={form.picName}
+                                onChange={(e) => handleFormChange('picName', e.target.value)}
+                                placeholder="Nama penanggung jawab"
+                                style={{
+                                    width: '100%',
+                                    padding: '9px 12px',
+                                    borderRadius: 8,
+                                    border: '1px solid #E2E8F0',
+                                    fontSize: 13,
+                                    outline: 'none',
+                                    boxSizing: 'border-box'
+                                }}
+                            />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#334155', marginBottom: 5 }}>
+                                No. Telepon / WA
+                            </label>
+                            <input
+                                type="text"
+                                value={form.phone}
+                                onChange={(e) => handleFormChange('phone', e.target.value)}
+                                placeholder="08xxxxxxxxxx"
+                                style={{
+                                    width: '100%',
+                                    padding: '9px 12px',
+                                    borderRadius: 8,
+                                    border: '1px solid #E2E8F0',
+                                    fontSize: 13,
+                                    outline: 'none',
+                                    boxSizing: 'border-box'
+                                }}
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#334155', marginBottom: 5 }}>
+                            Email Perusahaan
+                        </label>
+                        <input
+                            type="email"
+                            value={form.email}
+                            onChange={(e) => handleFormChange('email', e.target.value)}
+                            placeholder="admin@perusahaan.co.id"
+                            style={{
+                                width: '100%',
+                                padding: '9px 12px',
+                                borderRadius: 8,
+                                border: '1px solid #E2E8F0',
+                                fontSize: 13,
+                                outline: 'none',
+                                boxSizing: 'border-box'
+                            }}
+                        />
+                    </div>
+
+                    <div>
+                        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#334155', marginBottom: 5 }}>
+                            Alamat Lengkap
+                        </label>
+                        <textarea
+                            rows={2}
+                            value={form.address}
+                            onChange={(e) => handleFormChange('address', e.target.value)}
+                            placeholder="Jl. Industri Raya Blok A No. 12, Jakarta"
+                            style={{
+                                width: '100%',
+                                padding: '9px 12px',
+                                borderRadius: 8,
+                                border: '1px solid #E2E8F0',
+                                fontSize: 13,
+                                outline: 'none',
+                                boxSizing: 'border-box',
+                                resize: 'none'
+                            }}
+                        />
+                    </div>
+
+                    {formError && (
+                        <div style={{ padding: '8px 12px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 8, color: '#DC2626', fontSize: 12 }}>
+                            {formError}
+                        </div>
+                    )}
+
+                    {/* Footer Tombol Aksi */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, marginTop: 8 }}>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            disabled={isLoading}
+                            style={{
+                                padding: '9px 16px',
+                                borderRadius: 8,
+                                border: '1px solid #E2E8F0',
+                                background: '#FFFFFF',
+                                color: '#475569',
+                                fontSize: 13,
+                                fontWeight: 600,
+                                cursor: isLoading ? 'not-allowed' : 'pointer',
+                            }}
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 6,
+                                padding: '9px 18px',
+                                borderRadius: 8,
+                                border: 'none',
+                                background: '#B7791F',
+                                color: '#FFFFFF',
+                                fontSize: 13,
+                                fontWeight: 700,
+                                cursor: isLoading ? 'not-allowed' : 'pointer',
+                                opacity: isLoading ? 0.7 : 1,
+                            }}
+                        >
+                            <Plus size={15} />
+                            {isLoading ? 'Menyimpan...' : 'Simpan Customer'}
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     );

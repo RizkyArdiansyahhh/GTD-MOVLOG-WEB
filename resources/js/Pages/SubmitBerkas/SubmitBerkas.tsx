@@ -43,6 +43,8 @@ function SubmitBerkasHubContent({
     hydrateFromExisting,
   } = useWizard();
 
+  // State daftar customer lokal agar update realtime saat ada customer baru dibuat
+  const [customerList, setCustomerList] = useState<Customer[]>(customers);
   const [isCreateCustomerOpen, setIsCreateCustomerOpen] = useState(false);
   const [isStartingAssignment, setIsStartingAssignment] = useState(false);
   const [isLoadingAssignment, setIsLoadingAssignment] = useState(false);
@@ -96,6 +98,11 @@ function SubmitBerkasHubContent({
     } finally {
       setIsLoadingAssignment(false);
     }
+  };
+
+  // Handler saat customer baru selesai dibuat -> tambahkan ke list, jangan otomatis terpilih
+  const handleCustomerCreated = (newCustomer: Customer) => {
+    setCustomerList((prev) => [newCustomer, ...prev]);
   };
 
   return (
@@ -169,7 +176,7 @@ function SubmitBerkasHubContent({
 
           {/* Sisi Kanan (30%): Panel Aksi Customer */}
           <CustomerActionPanel
-            customers={customers}
+            customers={customerList}
             selectedCustomer={selectedCustomer}
             onSelectCustomer={(cust) => setSelectedCustomer(cust)}
             onOpenCreateModal={() => setIsCreateCustomerOpen(true)}
@@ -179,16 +186,12 @@ function SubmitBerkasHubContent({
         </div>
       )}
 
-      {/* Modal Tambah Customer Baru jika dipicu dari panel kanan */}
-      {isCreateCustomerOpen && (
-        <CustomerSelectModal
-          onConfirm={(cust) => {
-            setSelectedCustomer(cust);
-            setIsCreateCustomerOpen(false);
-          }}
-          customers={customers}
-        />
-      )}
+      {/* Modal Tambah Customer Baru */}
+      <CustomerSelectModal
+        isOpen={isCreateCustomerOpen}
+        onClose={() => setIsCreateCustomerOpen(false)}
+        onCustomerCreated={handleCustomerCreated}
+      />
     </div>
   );
 }
