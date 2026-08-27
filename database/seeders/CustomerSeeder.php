@@ -1,44 +1,36 @@
 <?php
 
-declare(strict_types=1);
-
+// database/seeders/CustomerSeeder.php
 namespace Database\Seeders;
 
-use App\Models\Customer;
 use Illuminate\Database\Seeder;
+use App\Models\Customer;
 
 class CustomerSeeder extends Seeder
 {
     public function run(): void
     {
-        $customers = [
+        $data = [
             [
-                'company_name' => 'PT Customer A',
-                'address'      => 'Jl. Jenderal Sudirman No. 45, Jakarta Selatan',
-                'phone'        => '+62 21 555 1234',
-                'email'        => 'customer@lms.local',
-                'pic_name'     => 'Hendra Wijaya',
+                'company_name' => 'PT Trans Cargo Indonesia',
+                'address' => 'Jl. Yos Sudarso No. 45, Tanjung Priok',
+                'phone' => '021-5551234',
+                'email' => 'ops@transcargo.co.id',
+                'pic_name' => 'Budi Santoso',
             ],
             [
-                'company_name' => 'PT United Mining Nusantara',
-                'address'      => 'Kawasan Industri Kariangau Blok B-8, Balikpapan',
-                'phone'        => '+62 542 889 001',
-                'email'        => 'logistics@unitedmining.co.id',
-                'pic_name'     => 'Agus Prasetyo',
-            ],
-            [
-                'company_name' => 'PT Kalimantan Coal Energi',
-                'address'      => 'Jl. Mulawarman KM 13, Samarinda',
-                'phone'        => '+62 541 772 334',
-                'email'        => 'supply@kalimantancoal.com',
-                'pic_name'     => 'Dewi Anggraini',
+                'company_name' => 'PT Sinar Jaya Logistik',
+                'address' => 'Jl. Perak Timur No. 12, Surabaya',
+                'phone' => '031-5559876',
+                'email' => 'admin@sinarjayalogistik.co.id',
+                'pic_name' => 'Siti Rahayu',
             ],
         ];
 
-        foreach ($customers as $cust) {
-            Customer::firstOrCreate(
-                ['email' => $cust['email']],
-                $cust
+        foreach ($data as $item) {
+            Customer::updateOrCreate(
+                ['company_name' => $item['company_name']],
+                $item
             );
         }
     }

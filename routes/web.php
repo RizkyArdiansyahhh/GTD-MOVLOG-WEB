@@ -2,115 +2,60 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Web\GlobalSearchController;
-use App\Http\Controllers\Web\KelolaAkunController;
-use App\Http\Controllers\Web\SesiPekerjaController;
+use App\Http\Controllers\Web\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Web\Auth\RegisteredUserController;
+use App\Http\Controllers\Web\LaporanController;
+use App\Http\Controllers\Web\MonitoringBarangController;
+use App\Http\Controllers\Web\SubmitBerkasController;
 use App\Http\Controllers\Web\UserController;
-use App\Http\Controllers\Web\VerifikasiBerkasController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes Ã¢â‚¬â€ Admin Dashboard (Inertia.js + React + TypeScript)
-|--------------------------------------------------------------------------
-| All routes here serve Inertia responses for the web admin panel.
-|
-| Authentication: Laravel Session (web guard)
-| Authorization : Laravel Policy + Spatie Permission
-|
-| DO NOT mix API (REST) routes here.
-|--------------------------------------------------------------------------
-*/
-
-// If you want a landing page that renders welcome.blade.php, you can keep this:
 Route::get('/welcome', fn () => view('welcome'))->name('welcome');
 
-// --- Guest routes ---------------------------------------------------------
 Route::middleware('guest')->group(function () {
     Route::get('login', fn () => Inertia::render('Auth/Login'))
         ->name('login');
 
-    Route::post('login', [\App\Http\Controllers\Web\Auth\AuthenticatedSessionController::class, 'store'])
+    Route::post('login', [AuthenticatedSessionController::class, 'store'])
         ->name('login.store');
 
     Route::get('register', fn () => Inertia::render('Auth/Register'))
         ->name('register');
 
-    Route::post('register', [\App\Http\Controllers\Web\Auth\RegisteredUserController::class, 'store'])
+    Route::post('register', [RegisteredUserController::class, 'store'])
         ->name('register.store');
 });
 
-// --- Authenticated routes --------------------------------------------------
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/', fn () => Inertia::render('Dashboard/Index'))
+        ->name('dashboard');
 
-    // Dashboard
-    Route::get('/', function () {
-        $stats = [
-            'total_users'        => \App\Models\User::count(),
-            'total_shipments'    => \App\Models\ShippingSession::count(),
-            'active_drivers'     => \App\Models\User::whereHas('roles', fn ($q) => $q->where('name', 'field-worker'))->count(),
-            'pending_deliveries' => \App\Models\ShippingSession::whereIn('status', ['in_transit', 'pending'])->count(),
-        ];
-        return Inertia::render('Dashboard/Index', ['stats' => $stats]);
-    })->name('dashboard');
+    Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
+        ->name('logout');
 
-    // Global Search Endpoints
-    Route::get('global-search/quick', [GlobalSearchController::class, 'quick'])
-        ->name('global-search.quick');
-    Route::get('search', [GlobalSearchController::class, 'index'])
-        ->name('global-search.index');
-
-    // --- Super Admin Routes -------------------------------------------
-    Route::middleware('role:super-admin')->group(function () {
-        // Kelola Akun
-        Route::get('kelola-akun', [KelolaAkunController::class, 'index'])
-            ->name('kelola-akun');
-        Route::get('kelola-akun/tambah', [KelolaAkunController::class, 'create'])
-            ->name('kelola-akun.create');
-        Route::post('kelola-akun/tambah', [KelolaAkunController::class, 'store'])
-            ->name('kelola-akun.store');
-        Route::patch('kelola-akun/{user}/status', [KelolaAkunController::class, 'toggleStatus'])
-            ->name('kelola-akun.toggle-status');
-
-        // Kelola Sesi Pekerja
-        Route::get('sesi-pekerja', [SesiPekerjaController::class, 'index'])
-            ->name('kelola-sesi');
-        Route::get('sesi-pekerja/tambah', [SesiPekerjaController::class, 'create'])
-            ->name('kelola-sesi.create');
-    });
-
-    // --- Supervisor Routes --------------------------------------------
-    Route::middleware('role:supervisor')->group(function () {
-        // Verifikasi Berkas
-        Route::get('verifikasi-berkas', [VerifikasiBerkasController::class, 'index'])
-            ->name('verifikasi-berkas');
-    });
-
-    // User Management
     Route::resource('users', UserController::class);
 
-    // Verifikasi Berkas
-    Route::get('verifikasi-berkas', [VerifikasiBerkasController::class, 'index'])
-        ->name('verifikasi-berkas');
+    // Route untuk simpan customer baru dari modal frontend
+    Route::post('/customers', [SubmitBerkasController::class, 'storeCustomer'])->name('customers.store');
 
-    // Kelola Sesi Pekerja
-    Route::get('sesi-pekerja', [SesiPekerjaController::class, 'index'])
-        ->name('sesi-pekerja');
-    Route::get('sesi-pekerja/tambah', [SesiPekerjaController::class, 'create'])
-        ->name('sesi-pekerja.create');
-    Route::post('sesi-pekerja', [SesiPekerjaController::class, 'store'])
-        ->name('sesi-pekerja.store');
-    Route::get('sesi-pekerja/{session}', [SesiPekerjaController::class, 'show'])
-        ->name('sesi-pekerja.show');
-    Route::post('sesi-pekerja/{session}/stages/{stage}/assign', [SesiPekerjaController::class, 'assignStage'])
-        ->name('sesi-pekerja.stages.assign');
-    Route::post('sesi-pekerja/{session}/stages/{stage}/complete', [SesiPekerjaController::class, 'completeStage'])
-        ->name('sesi-pekerja.stages.complete');
-    Route::get('verifikasi-berkas/{contractNumber}', [VerifikasiBerkasController::class, 'show'])
-        ->name('verifikasi-berkas.show');
+    Route::get('monitoring-barang', [MonitoringBarangController::class, 'index'])
+        ->name('monitoring-barang.index');
 
-    // Logout
-    Route::post('logout', [\App\Http\Controllers\Web\Auth\AuthenticatedSessionController::class, 'destroy'])
-        ->name('logout');
+    Route::get('laporan', [LaporanController::class, 'index'])
+        ->name('laporan.index');
+
+    Route::prefix('submit-berkas')
+        ->name('submit-berkas.')
+        ->controller(SubmitBerkasController::class)
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/customers', 'storeCustomer')->name('customers.store'); // <-- Pindahkan ke sini
+            Route::post('/start', 'startAssignment')->name('start');
+            Route::post('/step', 'saveStep')->name('save-step');
+            Route::get('/{assignmentNoRef}', 'show')->name('show');
+            Route::post('/{assignmentNoRef}/finalize', 'finalize')->name('finalize');
+            Route::get('/{assignmentNoRef}/status', 'status')->name('status');
+        });
+    Route::post('/submit-berkas/step', [SubmitBerkasController::class, 'saveStep']);
 });

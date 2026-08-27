@@ -1,180 +1,167 @@
-import { Head } from '@inertiajs/react';
-import { usePage } from '@inertiajs/react';
-import {
-    Users,
-    Package,
-    Truck,
-    Clock,
-    TrendingUp,
-    ArrowUpRight,
-} from 'lucide-react';
+import { Head, usePage } from '@inertiajs/react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import type { PageProps } from '@/types';
+import { Users, Package, Truck, Clock, ArrowUpRight } from 'lucide-react';
 
-// ─────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────
 interface DashboardStats {
-    total_users: number;
-    total_shipments: number;
-    active_drivers: number;
-    pending_deliveries: number;
+    total_users?: number;
+    total_shipments?: number;
+    active_drivers?: number;
+    pending_deliveries?: number;
 }
 
 interface DashboardProps extends PageProps {
-    stats: DashboardStats;
+    stats?: DashboardStats;
 }
 
-// ─────────────────────────────────────────────
-// StatCard Component
-// ─────────────────────────────────────────────
-interface StatCardProps {
-    label: string;
-    value: number | string;
-    icon: React.ElementType;
-    accent?: string;   // bg color of icon box
-    trend?: string;    // e.g. "+12%"
-}
-
-function StatCard({ label, value, icon: Icon, accent = '#F6C343', trend }: StatCardProps) {
-    return (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4 hover:shadow-md transition-shadow duration-200">
-            <div className="flex items-center justify-between">
-                <div
-                    className="flex items-center justify-center rounded-xl"
-                    style={{ width: 44, height: 44, backgroundColor: `${accent}22` }}
-                >
-                    <Icon size={20} style={{ color: accent }} strokeWidth={2} />
-                </div>
-                {trend && (
-                    <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
-                        <ArrowUpRight size={12} />
-                        {trend}
-                    </span>
-                )}
-            </div>
-            <div>
-                <p className="text-2xl font-bold text-gray-900 leading-none">
-                    {typeof value === 'number' ? value.toLocaleString() : value}
-                </p>
-                <p className="text-sm text-gray-500 mt-1 font-medium">{label}</p>
-            </div>
-        </div>
-    );
-}
-
-// ─────────────────────────────────────────────
-// Dashboard Page
-// ─────────────────────────────────────────────
 export default function Index({ stats }: DashboardProps) {
     const { auth } = usePage<PageProps>().props;
 
-    return (
-        <DashboardLayout>
-            <Head title="Dashboard — Global Trans Djaya" />
+    const statCards = [
+        {
+            label: 'Total Akun User',
+            value: stats?.total_users ?? 12,
+            icon: Users,
+            color: 'bg-blue-50 text-blue-600',
+        },
+        {
+            label: 'Total Shipments',
+            value: stats?.total_shipments ?? 148,
+            icon: Package,
+            color: 'bg-amber-50 text-amber-600',
+        },
+        {
+            label: 'Driver Aktif',
+            value: stats?.active_drivers ?? 24,
+            icon: Truck,
+            color: 'bg-emerald-50 text-emerald-600',
+        },
+        {
+            label: 'Pengiriman Pending',
+            value: stats?.pending_deliveries ?? 5,
+            icon: Clock,
+            color: 'bg-purple-50 text-purple-600',
+        },
+    ];
 
-            {/* ── Welcome Banner ── */}
+    return (
+        <DashboardLayout title="Dashboard">
+            <Head title="Dashboard" />
+
             <div
-                className="rounded-2xl p-6 mb-6 flex items-center justify-between overflow-hidden relative"
+                className="p-6 flex flex-col gap-6"
                 style={{
-                    background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+                    minHeight: '100%',
+                    backgroundColor: '#F5F7FA',
+                    fontFamily: "'Poppins', sans-serif",
                 }}
             >
-                {/* Decorative circle */}
-                <div
-                    className="absolute right-0 top-0 rounded-full opacity-10"
-                    style={{
-                        width: 240,
-                        height: 240,
-                        background: '#F6C343',
-                        transform: 'translate(40%, -40%)',
-                    }}
-                />
-                <div className="relative z-10">
-                    <p className="text-yellow-400 text-xs font-semibold uppercase tracking-widest mb-1">
-                        Selamat Datang
-                    </p>
-                    <h1 className="text-2xl font-bold text-white">
-                        {auth.user.name} 👋
-                    </h1>
-                    <p className="text-blue-200 text-sm mt-1">
-                        Pantau operasional logistik Anda hari ini.
-                    </p>
-                </div>
-                <div className="relative z-10 hidden sm:flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3">
-                    <TrendingUp size={20} className="text-yellow-400" />
-                    <div className="leading-tight">
-                        <p className="text-white text-xs font-semibold">Sistem Aktif</p>
-                        <p className="text-blue-200 text-xs">Semua sistem berjalan</p>
+                {/* ── Welcome Banner ── */}
+                <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-2xl font-bold text-[#06283A]">
+                            Selamat Datang, {auth.user?.name ?? 'User'} 👋
+                        </h1>
+                        <p className="text-sm text-slate-500 mt-1">
+                            Sistem Informasi Monitoring Operational Logistics (GTD-MOVLOG)
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-200/60 self-start md:self-auto">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <span>Sistem Berjalan Normal</span>
                     </div>
                 </div>
-            </div>
 
-            {/* ── Stat Cards ── */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
-                <StatCard
-                    label="Total Pengguna"
-                    value={stats?.total_users ?? 0}
-                    icon={Users}
-                    accent="#6366f1"
-                    trend="+5%"
-                />
-                <StatCard
-                    label="Total Pengiriman"
-                    value={stats?.total_shipments ?? 0}
-                    icon={Package}
-                    accent="#F6C343"
-                    trend="+12%"
-                />
-                <StatCard
-                    label="Driver Aktif"
-                    value={stats?.active_drivers ?? 0}
-                    icon={Truck}
-                    accent="#10b981"
-                />
-                <StatCard
-                    label="Menunggu Pengiriman"
-                    value={stats?.pending_deliveries ?? 0}
-                    icon={Clock}
-                    accent="#f59e0b"
-                />
-            </div>
+                {/* ── Stat Cards Grid ── */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {statCards.map((card, i) => {
+                        const Icon = card.icon;
+                        return (
+                            <div
+                                key={i}
+                                className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs font-medium text-slate-500">{card.label}</span>
+                                    <div className={`w-10 h-10 rounded-xl ${card.color} flex items-center justify-center`}>
+                                        <Icon size={20} strokeWidth={2} />
+                                    </div>
+                                </div>
+                                <div className="mt-4 flex items-baseline justify-between">
+                                    <span className="text-2xl font-bold text-[#06283A]">
+                                        {card.value.toLocaleString()}
+                                    </span>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
 
-            {/* ── Content Sections ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* Recent Shipments */}
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-semibold text-gray-800">Pengiriman Terbaru</h3>
-                        <span className="text-xs text-gray-400 font-medium">Lihat semua</span>
-                    </div>
-                    <div className="flex flex-col items-center justify-center py-10 text-center">
-                        <div
-                            className="flex items-center justify-center rounded-full mb-3"
-                            style={{ width: 48, height: 48, backgroundColor: '#F6C34322' }}
-                        >
-                            <Package size={22} style={{ color: '#F6C343' }} strokeWidth={1.8} />
+                {/* ── Dashboard Quick Sections ── */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Ringkasan Activity */}
+                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="font-semibold text-[#06283A]">Aktivitas Pengiriman Terkini</h2>
                         </div>
-                        <p className="text-sm font-medium text-gray-500">Belum ada pengiriman</p>
-                        <p className="text-xs text-gray-400 mt-1">Data akan muncul di sini</p>
-                    </div>
-                </div>
-
-                {/* Activity Feed */}
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-semibold text-gray-800">Aktivitas Terkini</h3>
-                        <span className="text-xs text-gray-400 font-medium">Lihat semua</span>
-                    </div>
-                    <div className="flex flex-col items-center justify-center py-10 text-center">
-                        <div
-                            className="flex items-center justify-center rounded-full mb-3"
-                            style={{ width: 48, height: 48, backgroundColor: '#6366f122' }}
-                        >
-                            <TrendingUp size={22} style={{ color: '#6366f1' }} strokeWidth={1.8} />
+                        <div className="space-y-3">
+                            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs">
+                                <div>
+                                    <p className="font-semibold text-slate-800">Sesi #SESS-2026-0801</p>
+                                    <p className="text-slate-500 mt-0.5">Surabaya → Jakarta</p>
+                                </div>
+                                <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 font-medium border border-emerald-100">
+                                    Selesai
+                                </span>
+                            </div>
+                            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs">
+                                <div>
+                                    <p className="font-semibold text-slate-800">Sesi #SESS-2026-0802</p>
+                                    <p className="text-slate-500 mt-0.5">Bandung → Semarang</p>
+                                </div>
+                                <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 font-medium border border-blue-100">
+                                    Dalam Perjalanan
+                                </span>
+                            </div>
+                            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs">
+                                <div>
+                                    <p className="font-semibold text-slate-800">Sesi #SESS-2026-0803</p>
+                                    <p className="text-slate-500 mt-0.5">Medan → Pekanbaru</p>
+                                </div>
+                                <span className="px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 font-medium border border-amber-100">
+                                    Pending
+                                </span>
+                            </div>
                         </div>
-                        <p className="text-sm font-medium text-gray-500">Belum ada aktivitas</p>
-                        <p className="text-xs text-gray-400 mt-1">Aktivitas sistem akan tampil di sini</p>
+                    </div>
+
+                    {/* Quick Access */}
+                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <h2 className="font-semibold text-[#06283A] mb-4">Navigasi Cepat</h2>
+                            <div className="grid grid-cols-2 gap-3">
+                                <a
+                                    href="/monitoring-barang"
+                                    className="p-4 rounded-xl border border-slate-200/80 hover:border-[#F6C343] hover:bg-amber-50/30 transition-all flex items-center justify-between group"
+                                >
+                                    <div>
+                                        <p className="text-xs font-semibold text-[#06283A] group-hover:text-amber-700">Monitoring Barang</p>
+                                        <p className="text-[11px] text-slate-400 mt-0.5">Pantau status barang</p>
+                                    </div>
+                                    <ArrowUpRight size={16} className="text-slate-400 group-hover:text-amber-600" />
+                                </a>
+                                <a
+                                    href="/laporan"
+                                    className="p-4 rounded-xl border border-slate-200/80 hover:border-[#F6C343] hover:bg-amber-50/30 transition-all flex items-center justify-between group"
+                                >
+                                    <div>
+                                        <p className="text-xs font-semibold text-[#06283A] group-hover:text-amber-700">Laporan</p>
+                                        <p className="text-[11px] text-slate-400 mt-0.5">Unduh data laporan</p>
+                                    </div>
+                                    <ArrowUpRight size={16} className="text-slate-400 group-hover:text-amber-600" />
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

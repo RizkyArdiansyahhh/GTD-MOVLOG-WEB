@@ -12,7 +12,9 @@ class Document extends Model
     use HasUlids;
 
     protected $fillable = [
-        'shipping_session_id',
+        'assignment_no_ref',
+        'customer_id',
+        'session_id',
         'document_type_id',
         'document_data',
         'file_name',
@@ -44,7 +46,7 @@ class Document extends Model
     {
         return $this->belongsTo(
             ShippingSession::class,
-            'shipping_session_id'
+            'session_id'
         );
     }
 
@@ -67,5 +69,10 @@ class Document extends Model
             User::class,
             'verified_by'
         );
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
     }
 }
