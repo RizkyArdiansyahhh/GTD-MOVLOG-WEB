@@ -31,7 +31,7 @@ class SaveDocumentStepRequest extends FormRequest
         return [
             'assignment_no_ref' => ['required', 'string'],
             'customer_id'       => ['required', 'string', 'exists:customers,id'],
-            'document_type_id'  => ['required', 'string'],
+            'document_type_id'  => ['required', 'string', 'exists:document_types,id'],
             'document_data'     => ['required', 'array'],
             'file_name'         => ['nullable', 'string'],
             'file_path'         => ['nullable', 'string'],

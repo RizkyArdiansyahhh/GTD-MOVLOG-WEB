@@ -19,9 +19,9 @@ export type TermOfShipment = 'FOB' | 'CIF';
 
 export interface PdfFile {
   name: string;
-  sizeLabel: string; // e.g. "2.4 MB"
-  url?: string;      // populated once "uploaded" (mock or real)
-  file?: File;       // <-- Ditambahkan untuk menyimpan objek File fisik asli
+  sizeLabel: string;
+  url?: string;
+  file?: File;
 }
 
 export interface Customer {
@@ -228,8 +228,6 @@ export interface StepRecord<T> {
 }
 
 export interface WizardData {
-  assignmentNoRef: string;
-  customerId: string;
   billOfLading: StepRecord<BillOfLadingData> | null;
   commercialInvoice: StepRecord<CommercialInvoiceData> | null;
   packingList: StepRecord<PackingListData> | null;
@@ -242,3 +240,20 @@ export interface StepDefinition {
   order: number;
   label: string;
 }
+
+/* ════════════════════════════════════════════════════════
+    AssignmentSummary 
+   ════════════════════════════════════════════════════════ */
+
+export interface AssignmentSummary {
+  assignment_no_ref: string;
+  customer_id: string;
+  customer_name: string;
+  customer_pic?: string;
+  total_documents: number;
+  completed_documents?: number;
+  status: 'DRAFT' | 'PENDING' | 'VERIFIED' | 'REJECTED';
+  created_at: string;
+  updated_at?: string;
+}
+

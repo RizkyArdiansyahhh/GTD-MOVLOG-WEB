@@ -14,8 +14,7 @@ const CURRENCIES = ['USD', 'IDR', 'EUR', 'CNY', 'SGD'];
 const PACKAGE_UNITS = ['Unit', 'Pcs', 'Box', 'Pallet'];
 const GOODS_UNITS = ['Unit', 'Pcs', 'Box', 'Pallet'];
 
-/** ID tipe dokumen untuk Packing List (PL) di database */
-const DOCUMENT_TYPE_ID_PL = 3;
+const DOCUMENT_TYPE_ID_PL = '3';
 
 const currencySelectStyle: React.CSSProperties = {
     width: '100%',

@@ -7,49 +7,38 @@ namespace App\Services;
 use App\Enums\DocumentStatus;
 use App\Models\Document;
 use App\Models\DocumentType;
-use Illuminate\Database\Eloquent\Collection;
+use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class DocumentSubmissionService
 {
-    /**
-     * Jumlah dokumen wajib dalam satu paket assignment.
-     * BL (1), CI (2), PL (3), COO (4), Insurance (5) = 5.
-     */
     private const REQUIRED_DOCUMENT_COUNT = 5;
 
     /**
      * Generate nomor referensi penugasan (assignment_no_ref) baru.
-     * Dipanggil saat customer pertama kali dipilih/didaftarkan di awal wizard.
      */
     public function generateAssignmentRef(): string
     {
-        // Contoh format: ASG-20260827-A1B2C3
         return 'ASG-' . now()->format('Ymd') . '-' . strtoupper(Str::random(6));
     }
 
     /**
      * Simpan / update satu dokumen per-step (upsert).
-     * Dipanggil setiap kali user klik "Simpan & Lanjut" pada masing-masing step.
-     *
-     * @param array $data Berisi: assignment_no_ref, customer_id, document_type_id,
-     *                    document_data, file_name, file_path
-     * @param string|null $uploadedBy ID user yang mengunggah
      */
     public function saveStep(array $data, ?string $uploadedBy = null): Document
     {
-        // Pastikan customer_id konsisten dengan dokumen lain pada assignment yang sama
         $this->assertCustomerLocked($data['assignment_no_ref'], $data['customer_id']);
 
-        // Siapkan fallback file_name & file_path jika file fisik/URL tidak dikirim (misal saat testing mock data)
-        $fileName = !empty($data['file_name']) 
-            ? $data['file_name'] 
+        $fileName = !empty($data['file_name'])
+            ? $data['file_name']
             : 'document_' . $data['document_type_id'] . '.pdf';
 
-        $filePath = !empty($data['file_path']) 
-            ? $data['file_path'] 
+        // Normalisasi path agar tidak ada leading slash '/'
+        $filePath = !empty($data['file_path'])
+            ? ltrim($data['file_path'], '/')
             : ('documents/' . $data['assignment_no_ref'] . '/' . $fileName);
 
         return DB::transaction(function () use ($data, $fileName, $filePath, $uploadedBy) {
@@ -73,7 +62,6 @@ class DocumentSubmissionService
 
     /**
      * Ambil seluruh dokumen dalam satu assignment_no_ref.
-     * Digunakan untuk resume wizard dan tampilan Preview PIB.
      */
     public function getByAssignmentRef(string $assignmentNoRef): Collection
     {
@@ -84,10 +72,47 @@ class DocumentSubmissionService
     }
 
     /**
+     * Mengambil daftar riwayat submission per assignment_no_ref untuk tabel 70%.
+     * Query diperbaiki: 1 baris per assignment dengan status dominan.
+     */
+    public function getAssignmentSummaries(): Collection
+    {
+        return Document::query()
+            ->select(
+                'assignment_no_ref',
+                'customer_id',
+                DB::raw('MAX(created_at) as created_at'),
+                DB::raw('COUNT(id) as total_documents'),
+                DB::raw("
+                    MAX(CASE
+                        WHEN status = 'VERIFIED'  THEN 'VERIFIED'
+                        WHEN status = 'REJECTED'  THEN 'REJECTED'
+                        WHEN status = 'PENDING'   THEN 'PENDING'
+                        ELSE 'DRAFT'
+                    END) as dominant_status
+                ")
+            )
+            ->with('customer:id,company_name,pic_name')
+            ->groupBy('assignment_no_ref', 'customer_id')
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(function ($doc) {
+                return [
+                    'assignment_no_ref' => $doc->assignment_no_ref,
+                    'customer_id'       => $doc->customer_id,
+                    'customer_name'     => $doc->customer?->company_name ?? 'Customer Tidak Diketahui',
+                    'customer_pic'      => $doc->customer?->pic_name ?? '-',
+                    'total_documents'   => (int) $doc->total_documents,
+                    'status'            => $doc->dominant_status ?? 'DRAFT',
+                    'created_at'        => $doc->created_at
+                        ? Carbon::parse($doc->created_at)->toISOString()
+                        : now()->toISOString(),
+                ];
+            });
+    }
+
+    /**
      * Finalisasi submission di step Preview PIB.
-     * Mengubah status DRAFT -> PENDING secara atomik untuk seluruh dokumen dalam assignment.
-     *
-     * @throws ValidationException jika dokumen belum lengkap (5/5)
      */
     public function submitFinal(string $assignmentNoRef): void
     {
@@ -108,11 +133,10 @@ class DocumentSubmissionService
     }
 
     /**
-     * Pastikan seluruh jenis dokumen (5/5) sudah diisi sebelum boleh finalisasi.
+     * Pastikan seluruh jenis dokumen (5/5) sudah diisi sebelum finalisasi.
      */
     private function assertComplete(Collection $documents, string $assignmentNoRef): void
     {
-        // Ambil seluruh ID tipe dokumen master (1 s/d 5)
         $requiredTypeIds = DocumentType::query()
             ->whereIn('id', [1, 2, 3, 4, 5])
             ->pluck('id');
@@ -129,7 +153,7 @@ class DocumentSubmissionService
     }
 
     /**
-     * Pastikan tidak ada dokumen yang sudah berstatus selain DRAFT (mencegah double finalize).
+     * Pastikan semua dokumen berstatus draft sebelum finalisasi.
      */
     private function assertAllDraft(Collection $documents): void
     {
@@ -143,7 +167,7 @@ class DocumentSubmissionService
     }
 
     /**
-     * Pastikan customer_id konsisten untuk seluruh dokumen dalam satu assignment_no_ref.
+     * Pastikan customer_id konsisten dalam satu assignment_no_ref.
      */
     private function assertCustomerLocked(string $assignmentNoRef, string $customerId): void
     {

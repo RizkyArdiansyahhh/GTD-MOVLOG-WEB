@@ -7,16 +7,9 @@ import type {
     PdfFile,
 } from '../types/SubmitBerkas';
 
-/**
- * Data contoh untuk keperluan testing/development — supaya form nggak perlu
- * diisi manual satu-satu tiap kali reload. Skenario: pengiriman 2 unit alat
- * berat (Excavator & Bulldozer) dari Surabaya ke Kalimantan Timur.
- */
-
 export const MOCK_BOL_PDF: PdfFile = {
     name: 'Bill_of_Lading_Sample.pdf',
     sizeLabel: '1.4 MB',
-    url: '/mock/documents/Bill_of_Lading_Sample.pdf',
 };
 
 export const MOCK_BOL_DATA: BillOfLadingData = {

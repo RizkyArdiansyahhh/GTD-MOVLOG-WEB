@@ -14,10 +14,8 @@ const WEIGHT_UNITS = ['kg', 'ton'];
 const VOLUME_UNITS = ['m³', 'cbm'];
 const PACKAGE_UNITS = ['Unit', 'Pcs', 'Box', 'Pallet'];
 
-/** ID tipe dokumen untuk Insurance di database */
-const DOCUMENT_TYPE_ID_INSURANCE = 5;
+const DOCUMENT_TYPE_ID_INSURANCE = '5';
 
-/* ── Inline warning di bawah section yang berubah ── */
 function ChangeWarningAlert({ message }: { message: string }) {
     return (
         <div

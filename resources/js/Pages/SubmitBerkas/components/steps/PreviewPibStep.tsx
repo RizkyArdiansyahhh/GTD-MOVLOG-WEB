@@ -101,132 +101,81 @@ interface MergedCargoItem {
     price: string;
 }
 
-/**
- * Simple, dependency-free confirmation modal.
- * Shown right before the final POST so the user has a last chance to review.
- */
-function ConfirmSubmitModal({
-    open,
-    onConfirm,
-    onCancel,
-    isSubmitting,
-    warnings,
-}: {
+interface ConfirmSubmitModalProps {
     open: boolean;
     onConfirm: () => void;
     onCancel: () => void;
     isSubmitting: boolean;
-    warnings: string[];
-}) {
-    if (!open) return null;
+    warnings?: string[];
+}
 
+function ConfirmSubmitModal({ open, onConfirm, onCancel, isSubmitting, warnings = [] }: ConfirmSubmitModalProps) {
+    if (!open) return null;
     return (
-        <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="confirm-submit-title"
-            style={{
-                position: 'fixed',
-                inset: 0,
-                background: 'rgba(6, 40, 58, 0.45)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 1000,
-                padding: 16,
-            }}
-            onClick={onCancel}
-        >
-            <div
-                onClick={(e) => e.stopPropagation()}
-                style={{
-                    background: '#fff',
-                    borderRadius: 14,
-                    width: '100%',
-                    maxWidth: 440,
-                    boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
-                    overflow: 'hidden',
-                }}
-            >
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        justifyContent: 'space-between',
-                        padding: '20px 22px 0',
-                    }}
-                >
-                    <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                        <div
-                            style={{
-                                width: 38,
-                                height: 38,
-                                borderRadius: '50%',
-                                background: '#EFF6FF',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                flexShrink: 0,
-                            }}
-                        >
-                            <CheckCircle2 size={20} color="#06283A" />
-                        </div>
-                        <div>
-                            <p
-                                id="confirm-submit-title"
-                                style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#06283A' }}
-                            >
-                                Submit berkas PIB?
-                            </p>
-                            <p style={{ margin: '4px 0 0', fontSize: 13, color: '#6B7280', lineHeight: 1.5 }}>
-                                Pastikan seluruh data sudah benar. Setelah dikirim, dokumen tidak dapat diedit
-                                kembali dari step ini.
-                            </p>
-                        </div>
-                    </div>
+        <div style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+        }}>
+            <div style={{
+                background: '#fff',
+                borderRadius: 16,
+                width: 420,
+                maxWidth: '90vw',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+                overflow: 'hidden',
+            }}>
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '18px 22px',
+                    borderBottom: '1px solid #F1F5F9',
+                }}>
+                    <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#06283A' }}>
+                        Konfirmasi Submit Berkas
+                    </h3>
                     <button
                         type="button"
                         onClick={onCancel}
-                        aria-label="Tutup"
-                        style={{
-                            border: 'none',
-                            background: 'transparent',
-                            cursor: 'pointer',
-                            padding: 4,
-                            color: '#9CA3AF',
-                        }}
+                        disabled={isSubmitting}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8' }}
                     >
-                        <X size={18} />
+                        <X size={20} />
                     </button>
                 </div>
 
-                {warnings.length > 0 && (
-                    <div
-                        style={{
-                            margin: '16px 22px 0',
-                            padding: '10px 12px',
+                <div style={{ padding: '18px 22px' }}>
+                    <p style={{ margin: 0, fontSize: 14, color: '#374151', lineHeight: 1.6 }}>
+                        Apakah Anda yakin ingin mengirimkan seluruh berkas penugasan ini untuk diverifikasi?
+                        Status dokumen akan berubah dari <strong>Draft</strong> menjadi <strong>Pending Verifikasi</strong>.
+                    </p>
+
+                    {warnings.length > 0 && (
+                        <div style={{
+                            marginTop: 14,
+                            padding: '10px 14px',
                             background: '#FFFBEB',
                             border: '1px solid #FDE68A',
                             borderRadius: 8,
-                        }}
-                    >
-                        <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                            <AlertTriangle size={16} color="#B45309" style={{ flexShrink: 0, marginTop: 1 }} />
-                            <div>
-                                <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: '#92400E' }}>
-                                    Periksa kembali sebelum submit
-                                </p>
-                                <ul style={{ margin: '4px 0 0', paddingLeft: 16, fontSize: 12, color: '#92400E' }}>
-                                    {warnings.map((w, i) => (
-                                        <li key={i} style={{ marginBottom: 2 }}>
-                                            {w}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
+                        }}>
+                            <p style={{ margin: '0 0 6px', fontSize: 13, fontWeight: 700, color: '#92400E' }}>
+                                Perhatian:
+                            </p>
+                            <ul style={{ margin: 0, padding: '0 0 0 18px', fontSize: 12, color: '#78350F' }}>
+                                {warnings.map((w, i) => (
+                                    <li key={i} style={{ marginBottom: 2 }}>
+                                        {w}
+                                    </li>
+                                ))}
+                            </ul>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
 
                 <div style={{ display: 'flex', gap: 10, padding: 22 }}>
                     <button
@@ -272,7 +221,11 @@ function ConfirmSubmitModal({
     );
 }
 
-export function PreviewPibStep() {
+interface PreviewPibStepProps {
+    onFinished?: () => void;
+}
+
+export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
     const { wizardData, goBack, goToStep, assignmentNoRef } = useWizard();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
@@ -314,7 +267,6 @@ export function PreviewPibStep() {
         return total === 0 ? '' : String(total);
     }, [pl?.data]);
 
-    // --- Cargo merge (by index, with mismatch detection) ---------------------
     const cargoCountMismatch =
         !!ci?.data?.cargoDetail?.length &&
         !!pl?.data?.cargoDetail?.length &&
@@ -338,7 +290,6 @@ export function PreviewPibStep() {
         });
     }, [ci?.data, pl?.data]);
 
-    // Warnings shown inside the confirmation modal
     const submitWarnings = useMemo(() => {
         const warnings: string[] = [];
         if (cargoCountMismatch) {
@@ -349,25 +300,34 @@ export function PreviewPibStep() {
         return warnings;
     }, [cargoCountMismatch, ci?.data?.cargoDetail?.length, pl?.data?.cargoDetail?.length]);
 
-    // Step 1: user clicks "Submit Berkas" -> opens confirmation modal
     const handleSubmitClick = () => {
         if (!allComplete || isSubmitting) return;
         setSubmitError(null);
         setShowConfirm(true);
     };
 
-    // Step 2: user confirms inside modal -> actual POST request via Inertia.js
     const handleConfirmSubmit = () => {
         if (isSubmitting || !assignmentNoRef) return;
         setIsSubmitting(true);
         setSubmitError(null);
-
-        // Mengirim request POST ke route finalize backend dengan path parameter assignmentNoRef
         router.post(`/submit-berkas/${assignmentNoRef}/finalize`, {}, {
-            onError: (errors) => {
-                const message = typeof errors === 'string'
-                    ? errors
-                    : errors?.message || 'Gagal mengirim berkas. Silakan coba lagi.';
+            onSuccess: () => {
+                setShowConfirm(false);
+                setIsSubmitting(false);
+                if (onFinished) {
+                    onFinished();
+                }
+            },
+            onError: (errors: Record<string, any>) => {
+                let message = 'Gagal mengirim berkas. Silakan coba lagi.';
+                if (typeof errors === 'string') {
+                    message = errors;
+                } else if (errors && typeof errors === 'object') {
+                    const values = Object.values(errors).flat() as string[];
+                    if (values.length > 0) {
+                        message = values.join(' ');
+                    }
+                }
                 setSubmitError(message);
                 setIsSubmitting(false);
                 setShowConfirm(false);
@@ -375,6 +335,7 @@ export function PreviewPibStep() {
             onFinish: () => setIsSubmitting(false),
         });
     };
+
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -398,27 +359,28 @@ export function PreviewPibStep() {
                         <p style={{ margin: '4px 0 10px', fontSize: 13, color: '#7F1D1D' }}>
                             Lengkapi step berikut sebelum submit berkas:
                         </p>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                        <ul style={{ margin: 0, padding: '0 0 0 18px', fontSize: 13, color: '#7F1D1D' }}>
                             {incompleteSteps.map((s) => (
-                                <button
-                                    key={s.index}
-                                    type="button"
-                                    onClick={() => goToStep(s.index)}
-                                    style={{
-                                        padding: '6px 12px',
-                                        borderRadius: 8,
-                                        border: '1px solid #FCA5A5',
-                                        background: '#fff',
-                                        color: '#DC2626',
-                                        fontSize: 12,
-                                        fontWeight: 600,
-                                        cursor: 'pointer',
-                                    }}
-                                >
-                                    {s.label}
-                                </button>
+                                <li key={s.index}>
+                                    <button
+                                        type="button"
+                                        onClick={() => goToStep(s.index)}
+                                        style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            color: '#DC2626',
+                                            textDecoration: 'underline',
+                                            cursor: 'pointer',
+                                            fontSize: 13,
+                                            fontWeight: 600,
+                                            padding: 0,
+                                        }}
+                                    >
+                                        {s.label}
+                                    </button>
+                                </li>
                             ))}
-                        </div>
+                        </ul>
                     </div>
                 </div>
             )}
@@ -447,10 +409,10 @@ export function PreviewPibStep() {
                 icon={<Ship size={17} color="#06283A" />}
                 title="3. Transport Detail"
                 rows={[
-                    { label: 'Port of Loading', value: transport?.portOfLoading ?? '' },
-                    { label: 'Port of Discharge', value: transport?.portOfDischarge ?? '' },
                     { label: 'Shipp Name', value: transport?.shippName ?? '' },
                     { label: 'Voyage', value: transport?.voyage ?? '' },
+                    { label: 'Port of Loading', value: transport?.portOfLoading ?? '' },
+                    { label: 'Port of Discharge', value: transport?.portOfDischarge ?? '' },
                 ]}
             />
 
@@ -460,6 +422,7 @@ export function PreviewPibStep() {
                 rows={[
                     { label: 'Number', value: ci?.data?.documentDetail.number ?? '' },
                     { label: 'Date', value: ci?.data?.documentDetail.date ?? '' },
+                    { label: 'Term of Shipment', value: ci?.data?.documentDetail.termOfShipment ?? '' },
                 ]}
             />
 
@@ -492,46 +455,40 @@ export function PreviewPibStep() {
 
             <SummaryCard
                 icon={<Calculator size={17} color="#06283A" />}
-                title="Ringkasan Nilai & Kuantitas"
+                title="8. Nilai & Bobot"
                 rows={[
                     {
-                        label: '8. Total Price of Goods',
-                        value: ci?.data?.totalQuantity.totalPrice
-                            ? `${ci.data.totalQuantity.totalPrice} ${ci.data.totalQuantity.totalPriceCurrency}`
-                            : '',
-                    },
-                    {
-                        label: '9. Premi Insurance (CI)',
+                        label: 'Premi Insurance (CI)',
                         value:
                             isFob && ci?.data?.documentDetail.insurance
                                 ? `${ci.data.documentDetail.insurance} ${ci.data.documentDetail.insuranceCurrency}`
                                 : '',
                     },
                     {
-                        label: '10. Ocean Freight',
+                        label: 'Ocean Freight',
                         value:
                             isFob && ci?.data?.documentDetail.oceanFreight
                                 ? `${ci.data.documentDetail.oceanFreight} ${ci.data.documentDetail.oceanFreightCurrency}`
                                 : '',
                     },
                     {
-                        label: '11. Total of Package',
+                        label: 'Total of Package',
                         value: ci?.data?.totalQuantity.totalPackages
                             ? `${ci.data.totalQuantity.totalPackages} ${ci.data.totalQuantity.totalPackagesUnit}`
                             : '',
                     },
                     {
-                        label: '12. Total Gross Weight',
+                        label: 'Total Gross Weight',
                         value: bol?.data?.quantity.totalGrossWeight
                             ? `${bol.data.quantity.totalGrossWeight} ${bol.data.quantity.totalGrossWeightUnit}`
                             : '',
                     },
                     {
-                        label: '13. Total Net Weight',
+                        label: 'Total Net Weight',
                         value: totalNetWeight ? `${totalNetWeight} kg` : '',
                     },
                     {
-                        label: '14. Total Volume',
+                        label: 'Total Volume',
                         value: bol?.data?.quantity.totalVolume
                             ? `${bol.data.quantity.totalVolume} ${bol.data.quantity.totalVolumeUnit}`
                             : '',
@@ -542,7 +499,7 @@ export function PreviewPibStep() {
             <div style={cardStyle}>
                 <div style={cardHeaderStyle}>
                     <Package size={17} color="#06283A" />
-                    <p style={cardTitleStyle}>15. Cargo Detail</p>
+                    <p style={cardTitleStyle}>9. Cargo Detail</p>
                 </div>
 
                 {cargoCountMismatch && (

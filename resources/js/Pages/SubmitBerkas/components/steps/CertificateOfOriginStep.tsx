@@ -12,8 +12,7 @@ import type { CertificateOfOriginData, CooCargoItem, PdfFile } from '../../types
 
 const PACKAGE_UNITS = ['Unit', 'Pcs', 'Box', 'Pallet'];
 
-/** ID tipe dokumen untuk Certificate of Origin (COO) di database */
-const DOCUMENT_TYPE_ID_COO = 4;
+const DOCUMENT_TYPE_ID_COO = '4';
 
 const selectStyle: React.CSSProperties = {
     width: '100%',

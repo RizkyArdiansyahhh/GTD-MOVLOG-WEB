@@ -107,7 +107,7 @@ export function BillOfLadingStep() {
         document_type_id: '1',
         document_data: data,
         file_name: pdf?.name ?? 'Bill_of_Lading.pdf',
-        file_path: pdf?.url ?? (pdf ? `/documents/${assignmentNoRef}/${pdf.name}` : '/documents/sample.pdf'), // <-- Fallback jika url kosong
+        file_path: pdf?.url ?? null,
       });
 
       saveStepData('billOfLading', data, pdf);

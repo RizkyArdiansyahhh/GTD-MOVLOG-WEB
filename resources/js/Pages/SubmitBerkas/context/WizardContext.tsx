@@ -21,35 +21,19 @@ const FORM_STEP_KEYS: FormStepKey[] = [
 
 interface WizardContextValue {
   currentStepIndex: number;
-  /** Highest step index the user is allowed to jump to (based on completion so far). */
   highestUnlockedIndex: number;
   wizardData: WizardData;
   stepStatuses: StepStatus[];
-
-  /**
-   * Assignment reference code dari backend (misal: ASG-20260824-A1B2C3).
-   */
   assignmentNoRef: string | null;
-
-  /**
-   * Customer yang menjadi acuan seluruh proses submit (BL–Insurance).
-   * Wajib dipilih/dibuat sebelum wizard step form dapat diakses.
-   */
   selectedCustomer: Customer | null;
-  /** Set customer aktif dan generate assignment_no_ref dari backend. */
   setSelectedCustomer: (customer: Customer | null) => Promise<void>;
-
-  /** Save the given step's form data + pdf, mark it completed, and unlock the next step. */
   saveStepData: <T, >(key: FormStepKey, data: T, pdf: PdfFile | null) => void;
-
-  /** Move to the next step (only works if the current step is completed). */
   goNext: () => void;
-  /** Move to the previous step (always allowed). */
   goBack: () => void;
-  /** Jump directly to a step, only if it's unlocked. */
   goToStep: (index: number) => void;
-
   isStepUnlocked: (index: number) => boolean;
+  /** Reset seluruh state wizard ke kondisi awal (dipanggil setelah finalisasi berhasil). */
+  resetWizard: () => void;
 }
 
 export const WizardContext = createContext<WizardContextValue | null>(null);
@@ -90,6 +74,16 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('Gagal melakukan inisialisasi assignment:', error);
     }
+  }, []);
+
+  /**
+   * Reset seluruh state wizard ke kondisi awal.
+   */
+  const resetWizard = useCallback(() => {
+    setCurrentStepIndex(0);
+    setWizardData(EMPTY_WIZARD_DATA);
+    setSelectedCustomerState(null);
+    setAssignmentNoRef(null);
   }, []);
 
   // Highest index reachable via the stepper (grows as steps are completed).
@@ -156,6 +150,7 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
     goBack,
     goToStep,
     isStepUnlocked,
+    resetWizard,
   };
 
   return <WizardContext.Provider value={value}>{children}</WizardContext.Provider>;

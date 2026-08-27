@@ -70,4 +70,9 @@ class Document extends Model
             'verified_by'
         );
     }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
 }

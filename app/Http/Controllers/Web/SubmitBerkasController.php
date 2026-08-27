@@ -23,6 +23,7 @@ class SubmitBerkasController extends Controller
     {
         return Inertia::render('SubmitBerkas/SubmitBerkas', [
             'customers' => Customer::latest()->get(),
+            'assignments' => $this->documentSubmissionService->getAssignmentSummaries(),
         ]);
     }
 
@@ -65,7 +66,7 @@ class SubmitBerkasController extends Controller
     {
         $data = $request->validated();
 
-        // Proses upload file jika ada file pdf terlampir
+        // Simpan file fisik jika diunggah langsung
         if ($request->hasFile('pdf')) {
             $file = $request->file('pdf');
             $path = $file->store('documents/' . $data['assignment_no_ref'], 'public');
@@ -82,7 +83,6 @@ class SubmitBerkasController extends Controller
         return response()->json($document);
     }
 
-
     /**
      * Ambil seluruh dokumen dalam satu assignment.
      */
@@ -96,13 +96,12 @@ class SubmitBerkasController extends Controller
     /**
      * Finalisasi submission di Preview PIB.
      */
-    public function finalize(string $assignmentNoRef)
+   public function finalize(string $assignmentNoRef)
     {
         $this->documentSubmissionService->submitFinal($assignmentNoRef);
-
         return redirect()
-            ->route('submit-berkas.status', $assignmentNoRef)
-            ->with('success', 'Berkas berhasil disubmit dan menunggu verifikasi.');
+            ->route('submit-berkas.index')
+            ->with('success', "Berkas untuk penugasan {$assignmentNoRef} berhasil disubmit dan menunggu verifikasi.");
     }
 
     /**
@@ -114,7 +113,7 @@ class SubmitBerkasController extends Controller
 
         return Inertia::render('SubmitBerkas/Status', [
             'assignmentNoRef' => $assignmentNoRef,
-            'documents' => $documents,
+            'documents'       => $documents,
         ]);
     }
 }
