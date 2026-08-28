@@ -31,8 +31,8 @@ export function MonitoringTable({ data, onViewDetail, selectedId, itemsPerPage =
     <div className="bg-white w-full overflow-hidden" style={{ borderRadius: 10, border: '1px solid #E5E7EB' }}>
       <table className="w-full border-collapse">
         <thead>
-          <tr style={{ height: 40, borderBottom: '1px solid #F1F5F9' }}>
-            {['ID', 'Nama Barang', 'Asal', 'Tujuan', 'Status', 'Update Terakhir', 'Aksi'].map((col) => (
+          <tr style={{ height: 42, borderBottom: '1px solid #F1F5F9' }}>
+            {['No Kontrak & Assignment', 'Daftar Barang', 'Asal', 'Tujuan', 'Status', 'Update Terakhir', 'Aksi'].map((col) => (
               <th
                 key={col}
                 className="text-left px-4"
@@ -44,36 +44,70 @@ export function MonitoringTable({ data, onViewDetail, selectedId, itemsPerPage =
           </tr>
         </thead>
         <tbody>
-          {paginatedData.map((item) => (
-            <tr
-              key={item.id}
-              onClick={() => onViewDetail(item)}
-              className="cursor-pointer transition-colors duration-200"
-              style={{ height: 40, backgroundColor: selectedId === item.id ? '#FFF8EC' : undefined }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#FFF8EC')}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = selectedId === item.id ? '#FFF8EC' : '')}
-            >
-              <td className="px-4 text-xs font-medium" style={{ color: '#1E293B' }}>{item.contractId}</td>
-              <td className="px-4 text-xs" style={{ color: '#334155' }}>{item.itemName}</td>
-              <td className="px-4 text-xs" style={{ color: '#334155' }}>{item.origin}</td>
-              <td className="px-4 text-xs" style={{ color: '#334155' }}>{item.destination}</td>
-              <td className="px-4"><StatusBadge status={item.status} /></td>
-              <td className="px-4 text-xs" style={{ color: '#64748B' }}>{formatDateTime(item.lastUpdate)}</td>
-              <td className="px-4">
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); onViewDetail(item); }}
-                  className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition-colors duration-150"
-                  style={{ color: '#2563EB' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#EFF6FF')}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-                >
-                  <Eye size={14} />
-                  Detail
-                </button>
-              </td>
-            </tr>
-          ))}
+          {paginatedData.map((item) => {
+            const cargoList = item.cargos && item.cargos.length > 0 ? item.cargos : [];
+
+            return (
+              <tr
+                key={item.id}
+                onClick={() => onViewDetail(item)}
+                className="cursor-pointer transition-colors duration-200"
+                style={{
+                  minHeight: 44,
+                  backgroundColor: selectedId === item.id ? '#FFF8EC' : undefined,
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#FFF8EC')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = selectedId === item.id ? '#FFF8EC' : '')}
+              >
+                {/* Kolom 1: Menampilkan No Kontrak berdasarkan No Assignment */}
+                <td className="px-4 py-2.5 text-xs">
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-slate-800">
+                      {item.contractId && item.contractId !== '-' ? item.contractId : item.id}
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-normal">
+                      {item.shippingSession || item.id}
+                    </span>
+                  </div>
+                </td>
+
+                {/* Kolom 2: Menampilkan seluruh barang yang diisi aslinya */}
+                <td className="px-4 text-xs py-2.5" style={{ color: '#334155' }}>
+                  {cargoList.length > 0 ? (
+                    <div className="flex flex-col gap-1.5">
+                      {cargoList.map((cargo, idx) => (
+                        <div key={idx} className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-medium text-slate-800">
+                            {cargo.descriptionOfGoods}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col">
+                      <span className="font-medium text-slate-800">{item.itemName}</span>
+                    </div>
+                  )}
+                </td>
+
+                <td className="px-4 text-xs" style={{ color: '#334155' }}>{item.origin}</td>
+                <td className="px-4 text-xs" style={{ color: '#334155' }}>{item.destination}</td>
+                <td className="px-4"><StatusBadge status={item.status} /></td>
+                <td className="px-4 text-xs" style={{ color: '#64748B' }}>{formatDateTime(item.lastUpdate)}</td>
+                <td className="px-4">
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); onViewDetail(item); }}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors duration-150"
+                    style={{ color: '#2563EB', backgroundColor: '#EFF6FF' }}
+                  >
+                    <Eye size={14} />
+                    Detail
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
 

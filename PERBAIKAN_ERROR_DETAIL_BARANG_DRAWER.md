@@ -1,3 +1,51 @@
+# Panduan Perbaikan Error TypeScript pada DetailBarangDrawer.tsx
+
+Dokumen ini berisi rincian solusi dan kode perbaikan untuk mengatasi error TypeScript pada `DetailBarangDrawer.tsx`:
+- `Property 'netWeight' does not exist on type 'CiCargoDetail'.`
+- `Property 'grossWeight' does not exist on type 'CiCargoDetail'.`
+- `Property 'price' does not exist on type 'CiCargoDetail'.`
+
+---
+
+## 1. Analisis Penyebab Error
+
+Error ini terjadi karena:
+1. Komponen `DetailBarangDrawer.tsx` hanya mengimpor interface induk `MonitoringItem`:
+   ```typescript
+   import type { MonitoringItem } from '../types/monitoringBarang';
+   ```
+2. Pengambilan variabel `cargoList` tidak dideklarasikan tipe eksplisitnya (`const cargoList = item.cargos ...`), sehingga TypeScript Language Server IDE menggunakan cache inferensi tipe lama dari memory IDE.
+
+---
+
+## 2. Rincian Perbaikan Kode (Code Diff)
+
+### Perubahan pada: `resources/js/Pages/MonitoringBarang/components/DetailBarangDrawer.tsx`
+
+```diff
+- import { Package, X, FileText, ExternalLink, Boxes } from 'lucide-react';
+- import type { MonitoringItem } from '../types/monitoringBarang';
++ import { Package, X, FileText, ExternalLink, Boxes } from 'lucide-react';
++ import type { MonitoringItem, CiCargoDetail } from '../types/monitoringBarang';
+  import { StatusBadge } from './StatusBadge';
+
+  interface DetailBarangDrawerProps {
+      item: MonitoringItem;
+      onClose: () => void;
+  }
+
+  export function DetailBarangDrawer({ item, onClose }: DetailBarangDrawerProps) {
+-     const cargoList = item.cargos && item.cargos.length > 0 ? item.cargos : [];
++     const cargoList: CiCargoDetail[] = item.cargos && item.cargos.length > 0 ? item.cargos : [];
+```
+
+---
+
+## 3. Kode Lengkap Komponen `DetailBarangDrawer.tsx` Setelah Diperbaiki
+
+Berikut adalah keseluruhan isi kode `DetailBarangDrawer.tsx` yang sudah bersih dan bebas dari error:
+
+```tsx
 import { Package, X, FileText, ExternalLink, Boxes } from 'lucide-react';
 import type { MonitoringItem, CiCargoDetail } from '../types/monitoringBarang';
 import { StatusBadge } from './StatusBadge';
@@ -169,7 +217,7 @@ export function DetailBarangDrawer({ item, onClose }: DetailBarangDrawerProps) {
 
                         {/* Spesifikasi Ringkasan Kargo */}
                         <div
-                            className="p-3 grid grid-cols-3 gap-y-3 gap-x-2"
+                            className="p-3 grid grid-cols-2 gap-y-3 gap-x-2"
                             style={{
                                 backgroundColor: '#FFF7ED',
                                 borderRadius: 8,
@@ -196,7 +244,16 @@ export function DetailBarangDrawer({ item, onClose }: DetailBarangDrawerProps) {
 
                             <div>
                                 <div style={{ fontSize: 10, color: '#9A3412', fontWeight: 600 }}>
-                                    BRAND
+                                    TIPE / JENIS BARANG
+                                </div>
+                                <div style={{ fontSize: 12, fontWeight: 600, color: '#1E293B', marginTop: 1 }}>
+                                    {item.itemType && item.itemType !== '-' ? item.itemType : '-'}
+                                </div>
+                            </div>
+
+                            <div>
+                                <div style={{ fontSize: 10, color: '#9A3412', fontWeight: 600 }}>
+                                    MANUFAKTUR / BRAND
                                 </div>
                                 <div style={{ fontSize: 12, fontWeight: 600, color: '#1E293B', marginTop: 1 }}>
                                     {item.manufacturer && item.manufacturer !== '-' ? item.manufacturer : '-'}
@@ -452,3 +509,4 @@ export function DetailBarangDrawer({ item, onClose }: DetailBarangDrawerProps) {
         </>
     );
 }
+```
