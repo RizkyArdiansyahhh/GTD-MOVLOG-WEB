@@ -6,18 +6,18 @@ namespace App\Enums;
 
 enum ShippingSessionStatus: string
 {
-    case Draft = 'DRAFT';
-    case InProgress = 'IN_PROGRESS';
-    case Completed = 'COMPLETED';
-    case Cancelled = 'CANCELLED';
+    case PENDING = 'pending';
+    case IN_TRANSIT = 'in_transit';
+    case DELIVERED = 'delivered';
+    case CANCELLED = 'cancelled';
 
     public function label(): string
     {
         return match ($this) {
-            self::Draft => 'Draft',
-            self::InProgress => 'Dalam Perjalanan',
-            self::Completed => 'Selesai',
-            self::Cancelled => 'Dibatalkan',
+            self::PENDING => 'Menunggu',
+            self::IN_TRANSIT => 'Dalam Perjalanan',
+            self::DELIVERED => 'Selesai',
+            self::CANCELLED => 'Dibatalkan',
         };
     }
 

@@ -3,6 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="csrf-token" content="{{ csrf_token() }}" />
         <meta name="description" content="Logistics Management System — Manage your shipments, drivers, and operations efficiently." />
 
         <title inertia>{{ config('app.name', 'Logistics Management System') }}</title>

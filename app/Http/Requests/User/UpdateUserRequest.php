@@ -22,7 +22,10 @@ class UpdateUserRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        $user = \App\Models\User::findOrFail($this->route('user'));
+        $userParam = $this->route('user');
+        $user = $userParam instanceof \App\Models\User
+            ? $userParam
+            : \App\Models\User::findOrFail($userParam);
 
         return $this->user()->can('update', $user);
     }
@@ -34,11 +37,12 @@ class UpdateUserRequest extends FormRequest
      */
     public function rules(): array
     {
-        $userId = $this->route('user');
+        $userParam = $this->route('user');
+        $userId = $userParam instanceof \App\Models\User ? $userParam->id : $userParam;
 
         return [
             'name'     => ['required', 'string', 'max:255'],
-            'email'    => ['required', 'string', 'email:rfc,dns', 'max:255', Rule::unique('users', 'email')->ignore($userId)],
+            'email'    => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($userId)],
             'password' => ['nullable', 'confirmed', Password::min(8)->mixedCase()->numbers()],
             'status'   => ['required', Rule::enum(UserStatus::class)],
             'role'     => ['nullable', Rule::enum(UserRole::class)],

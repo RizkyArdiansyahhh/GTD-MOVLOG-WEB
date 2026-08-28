@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Enums\SessionCheckpointStatus;
 use App\Enums\ShippingSessionStatus;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class ShippingSession extends Model
 {
@@ -23,6 +25,7 @@ class ShippingSession extends Model
         'destination',
         'current_checkpoint_id',
         'status',
+        'notes',
     ];
 
     protected function casts(): array
@@ -61,6 +64,17 @@ class ShippingSession extends Model
 
     public function sessionCheckpoints(): HasMany
     {
-        return $this->hasMany(SessionCheckpoint::class);
+        return $this->hasMany(SessionCheckpoint::class, 'shipping_session_id');
+    }
+
+    public function activeSessionCheckpoint(): HasOne
+    {
+        return $this->hasOne(SessionCheckpoint::class, 'shipping_session_id')
+            ->where('status', SessionCheckpointStatus::IN_PROGRESS);
+    }
+
+    public function units(): HasMany
+    {
+        return $this->hasMany(SessionUnit::class, 'shipping_session_id');
     }
 }

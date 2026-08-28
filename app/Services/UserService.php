@@ -42,7 +42,7 @@ class UserService extends BaseService
     /**
      * Retrieve a single user by ID.
      */
-    public function findById(int $id): User
+    public function findById(int|string $id): User
     {
         /** @var User */
         return $this->userRepository->findOrFail($id, relations: ['roles', 'permissions']);
@@ -73,7 +73,7 @@ class UserService extends BaseService
     /**
      * Update an existing user.
      */
-    public function update(int $id, UserDTO $dto): User
+    public function update(int|string $id, UserDTO $dto): User
     {
         return DB::transaction(function () use ($id, $dto): User {
             $data = [
@@ -82,7 +82,7 @@ class UserService extends BaseService
                 'status' => $dto->status->value,
             ];
 
-            if ($dto->password) {
+            if (is_string($dto->password) && $dto->password !== '') {
                 $data['password'] = Hash::make($dto->password);
             }
 
@@ -100,17 +100,32 @@ class UserService extends BaseService
     /**
      * Delete a user by ID.
      */
-    public function delete(int $id): bool
+    public function delete(int|string $id, ?User $currentUser = null): bool
     {
-        // Business rule: prevent deletion of the last admin user
-        $user = $this->findById($id);
+        /** @var User|null $user */
+        $user = $this->userRepository->find($id);
 
-        if ($user->hasRole('super-admin')) {
-            $adminCount = $this->userRepository->count();
+        if (!$user) {
+            throw new \Illuminate\Database\Eloquent\ModelNotFoundException('Pengguna tidak ditemukan.');
+        }
+
+        // Business rule 1: Prevent deletion of currently logged-in user
+        if ($currentUser && (string) $currentUser->id === (string) $user->id) {
+            throw new \App\Exceptions\BusinessException(
+                'Anda tidak dapat menghapus akun Anda sendiri.'
+            );
+        }
+
+        // Business rule 2: Prevent deletion of the last admin user
+        $isAdmin = $user->hasAnyRole(['super-admin', 'admin', 'Super Admin']);
+        if ($isAdmin) {
+            $adminCount = User::whereHas('roles', function ($q) {
+                $q->whereIn('name', ['super-admin', 'admin', 'Super Admin']);
+            })->count();
 
             if ($adminCount <= 1) {
                 throw new \App\Exceptions\BusinessException(
-                    'Cannot delete the last super-admin user.'
+                    'Minimal harus ada satu akun Admin.'
                 );
             }
         }

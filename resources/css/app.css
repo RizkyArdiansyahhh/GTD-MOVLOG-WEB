@@ -18,7 +18,7 @@
     --color-gold-hover: #d9a400;
 }
 
-html, body {
+body {
     font-family: 'Poppins', sans-serif;
 }
 
@@ -40,15 +40,13 @@ html, body {
     inset: 0;
     border-radius: inherit;
     padding: 1.4px;
-    background: linear-gradient(
-        180deg,
-        rgba(255, 255, 255, 0.45) 0%,
-        rgba(255, 255, 255, 0.15) 20%,
-        rgba(255, 255, 255, 0) 40%,
-        rgba(255, 255, 255, 0) 60%,
-        rgba(255, 255, 255, 0.15) 80%,
-        rgba(255, 255, 255, 0.45) 100%
-    );
+    background: linear-gradient(180deg,
+            rgba(255, 255, 255, 0.45) 0%,
+            rgba(255, 255, 255, 0.15) 20%,
+            rgba(255, 255, 255, 0) 40%,
+            rgba(255, 255, 255, 0) 60%,
+            rgba(255, 255, 255, 0.15) 80%,
+            rgba(255, 255, 255, 0.45) 100%);
     -webkit-mask: linear-gradient(#fff 0 0) content-box,
         linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
@@ -72,15 +70,13 @@ html, body {
     inset: 0;
     border-radius: inherit;
     padding: 1.4px;
-    background: linear-gradient(
-        180deg,
-        rgba(255, 255, 255, 0.5) 0%,
-        rgba(255, 255, 255, 0.2) 20%,
-        rgba(255, 255, 255, 0) 40%,
-        rgba(255, 255, 255, 0) 60%,
-        rgba(255, 255, 255, 0.2) 80%,
-        rgba(255, 255, 255, 0.5) 100%
-    );
+    background: linear-gradient(180deg,
+            rgba(255, 255, 255, 0.5) 0%,
+            rgba(255, 255, 255, 0.2) 20%,
+            rgba(255, 255, 255, 0) 40%,
+            rgba(255, 255, 255, 0.6) 60%,
+            rgba(255, 255, 255, 0.2) 80%,
+            rgba(255, 255, 255, 0.5) 100%);
     -webkit-mask: linear-gradient(#fff 0 0) content-box,
         linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;

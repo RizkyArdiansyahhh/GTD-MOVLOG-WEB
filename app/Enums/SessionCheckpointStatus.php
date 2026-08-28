@@ -6,18 +6,18 @@ namespace App\Enums;
 
 enum SessionCheckpointStatus: string
 {
-    case Pending = 'PENDING';
-    case InProgress = 'IN_PROGRESS';
-    case Completed = 'COMPLETED';
-    case Skipped = 'SKIPPED';
+    case PENDING = 'pending';
+    case IN_PROGRESS = 'in_progress';
+    case COMPLETED = 'completed';
+    case SKIPPED = 'skipped';
 
     public function label(): string
     {
         return match ($this) {
-            self::Pending => 'Menunggu',
-            self::InProgress => 'Sedang Berlangsung',
-            self::Completed => 'Selesai',
-            self::Skipped => 'Dilewati',
+            self::PENDING => 'Menunggu',
+            self::IN_PROGRESS => 'Sedang Berjalan',
+            self::COMPLETED => 'Selesai',
+            self::SKIPPED => 'Dilewati',
         };
     }
 

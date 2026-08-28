@@ -6,16 +6,16 @@ namespace App\Enums;
 
 enum SyncStatus: string
 {
-    case Synced = 'SYNCED';
-    case Pending = 'PENDING';
-    case Failed = 'FAILED';
+    case SYNCED = 'SYNCED';
+    case PENDING = 'PENDING';
+    case FAILED = 'FAILED';
 
     public function label(): string
     {
         return match ($this) {
-            self::Synced => 'Tersinkronisasi',
-            self::Pending => 'Menunggu Sinkronisasi',
-            self::Failed => 'Gagal Sinkron',
+            self::SYNCED => 'Tersinkronisasi',
+            self::PENDING => 'Menunggu Sinkronisasi',
+            self::FAILED => 'Gagal Sinkron',
         };
     }
 

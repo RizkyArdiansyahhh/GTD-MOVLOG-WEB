@@ -1,6 +1,7 @@
-import { type ReactNode } from 'react';
+import { type ReactNode, useState, type CSSProperties } from 'react';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
+import Toast from '@/Components/Toast';
 
 interface DashboardLayoutProps {
     children: ReactNode;
@@ -20,31 +21,51 @@ interface DashboardLayoutProps {
  *  │ (fixed)  │                                   │
  *  │          │                                   │
  *  └──────────┴───────────────────────────────────┘
+ *
+ * Desktop:
+ * - Navbar tetap di bagian atas
+ * - Sidebar tetap di sisi kiri
+ * - Konten bergeser mengikuti lebar sidebar
+ *
+ * Mobile/Tablet:
+ * - Sidebar dapat dibuka melalui Navbar
+ * - Konten menggunakan full width
  */
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-    const NAVBAR_HEIGHT = 64;
-    const SIDEBAR_WIDTH = 260;
-    const GAP = 16;
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     return (
         <div
             className="min-h-screen"
-            style={{ backgroundColor: '#F5F7FC', fontFamily: "'Poppins', sans-serif" }}
+            style={
+                {
+                    backgroundColor: '#F5F7FC',
+                    fontFamily: "'Poppins', sans-serif",
+                    '--navbar-h': '64px',
+                    '--content-gap': '0px',
+                } as CSSProperties
+            }
         >
             {/* ── Fixed Navbar (full-width top) ── */}
-            <Navbar />
+            <Navbar
+                onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
+            />
+
+            {/* ── Toast notifications ── */}
+            <Toast />
 
             {/* ── Fixed Sidebar (below navbar) ── */}
-            <Sidebar />
+            <Sidebar
+                isOpen={sidebarOpen}
+                onClose={() => setSidebarOpen(false)}
+            />
 
             {/* ── Main content area ── */}
             <main
-                className="flex-1"
+                className="flex-1 relative overflow-hidden ml-0 lg:ml-[292px] px-4 lg:px-0 lg:pr-4 pb-8"
                 style={{
-                    marginTop: `${NAVBAR_HEIGHT + GAP}px`,
-                    marginLeft: `${SIDEBAR_WIDTH + GAP * 2 + GAP}px`, // sidebar + left offset + gap
-                    minHeight: `calc(100vh - ${NAVBAR_HEIGHT + GAP}px)`,
-                    padding: `0 ${GAP}px ${GAP * 2}px 0`,
+                    paddingTop: 'calc(var(--navbar-h) + 16px)',
+                    minHeight: '100vh',
                 }}
             >
                 {children}
