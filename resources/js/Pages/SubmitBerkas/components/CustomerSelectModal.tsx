@@ -52,7 +52,7 @@ export default function CustomerSelectModal({
         setFormError(null);
 
         try {
-            const response = await axios.post('/submit-berkas/customer', {
+            const response = await axios.post('/submit-berkas/customers', {
                 company_name: form.companyName.trim(),
                 address: form.address.trim() || null,
                 phone: form.phone.trim() || null,
