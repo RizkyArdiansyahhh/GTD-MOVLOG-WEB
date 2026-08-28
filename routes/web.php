@@ -9,9 +9,10 @@ use App\Http\Controllers\Web\Customer\ProfileController as CustomerProfileContro
 use App\Http\Controllers\Web\CustomerDashboardController;
 use App\Http\Controllers\Web\GlobalSearchController;
 use App\Http\Controllers\Web\KelolaAkunController;
-use App\Http\Controllers\Web\SesiPekerjaController;
 use App\Http\Controllers\Web\LaporanController;
 use App\Http\Controllers\Web\MonitoringBarangController;
+use App\Http\Controllers\Web\ProfileController;
+use App\Http\Controllers\Web\SesiPekerjaController;
 use App\Http\Controllers\Web\SubmitBerkasController;
 use App\Http\Controllers\Web\UserController;
 use App\Http\Controllers\Web\VerifikasiBerkasController;
@@ -46,7 +47,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'total_users'        => \App\Models\User::count(),
             'total_shipments'    => \App\Models\ShippingSession::count(),
             'active_drivers'     => \App\Models\User::whereHas('roles', fn ($q) => $q->where('name', 'field-worker'))->count(),
-            'pending_deliveries' => \App\Models\ShippingSession::whereIn('status', ['in_transit', 'pending'])->count(),
+            'pending_deliveries' => \App\Models\ShippingSession::whereIn('status', ['in_transitS', 'pending'])->count(),
         ];
         return Inertia::render('Dashboard/Index', [
             'stats' => $stats,
@@ -65,33 +66,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/monitoring-barang', [CustomerDashboardController::class, 'monitoring'])
             ->name('monitoring');
-
         Route::get('/monitoring-barang/{id}', [CustomerDashboardController::class, 'detail'])
             ->name('monitoring.detail');
-
         Route::get('/checkpoints', [CustomerDashboardController::class, 'checkpoints'])
             ->name('checkpoints');
-
         Route::get('/shipment/{id}', [CustomerDashboardController::class, 'detail'])
             ->name('shipment.detail');
 
         // Customer Profile Management
         Route::get('/profil', [CustomerProfileController::class, 'edit'])
             ->name('profile.edit');
-
         Route::post('/profil', [CustomerProfileController::class, 'update'])
             ->name('profile.update');
-
         Route::put('/profil/password', [CustomerProfileController::class, 'updatePassword'])
             ->name('profile.password.update');
 
         // Customer Notifications
         Route::get('/notifications', [CustomerNotificationController::class, 'index'])
             ->name('notifications.index');
-
         Route::post('/notifications/{id}/read', [CustomerNotificationController::class, 'markAsRead'])
             ->name('notifications.read');
-
         Route::post('/notifications/read-all', [CustomerNotificationController::class, 'markAllAsRead'])
             ->name('notifications.read-all');
     });
@@ -102,7 +96,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('search', [GlobalSearchController::class, 'index'])
         ->name('global-search.index');
 
-    // --- Super Admin Routes -------------------------------------------
+    // Internal Profile Management (Staff, Supervisor, Super Admin, Field Worker)
+    Route::get('/profil', [ProfileController::class, 'edit'])
+        ->name('profile.edit');
+
+    Route::post('/profil', [ProfileController::class, 'update'])
+        ->name('profile.update');
+
+    Route::put('/profil/password', [ProfileController::class, 'updatePassword'])
+        ->name('profile.password.update');
+
+    // --- Super Admin Routes --------------------------------------------
     Route::middleware('role:super-admin')->group(function () {
         // Kelola Akun
         Route::get('kelola-akun', [KelolaAkunController::class, 'index'])
@@ -135,8 +139,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('verifikasi-berkas/file/{document}', [VerifikasiBerkasController::class, 'serveFile'])
             ->name('verifikasi-berkas.file');
     });
-    Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
-        ->name('logout');
 
     Route::resource('users', UserController::class);
 
@@ -153,16 +155,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('sesi-pekerja/{session}/stages/{stage}/complete', [SesiPekerjaController::class, 'completeStage'])
         ->name('sesi-pekerja.stages.complete');
 
-
     // Monitoring Barang
     Route::get('monitoring-barang', [MonitoringBarangController::class, 'index'])
         ->name('monitoring-barang.index');
 
-
     // Laporan
     Route::get('laporan', [LaporanController::class, 'index'])
         ->name('laporan.index');
-
 
     // Submit Berkas
     Route::prefix('submit-berkas')
@@ -175,12 +174,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/step', 'saveStep')->name('save-step');
             Route::get('/{assignmentNoRef}', 'show')->name('show');
             Route::post('/{assignmentNoRef}/finalize', 'finalize')->name('finalize');
-            Route::get('/{assignmentNoRef}/status', 'status')->name('status');
+            Route::get('{assignmentNoRef}/status', 'status')->name('status');
         });
-
-
 
     // Logout
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
-        ->name('logout');
+        ->name('logkut');
 });
