@@ -8,6 +8,7 @@ import {
     Package,
     CheckCircle2,
     AlertTriangle,
+    AlertCircle,
     ChevronLeft,
     X,
 } from 'lucide-react';

@@ -5,7 +5,7 @@ import Toast from '@/Components/Toast';
 
 interface DashboardLayoutProps {
     children: ReactNode;
-    /** Optional – kept for backward compat with pages that pass title */
+    /** Optional � kept for backward compat with pages that pass title */
     title?: string;
 }
 
@@ -13,23 +13,14 @@ interface DashboardLayoutProps {
  * DashboardLayout
  *
  * Composed layout for internal users (Admin/Staff):
- *  ┌──────────────────────────────────────────────┐
- *  │ [Navbar – fixed full-width top bar]          │
- *  ├──────────┬───────────────────────────────────┤
- *  │          │                                   │
- *  │ Sidebar  │  <children />                     │
- *  │ (fixed)  │                                   │
- *  │          │                                   │
- *  └──────────┴───────────────────────────────────┘
- *
- * Desktop:
- * - Navbar tetap di bagian atas
- * - Sidebar tetap di sisi kiri
- * - Konten bergeser mengikuti lebar sidebar
- *
- * Mobile/Tablet:
- * - Sidebar dapat dibuka melalui Navbar
- * - Konten menggunakan full width
+ *  +----------------------------------------------+
+ *  � [Navbar � floating top rounded card]         �
+ *  +----------------------------------------------�
+ *  �          �                                   �
+ *  � Sidebar  �  <children />                     �
+ *  � (card)   �                                   �
+ *  �          �                                   �
+ *  +----------------------------------------------+
  */
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -46,26 +37,26 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 } as CSSProperties
             }
         >
-            {/* ── Fixed Navbar (full-width top) ── */}
+            {/* -- Floating Navbar (does not connect to screen edges) -- */}
             <Navbar
                 onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
             />
 
-            {/* ── Toast notifications ── */}
+            {/* -- Toast notifications -- */}
             <Toast />
 
-            {/* ── Fixed Sidebar (below navbar) ── */}
+            {/* -- Fixed Sidebar (below floating navbar) -- */}
             <Sidebar
                 isOpen={sidebarOpen}
                 onClose={() => setSidebarOpen(false)}
             />
 
-            {/* ── Main content area ── */}
+            {/* -- Main content area -- */}
             <main
-                className="flex-1 relative overflow-hidden ml-0 lg:ml-[308px] px-4 lg:px-0 lg:pr-4 pb-8"
+                className="flex-1 relative overflow-hidden ml-0 lg:ml-[308px] px-3 lg:px-0 lg:pr-4 pb-8"
                 style={{
-                    marginTop: '80px',
-                    minHeight: 'calc(100vh - 80px)',
+                    marginTop: '96px',
+                    minHeight: 'calc(100vh - 96px)',
                 }}
             >
                 {children}
