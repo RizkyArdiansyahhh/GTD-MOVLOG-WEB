@@ -12,6 +12,8 @@ class Document extends Model
     use HasUlids;
 
     protected $fillable = [
+        'assignment_no_ref',
+        'customer_id',
         'shipping_session_id',
         'document_type_id',
         'document_data',
@@ -38,6 +40,11 @@ class Document extends Model
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
     }
 
     public function shippingSession(): BelongsTo

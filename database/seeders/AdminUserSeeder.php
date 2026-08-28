@@ -6,6 +6,7 @@ namespace Database\Seeders;
 
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
+use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -82,9 +83,11 @@ class AdminUserSeeder extends Seeder
         $fieldWorker2->assignRole(UserRole::FieldWorker->value);
 
         // --- Customer --------------------------------------------------
+        $customerRecord = Customer::where('email', 'customer@lms.local')->first();
         $customer = User::updateOrCreate(
             ['email' => 'customer@lms.local'],
             [
+                'customer_id'       => $customerRecord?->id,
                 'name'              => 'PT Customer A (Hendra W)',
                 'password'          => Hash::make('Admin@1234'),
                 'status'            => UserStatus::Active->value,

@@ -15,12 +15,29 @@ export interface User {
     status: string;
     status_label: string;
     phone: string | null;
-    avatar_url: string;
+    avatar?: string | null;
+    avatar_url: string | null;
     roles: string[];
     permissions: string[];
     customer?: Customer | null;
     created_at: string;
     updated_at: string;
+}
+
+export interface CustomerNotificationItem {
+    id: string;
+    type: string;
+    title: string;
+    assignment_no?: string | null;
+    url: string;
+    read_at: string | null;
+    created_at: string;
+    created_at_human: string;
+}
+
+export interface CustomerNotificationsData {
+    unread_count: number;
+    latest: CustomerNotificationItem[];
 }
 
 export interface PaginationMeta {
@@ -49,6 +66,7 @@ export interface PageProps {
     auth: {
         user: User;
     };
+    notifications?: CustomerNotificationsData | null;
     flash?: {
         success?: string;
         error?: string;

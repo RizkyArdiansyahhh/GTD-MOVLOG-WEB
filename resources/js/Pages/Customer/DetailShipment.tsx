@@ -1,390 +1,482 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import CustomerLayout from '@/Layouts/CustomerLayout';
-import type { CustomerShipmentDetail } from '@/types/customer';
+import { useRealtimeUpdates } from '@/hooks/useRealtimeUpdates';
+import type {
+    ShipmentDetail,
+    SessionUnitItem,
+    ShipmentTimelineItem,
+    VerifiedDocument,
+} from '@/types/customer';
 import {
     ArrowLeft,
     MapPin,
     Calendar,
-    FileCheck2,
+    FileText,
     Download,
     CheckCircle2,
     Clock,
     Truck,
-    Building2,
-    Lock,
-    MessageSquareQuote,
+    ShieldCheck,
+    UserCheck,
     Package,
+    ArrowRight,
+    MessageSquare,
+    Ship,
+    Anchor,
 } from 'lucide-react';
-import { useState } from 'react';
 
 interface DetailShipmentProps {
-    shipment: CustomerShipmentDetail;
+    shipment: ShipmentDetail;
+    units: SessionUnitItem[];
+    timeline: ShipmentTimelineItem[];
+    documents: VerifiedDocument[];
 }
 
-export default function DetailShipment({ shipment }: DetailShipmentProps) {
-    const { header, checkpoints, documents } = shipment;
-    const [inquiryModalOpen, setInquiryModalOpen] = useState(false);
+export default function DetailShipment({
+    shipment,
+    units = [],
+    timeline = [],
+    documents = [],
+}: DetailShipmentProps) {
+    useRealtimeUpdates();
 
-    const { data, setData, post, processing, reset } = useForm({
-        shipment_id: header.id,
-        subject: `Pertanyaan Pengiriman #${header.assignment_no}`,
-        message: '',
-    });
-
-    const submitInquiry = (e: React.FormEvent) => {
-        e.preventDefault();
-        post('/customer/inquiries', {
-            onSuccess: () => {
-                setInquiryModalOpen(false);
-                reset('message');
-            },
-        });
-    };
-
-    const formatBadge = (status: string, label?: string) => {
-        const text = (label || status || '').toUpperCase();
-        if (text.includes('PERJALANAN') || text.includes('IN_PROGRESS')) {
+    // Map semantic status badge (Clean text style without heavy pill backgrounds)
+    const renderStatusBadge = (status: string) => {
+        const s = (status || '').toUpperCase();
+        if (s === 'IN_PROGRESS' || s === 'IN_TRANSIT' || s === 'DALAM PERJALANAN') {
             return (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-600">
-                    Dalam Perjalanan
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
+                    <span>Dalam Perjalanan</span>
                 </span>
             );
         }
-        if (text.includes('SELESAI') || text.includes('TERKIRIM') || text.includes('COMPLETED')) {
+        if (s === 'COMPLETED' || s === 'DELIVERED' || s === 'TERKIRIM') {
             return (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600">
-                    Terkirim
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                    <span>Terkirim</span>
+                </span>
+            );
+        }
+        if (s === 'CANCELLED' || s === 'DIBATALKAN') {
+            return (
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
+                    <span>Dibatalkan</span>
                 </span>
             );
         }
         return (
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700">
-                {label || status}
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500">
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                <span>Persiapan Muat</span>
             </span>
         );
     };
 
+    // Determine 4-Stage Intermodal Progress
+    const totalNodes = timeline.length;
+    const completedNodes = timeline.filter((t) => t.status === 'COMPLETED' || t.status === 'SELESAI').length;
+
+    const stages = [
+        { label: 'Kapal', desc: 'Pemuatan & Pelayaran', icon: Ship },
+        { label: 'Tongkang', desc: 'Alih Muat / Transshipment', icon: Anchor },
+        { label: 'Pelabuhan', desc: 'Bongkar & Pos Transit', icon: MapPin },
+        { label: 'Site', desc: 'Tiba di Lokasi Tujuan', icon: Truck },
+    ];
+
+    const getStageStatus = (stageIdx: number) => {
+        if (totalNodes === 0) return 'pending';
+        const progressRatio = completedNodes / Math.max(1, totalNodes);
+        const stageRatio = (stageIdx + 1) / 4;
+        const prevStageRatio = stageIdx / 4;
+
+        if (progressRatio >= stageRatio) return 'completed';
+        if (progressRatio >= prevStageRatio) return 'in_progress';
+        return 'pending';
+    };
+
     return (
-        <CustomerLayout title={`Detail #${header.assignment_no}`}>
-            <Head title={`Detail Pengiriman #${header.assignment_no}`} />
+        <CustomerLayout title={`Detail #${shipment.assignment_no}`}>
+            <Head title={`Detail Pengiriman #${shipment.assignment_no} — GTD Customer Portal`} />
 
-            {/* Back Button */}
-            <div className="mb-4">
-                <Link
-                    href="/customer/monitoring-barang"
-                    className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-800 transition-colors"
-                >
-                    <ArrowLeft size={14} />
-                    <span>Kembali ke Monitoring Barang</span>
-                </Link>
-            </div>
-
-            {/* Header / Hero Overview Card */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                    <div>
-                        <div className="flex items-center gap-3 mb-1">
-                            <span className="font-mono text-xs font-semibold text-gray-700 bg-gray-100 px-2.5 py-0.5 rounded-md">
-                                #{header.assignment_no}
-                            </span>
-                            {formatBadge(header.status, header.status_label)}
-                        </div>
-                        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-                            {header.cargo_name}
-                        </h1>
-                        <p className="text-xs text-gray-500 mt-1 font-medium">
-                            Kategori: {header.cargo_category} • Kuantitas: {header.total_quantity.toLocaleString('id-ID')} {header.unit}
-                        </p>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                        <button
-                            type="button"
-                            onClick={() => setInquiryModalOpen(true)}
-                            className="px-4 py-2 rounded-xl text-gray-900 text-xs font-semibold flex items-center gap-2 transition-all shadow-xs cursor-pointer hover:brightness-95"
-                            style={{ backgroundColor: '#F6C343' }}
-                        >
-                            <MessageSquareQuote size={15} />
-                            <span>Hubungi Admin GTD</span>
-                        </button>
-                    </div>
+            <div className="space-y-6">
+                {/* ── Top Navigation / Back Link ── */}
+                <div className="flex items-center justify-between">
+                    <Link
+                        href="/customer/monitoring-barang"
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+                    >
+                        <ArrowLeft size={13} />
+                        <span>Kembali ke Monitoring Barang</span>
+                    </Link>
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                        <ShieldCheck size={13} className="text-emerald-600" />
+                        <span>Dokumen Terverifikasi Resmi</span>
+                    </span>
                 </div>
 
-                {/* Main Progress Bar */}
-                <div className="mt-6 pt-5 border-t border-gray-100">
-                    <div className="flex items-center justify-between text-xs font-semibold mb-2">
-                        <span className="text-gray-500">Progres Pengiriman</span>
-                        <span className="text-gray-900 font-bold">{header.progress_percentage}%</span>
-                    </div>
-                    <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
-                        <div
-                            className="h-2 rounded-full transition-all duration-500"
-                            style={{ width: `${header.progress_percentage}%`, backgroundColor: '#F6C343' }}
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {/* Info Grid (3 Columns) */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                {/* Rute & Tujuan */}
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-2">
-                    <div className="flex items-center gap-2">
-                        <div
-                            className="w-10 h-10 rounded-xl flex items-center justify-center"
-                            style={{ backgroundColor: '#F6C34322' }}
-                        >
-                            <MapPin size={18} style={{ color: '#F6C343' }} strokeWidth={2} />
-                        </div>
+                {/* ── 1. Hero Operational Header ── */}
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-5 border-b border-slate-100">
                         <div>
-                            <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Rute Kargo</span>
-                            <h4 className="text-xs font-bold text-gray-900">Asal ➔ Tujuan</h4>
+                            <div className="flex items-center gap-2.5 mb-2">
+                                <span className="font-mono text-xs font-bold text-[#06283A] bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
+                                    #{shipment.assignment_no}
+                                </span>
+                                {renderStatusBadge(shipment.status)}
+                            </div>
+                            <h1 className="text-xl sm:text-2xl font-bold text-[#06283A] tracking-tight">
+                                {shipment.cargo_name}
+                            </h1>
+                            <p className="text-xs text-slate-500 mt-1 font-normal">
+                                Tanggal Didaftarkan: <span className="font-semibold text-slate-800">{shipment.created_at}</span>
+                            </p>
                         </div>
-                    </div>
-                    <div className="mt-2 text-xs font-medium text-gray-700">
-                        <div className="text-gray-900 font-semibold">{header.origin}</div>
-                        <div className="text-gray-400 my-0.5">menuju</div>
-                        <div className="text-gray-900 font-semibold">{header.destination}</div>
-                    </div>
-                </div>
 
-                {/* Estimasi & Jadwal */}
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-2">
-                    <div className="flex items-center gap-2">
-                        <div
-                            className="w-10 h-10 rounded-xl flex items-center justify-center"
-                            style={{ backgroundColor: '#6366f122' }}
-                        >
-                            <Calendar size={18} style={{ color: '#6366f1' }} strokeWidth={2} />
-                        </div>
-                        <div>
-                            <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Jadwal &amp; Waktu</span>
-                            <h4 className="text-xs font-bold text-gray-900">Estimasi Tiba (ETA)</h4>
-                        </div>
-                    </div>
-                    <div className="mt-2 text-xs font-medium text-gray-700">
-                        <div><span className="text-gray-400">Mulai:</span> {header.departure_date ?? 'Hari ini, 08:00'}</div>
-                        <div className="mt-1"><span className="text-gray-400">Estimasi Selesai:</span> <span className="font-semibold text-gray-900">{header.eta ?? 'Besok, 16:00'}</span></div>
-                    </div>
-                </div>
-
-                {/* Armada & PIC */}
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-2">
-                    <div className="flex items-center gap-2">
-                        <div
-                            className="w-10 h-10 rounded-xl flex items-center justify-center"
-                            style={{ backgroundColor: '#10b98122' }}
-                        >
-                            <Truck size={18} style={{ color: '#10b981' }} strokeWidth={2} />
-                        </div>
-                        <div>
-                            <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Armada Operasional</span>
-                            <h4 className="text-xs font-bold text-gray-900">{header.driver_name || 'Driver GTD'}</h4>
-                        </div>
-                    </div>
-                    <div className="mt-2 text-xs font-medium text-gray-700">
-                        <div><span className="text-gray-400">Unit:</span> {header.vehicle_plate || 'Armada Logistik GTD'}</div>
-                        <div className="mt-1"><span className="text-gray-400">Posisi:</span> <span className="font-semibold text-gray-900">{header.current_checkpoint}</span></div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Checkpoints Timeline & Document Center Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-6">
-                
-                {/* Timeline Checkpoints (7 Cols) */}
-                <div className="lg:col-span-7 rounded-2xl bg-white border border-gray-100 shadow-sm p-6">
-                    <div className="flex items-center justify-between mb-5 pb-3 border-b border-gray-100">
+                        {/* Direct Contextual Support Action */}
                         <div className="flex items-center gap-2">
-                            <MapPin size={18} style={{ color: '#F6C343' }} />
-                            <h2 className="text-base font-semibold text-gray-800">Timeline Checkpoint</h2>
+                            <a
+                                href={`https://wa.me/6281234567890?text=Halo%20GTD%2C%20saya%20ingin%20koordinasi%20pengiriman%20%23${shipment.assignment_no}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-[#0F172A] hover:bg-slate-800 text-white text-xs font-semibold transition-colors cursor-pointer shadow-sm"
+                            >
+                                <MessageSquare size={13} />
+                                <span>Bantuan Pengiriman Ini</span>
+                            </a>
                         </div>
-                        <span className="text-xs font-medium text-gray-500">
-                            {checkpoints.filter((c) => c.status === 'passed').length} dari {checkpoints.length} Titik Terlewati
+                    </div>
+
+                    {/* 4 Key Operational Metrics in Hero */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-5 text-xs">
+                        {/* 1. Posisi Terkini */}
+                        <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
+                                Posisi Terkini
+                            </span>
+                            <div className="flex items-center gap-1.5 font-semibold text-slate-900 mt-1 truncate">
+                                <MapPin size={13} className="text-[#F6C343] shrink-0" />
+                                <span className="truncate">{shipment.current_checkpoint || 'Pos Operasional GTD'}</span>
+                            </div>
+                        </div>
+
+                        {/* 2. Estimasi Tiba (ETA) */}
+                        <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
+                                Estimasi Tiba (ETA)
+                            </span>
+                            <div className="flex items-center gap-1.5 font-semibold text-blue-800 mt-1">
+                                <Calendar size={13} className="text-blue-600 shrink-0" />
+                                <span>{shipment.eta || 'Belum tersedia'}</span>
+                            </div>
+                        </div>
+
+                        {/* 3. Rute Kargo */}
+                        <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
+                                Rute Transit
+                            </span>
+                            <div className="flex items-center gap-1.5 font-semibold text-slate-900 mt-1 truncate">
+                                <span className="truncate">{shipment.origin}</span>
+                                <ArrowRight size={11} className="text-slate-400 shrink-0" />
+                                <span className="truncate">{shipment.destination}</span>
+                            </div>
+                        </div>
+
+                        {/* 4. Total Muatan */}
+                        <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
+                                Total Muatan
+                            </span>
+                            <div className="flex items-center gap-1.5 font-semibold text-slate-900 mt-1">
+                                <Package size={13} className="text-slate-600 shrink-0" />
+                                <span>
+                                    {Number(shipment.total_quantity).toLocaleString('id-ID')} {shipment.unit}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* ── 2. 4-Milestone Intermodal Stepper ── */}
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6">
+                    <div className="flex items-center justify-between mb-4 pb-2.5 border-b border-slate-100">
+                        <h2 className="font-bold text-xs sm:text-sm text-[#06283A] uppercase tracking-wider">
+                            Tahapan Perjalanan Intermodal
+                        </h2>
+                        <span className="text-xs font-medium text-slate-500">
+                            {completedNodes} dari {totalNodes} Checkpoint Selesai
                         </span>
                     </div>
 
-                    <div className="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-3 before:bottom-3 before:w-[2px] before:bg-gray-100">
-                        {checkpoints.map((cp) => {
-                            const isPassed = cp.status === 'passed';
-                            const isCurrent = cp.status === 'current';
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {stages.map((stg, idx) => {
+                            const status = getStageStatus(idx);
+                            const Icon = stg.icon;
 
                             return (
-                                <div key={cp.id} className="relative">
-                                    {/* Icon Circle indicator */}
-                                    <div
-                                        className={`absolute -left-[27px] top-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ring-4 ring-white ${
-                                            isPassed
-                                                ? 'bg-emerald-500 text-white'
-                                                : isCurrent
-                                                ? 'text-gray-900 ring-2 ring-yellow-300'
-                                                : 'bg-gray-100 text-gray-400'
-                                        }`}
-                                        style={{
-                                            backgroundColor: isCurrent ? '#F6C343' : undefined,
-                                        }}
-                                    >
-                                        {isPassed ? <CheckCircle2 size={13} /> : cp.sequence}
-                                    </div>
-
-                                    <div className="bg-gray-50/70 rounded-xl p-4 border border-gray-100/80">
-                                        <div className="flex items-center justify-between">
-                                            <h4 className="text-xs font-semibold text-gray-900">
-                                                {cp.checkpoint_name}
-                                            </h4>
-                                            {isPassed && (
-                                                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-600">
-                                                    Selesai
-                                                </span>
-                                            )}
-                                            {isCurrent && (
-                                                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-yellow-100 text-yellow-800">
-                                                    Posisi Saat Ini
-                                                </span>
-                                            )}
+                                <div
+                                    key={idx}
+                                    className={`p-3.5 rounded-lg border transition-all ${
+                                        status === 'completed'
+                                            ? 'bg-emerald-50/60 border-emerald-200'
+                                            : status === 'in_progress'
+                                            ? 'bg-amber-50/60 border-amber-300 ring-1 ring-amber-300'
+                                            : 'bg-slate-50/70 border-slate-200'
+                                    }`}
+                                >
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div
+                                            className={`w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold ${
+                                                status === 'completed'
+                                                    ? 'bg-emerald-600 text-white'
+                                                    : status === 'in_progress'
+                                                    ? 'bg-[#F6C343] text-[#06283A]'
+                                                    : 'bg-slate-200 text-slate-500'
+                                            }`}
+                                        >
+                                            <Icon size={13} />
                                         </div>
-
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            {cp.location}
-                                        </p>
-
-                                        <div className="grid grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-gray-200/60 text-xs">
-                                            <div>
-                                                <span className="text-[10px] text-gray-400 block font-medium">PIC Checkpoint:</span>
-                                                <span className="font-semibold text-gray-800">{cp.pic_name}</span>
-                                            </div>
-                                            <div>
-                                                <span className="text-[10px] text-gray-400 block font-medium">Tanggal Aktual:</span>
-                                                <span className="font-semibold text-gray-800">{cp.actual_arrival ?? '-'}</span>
-                                            </div>
-                                        </div>
+                                        <span className="text-[10px] font-semibold uppercase tracking-wider">
+                                            {status === 'completed'
+                                                ? 'Selesai'
+                                                : status === 'in_progress'
+                                                ? 'Sedang Berjalan'
+                                                : 'Menunggu'}
+                                        </span>
                                     </div>
+                                    <h4 className="font-semibold text-xs text-slate-900">
+                                        {idx + 1}. {stg.label}
+                                    </h4>
+                                    <p className="text-[11px] text-slate-500 mt-0.5 font-normal">{stg.desc}</p>
                                 </div>
                             );
                         })}
                     </div>
                 </div>
 
-                {/* Document Center (5 Cols) */}
-                <div className="lg:col-span-5 rounded-2xl bg-white border border-gray-100 shadow-sm p-6 flex flex-col">
-                    <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
-                        <div className="flex items-center gap-2">
-                            <FileCheck2 size={18} style={{ color: '#F6C343' }} />
-                            <h2 className="text-base font-semibold text-gray-800">Document Center</h2>
+                {/* ── 3. Structured 2-Column Operational Summary ── */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Left: Rute & Jadwal */}
+                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-3.5">
+                        <h3 className="font-bold text-xs uppercase tracking-wider text-slate-400 pb-2 border-b border-slate-100">
+                            Informasi Rute &amp; Jadwal
+                        </h3>
+                        <div className="grid grid-cols-2 gap-3 text-xs">
+                            <div>
+                                <span className="text-[10px] text-slate-400 block font-semibold uppercase">Pos Asal:</span>
+                                <span className="font-semibold text-slate-900">{shipment.origin}</span>
+                            </div>
+                            <div>
+                                <span className="text-[10px] text-slate-400 block font-semibold uppercase">Tujuan Akhir:</span>
+                                <span className="font-semibold text-slate-900">{shipment.destination}</span>
+                            </div>
+                            <div>
+                                <span className="text-[10px] text-slate-400 block font-semibold uppercase">Tanggal Pembuatan:</span>
+                                <span className="font-medium text-slate-800">{shipment.created_at}</span>
+                            </div>
+                            <div>
+                                <span className="text-[10px] text-slate-400 block font-semibold uppercase">Estimasi Tiba (ETA):</span>
+                                <span className="font-semibold text-blue-800">{shipment.eta || 'Belum ditentukan'}</span>
+                            </div>
                         </div>
-                        <span className="text-xs font-medium text-gray-500">
-                            {documents.verified_count} Diverifikasi
-                        </span>
+
+                        <div className="pt-2.5 border-t border-slate-100 text-xs">
+                            <span className="text-[10px] text-slate-400 block font-semibold uppercase">Catatan Operasional:</span>
+                            <span className="text-slate-600 italic font-normal">{shipment.notes || 'Tidak ada instruksi khusus.'}</span>
+                        </div>
                     </div>
 
-                    <p className="text-xs text-gray-500 mb-4 font-normal">
-                        Hanya berkas resmi yang telah diverifikasi final oleh tim operasional GTD yang dapat diunduh.
-                    </p>
-
-                    <div className="space-y-3 flex-1">
-                        {documents.verified_documents.length === 0 ? (
-                            <div className="p-6 rounded-xl bg-gray-50 border border-gray-100 text-center text-gray-400 text-xs">
-                                <Lock size={20} className="mx-auto mb-2 opacity-40 text-gray-400" />
-                                Belum ada dokumen final yang terverifikasi untuk sesi pengiriman ini.
-                            </div>
-                        ) : (
-                            documents.verified_documents.map((doc) => (
-                                <div
-                                    key={doc.id}
-                                    className="p-3.5 rounded-xl bg-gray-50/80 hover:bg-gray-100/70 border border-gray-100 flex items-center justify-between gap-3 transition-colors"
-                                >
-                                    <div className="flex items-center gap-3 overflow-hidden">
-                                        <div className="w-8 h-8 rounded-lg bg-yellow-100 text-yellow-800 flex items-center justify-center shrink-0 font-bold text-xs">
-                                            PDF
-                                        </div>
-                                        <div className="overflow-hidden">
-                                            <p className="text-xs font-semibold text-gray-900 truncate">
-                                                {doc.file_name}
-                                            </p>
-                                            <p className="text-[10px] text-gray-500">
-                                                {doc.document_type} • {doc.verified_at}
-                                            </p>
-                                        </div>
+                    {/* Right: Rincian Unit Muatan (Clean Manifest) */}
+                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 flex flex-col justify-between">
+                        <div>
+                            <h3 className="font-bold text-xs uppercase tracking-wider text-slate-400 pb-2 border-b border-slate-100">
+                                Manifest Muatan Terdaftar
+                            </h3>
+                            <div className="mt-3 space-y-2 text-xs">
+                                {units.length === 0 ? (
+                                    <div className="flex items-center justify-between py-2 border-b border-slate-100">
+                                        <span className="font-semibold text-slate-800">{shipment.cargo_name}</span>
+                                        <span className="font-bold text-slate-900">
+                                            {Number(shipment.total_quantity).toLocaleString('id-ID')} {shipment.unit}
+                                        </span>
                                     </div>
+                                ) : (
+                                    units.map((u, idx) => (
+                                        <div
+                                            key={idx}
+                                            className="flex items-center justify-between py-2 px-3 rounded-lg bg-slate-50 border border-slate-200 text-xs font-medium"
+                                        >
+                                            <span className="text-slate-800">{u.unit_name}</span>
+                                            <span className="font-semibold text-slate-900 px-2 py-0.5 rounded bg-white border border-slate-200">
+                                                ×{u.quantity}
+                                            </span>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                        <p className="text-[11px] text-slate-400 pt-3 mt-3 border-t border-slate-100 font-normal">
+                            Total volume muatan terverifikasi oleh Supervisor GTD.
+                        </p>
+                    </div>
+                </div>
 
-                                    <a
-                                        href={doc.download_url}
-                                        className="p-2 rounded-lg text-gray-900 text-xs font-semibold flex items-center justify-center shrink-0 transition-colors shadow-2xs hover:brightness-95"
-                                        style={{ backgroundColor: '#F6C343' }}
-                                        title="Unduh Berkas"
-                                    >
-                                        <Download size={14} />
-                                    </a>
+                {/* ── 4. Vertical Timeline (7) vs Verified Document Vault (5) ── */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    {/* Vertical Timeline (7 Columns) */}
+                    <div className="lg:col-span-7 rounded-xl bg-white border border-slate-200 shadow-sm p-5 sm:p-6">
+                        <div className="flex items-center justify-between mb-5 pb-3 border-b border-slate-100">
+                            <div className="flex items-center gap-2">
+                                <MapPin size={16} className="text-[#F6C343]" />
+                                <h2 className="text-sm sm:text-base font-bold text-[#06283A]">
+                                    Timeline Pos Checkpoint
+                                </h2>
+                            </div>
+                            <span className="text-xs font-medium text-slate-500">
+                                {completedNodes} dari {totalNodes} Checkpoint Selesai
+                            </span>
+                        </div>
+
+                        <div className="relative pl-6 space-y-4 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-200">
+                            {timeline.length === 0 ? (
+                                <p className="text-xs text-slate-400 italic py-4">Belum ada pos checkpoint yang tercatat.</p>
+                            ) : (
+                                timeline.map((node, idx) => {
+                                    const isCompleted = node.status === 'COMPLETED' || node.status === 'SELESAI';
+                                    const isInProgress = node.status === 'IN_PROGRESS' || node.status === 'SEDANG BERJALAN';
+
+                                    return (
+                                        <div key={idx} className="relative">
+                                            {/* Status Node Icon */}
+                                            <div
+                                                className={`absolute -left-[27px] top-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ring-4 ring-white ${
+                                                    isCompleted
+                                                        ? 'bg-emerald-600 text-white'
+                                                        : isInProgress
+                                                        ? 'bg-[#F6C343] text-slate-900'
+                                                        : 'bg-slate-100 text-slate-500 border border-slate-300'
+                                                }`}
+                                            >
+                                                {isCompleted ? (
+                                                    <CheckCircle2 size={13} />
+                                                ) : isInProgress ? (
+                                                    <Clock size={13} />
+                                                ) : (
+                                                    node.sequence
+                                                )}
+                                            </div>
+
+                                            <div className="bg-slate-50/80 rounded-lg p-3.5 border border-slate-200">
+                                                <div className="flex items-center justify-between">
+                                                    <h4 className="text-xs font-semibold text-slate-900">
+                                                        {node.checkpoint_name}
+                                                    </h4>
+                                                    {isCompleted ? (
+                                                        <span className="text-[10px] font-semibold text-emerald-700">
+                                                            Selesai
+                                                        </span>
+                                                    ) : isInProgress ? (
+                                                        <span className="text-[10px] font-semibold text-blue-700">
+                                                            Sedang Berjalan
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-[10px] font-medium text-slate-500">
+                                                            Menunggu
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                <div className="grid grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-slate-200 text-xs">
+                                                    <div>
+                                                        <span className="text-[10px] text-slate-400 block font-semibold uppercase">Waktu Mulai:</span>
+                                                        <span className="font-medium text-slate-800">{node.actual_start || '-'}</span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-[10px] text-slate-400 block font-semibold uppercase">Waktu Selesai:</span>
+                                                        <span className="font-medium text-slate-800">{node.actual_finish || '-'}</span>
+                                                    </div>
+                                                </div>
+
+                                                {node.pic_name && (
+                                                    <div className="mt-2 text-[11px] text-slate-500 font-normal flex items-center gap-1">
+                                                        <UserCheck size={12} className="text-slate-600" />
+                                                        <span>PIC Pos: <strong className="text-slate-800 font-medium">{node.pic_name}</strong></span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Verified Document Vault (5 Columns) */}
+                    <div className="lg:col-span-5 rounded-xl bg-white border border-slate-200 shadow-sm p-5 sm:p-6 flex flex-col">
+                        <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                            <div className="flex items-center gap-2">
+                                <FileText size={16} className="text-slate-700" />
+                                <h2 className="text-sm sm:text-base font-bold text-[#06283A]">
+                                    Document Vault
+                                </h2>
+                            </div>
+                            <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
+                                {documents.length} Dokumen Resmi
+                            </span>
+                        </div>
+
+                        <p className="text-xs text-slate-500 mb-4 font-normal leading-relaxed">
+                            Hanya berkas resmi yang telah diverifikasi dan disetujui Supervisor GTD yang dapat diakses dan diunduh.
+                        </p>
+
+                        <div className="space-y-2.5 flex-1">
+                            {documents.length === 0 ? (
+                                <div className="p-8 rounded-lg bg-slate-50 border border-slate-200 text-center text-slate-400 text-xs">
+                                    <ShieldCheck size={26} className="mx-auto mb-2 text-slate-400" />
+                                    <p className="font-semibold text-slate-700">Belum ada dokumen yang terverifikasi.</p>
+                                    <p className="text-slate-400 mt-1">Dokumen akan muncul otomatis setelah disetujui Supervisor.</p>
                                 </div>
-                            ))
-                        )}
+                            ) : (
+                                documents.map((doc) => (
+                                    <div
+                                        key={doc.id}
+                                        className="p-3 rounded-lg bg-slate-50 hover:bg-slate-100/90 border border-slate-200 flex items-center justify-between gap-3 transition-colors"
+                                    >
+                                        <div className="overflow-hidden space-y-0.5">
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-[#0F172A] text-white uppercase">
+                                                    {doc.document_type_code || 'DOC'}
+                                                </span>
+                                                <p className="text-xs font-semibold text-slate-900 truncate">
+                                                    {doc.file_name}
+                                                </p>
+                                            </div>
+                                            <p className="text-[11px] text-slate-500 truncate font-normal">
+                                                {doc.document_type}
+                                            </p>
+                                            <p className="text-[10px] text-emerald-700 font-medium">
+                                                Diverifikasi: {doc.verified_at} ({doc.verified_by})
+                                            </p>
+                                        </div>
+
+                                        <a
+                                            href={`/storage/${doc.file_path}`}
+                                            download
+                                            className="p-2 rounded-lg bg-[#0F172A] hover:bg-slate-800 text-white text-xs font-semibold flex items-center justify-center shrink-0 transition-colors cursor-pointer shadow-sm"
+                                            title="Unduh Berkas Resmi"
+                                        >
+                                            <Download size={14} />
+                                        </a>
+                                    </div>
+                                ))
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
-
-            {/* Inquiry Modal */}
-            {inquiryModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-xs animate-in fade-in">
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-2xl p-6 max-w-lg w-full">
-                        <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
-                            <h3 className="font-semibold text-gray-900 text-base">
-                                Hubungi PIC Operasional GTD
-                            </h3>
-                            <button
-                                onClick={() => setInquiryModalOpen(false)}
-                                className="text-gray-400 hover:text-gray-700 text-sm font-semibold cursor-pointer"
-                            >
-                                ✕
-                            </button>
-                        </div>
-
-                        <form onSubmit={submitInquiry} className="space-y-4">
-                            <div>
-                                <label className="block text-xs font-semibold text-gray-700 mb-1">
-                                    Subjek Pesan
-                                </label>
-                                <input
-                                    type="text"
-                                    value={data.subject}
-                                    onChange={(e) => setData('subject', e.target.value)}
-                                    className="w-full px-3.5 py-2 rounded-xl bg-[#F5F5F5] border border-gray-200 text-xs text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:bg-white"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-semibold text-gray-700 mb-1">
-                                    Pesan / Pertanyaan
-                                </label>
-                                <textarea
-                                    rows={4}
-                                    value={data.message}
-                                    onChange={(e) => setData('message', e.target.value)}
-                                    placeholder="Tuliskan pertanyaan operasional atau koordinasi kargo Anda..."
-                                    className="w-full px-3.5 py-2 rounded-xl bg-[#F5F5F5] border border-gray-200 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:bg-white placeholder-gray-400"
-                                />
-                            </div>
-
-                            <div className="flex items-center justify-end gap-2 pt-2">
-                                <button
-                                    type="button"
-                                    onClick={() => setInquiryModalOpen(false)}
-                                    className="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium cursor-pointer"
-                                >
-                                    Batal
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={processing}
-                                    className="px-5 py-2 rounded-xl text-gray-900 text-xs font-semibold cursor-pointer hover:brightness-95"
-                                    style={{ backgroundColor: '#F6C343' }}
-                                >
-                                    {processing ? 'Mengirim...' : 'Kirim Pesan'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
         </CustomerLayout>
     );
 }

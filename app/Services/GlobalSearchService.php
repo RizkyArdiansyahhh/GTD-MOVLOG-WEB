@@ -183,7 +183,7 @@ class GlobalSearchService
      */
     private function getCustomerForUser(User $user): ?Customer
     {
-        return Customer::where('email', $user->email)->first();
+        return $user->customer;
     }
 
     /**

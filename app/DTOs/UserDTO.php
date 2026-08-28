@@ -33,5 +33,7 @@ class UserDTO extends Data
         public readonly UserStatus $status,
 
         public readonly string|null $role = null,
+
+        public readonly string|null|Optional $customer_id = null,
     ) {}
 }

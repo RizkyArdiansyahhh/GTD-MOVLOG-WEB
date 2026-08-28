@@ -1,429 +1,404 @@
+import { useState, useEffect, useMemo } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import CustomerLayout from '@/Layouts/CustomerLayout';
-import type { CustomerCompany, CustomerStats, ShipmentSummary } from '@/types/customer';
+import { useRealtimeUpdates } from '@/hooks/useRealtimeUpdates';
+import type {
+    CustomerCompany,
+    CustomerStats,
+    ShipmentSummary,
+    CheckpointOverviewGroup,
+} from '@/types/customer';
 import {
-    MapPin,
     ArrowRight,
-    History,
-    Headphones,
-    BookOpen,
-    Send,
-    ChevronRight,
     CheckCircle2,
-    Package,
-    Truck,
     Clock,
+    XCircle,
+    Package,
+    ShieldCheck,
+    AlertTriangle,
+    MapPin,
+    Compass,
+    PhoneCall,
+    ExternalLink,
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
-
-interface ActivityItem {
-    id: string;
-    title: string;
-    description: string;
-    time_ago: string;
-    type: string;
-    badge_color?: 'yellow' | 'blue' | 'green';
-}
 
 interface DashboardProps {
-    company: CustomerCompany;
-    stats: CustomerStats & { in_transit?: number };
-    recent_shipments: ShipmentSummary[];
-    activities?: ActivityItem[];
+    customer: CustomerCompany;
+    stats: CustomerStats;
+    recentShipments: ShipmentSummary[];
+    checkpointGroups?: CheckpointOverviewGroup[];
 }
 
-export default function Dashboard({ company, stats, recent_shipments, activities }: DashboardProps) {
-    const [greeting, setGreeting] = useState('Selamat Pagi');
+export default function Dashboard({
+    customer,
+    stats,
+    recentShipments = [],
+}: DashboardProps) {
+    useRealtimeUpdates(customer?.id);
+
+    const [greeting, setGreeting] = useState('Selamat Datang');
 
     useEffect(() => {
         const hour = new Date().getHours();
-        if (hour >= 4 && hour < 11) setGreeting('Selamat Pagi');
-        else if (hour >= 11 && hour < 15) setGreeting('Selamat Siang');
-        else if (hour >= 15 && hour < 18) setGreeting('Selamat Sore');
-        else setGreeting('Selamat Malam');
+        if (hour >= 4 && hour < 11) {
+            setGreeting('Selamat Pagi');
+        } else if (hour >= 11 && hour < 15) {
+            setGreeting('Selamat Siang');
+        } else if (hour >= 15 && hour < 18) {
+            setGreeting('Selamat Sore');
+        } else {
+            setGreeting('Selamat Malam');
+        }
     }, []);
 
-    // Fallback activities if none passed from props
-    const activityFeed: ActivityItem[] = activities && activities.length > 0 ? activities : [
-        {
-            id: 'act-1',
-            title: 'Manifest Berhasil Diunggah',
-            description: 'Dokumen pengiriman #LTR-88304 telah diverifikasi oleh admin. Proses pemuatan di pelabuhan asal dapat segera dimulai.',
-            time_ago: '10 Menit yang lalu',
-            type: 'document',
-            badge_color: 'yellow',
-        },
-        {
-            id: 'act-2',
-            title: 'Armada Memasuki Checkpoint 4',
-            description: 'Unit DT-104 (Barge Titan 2) tiba di Area Transit Pelabuhan Merak. Estimasi keberangkatan menuju tujuan akhir pukul 19:00.',
-            time_ago: '1 Jam yang lalu',
-            type: 'checkpoint',
-            badge_color: 'blue',
-        },
-        {
-            id: 'act-3',
-            title: 'Pengiriman Selesai',
-            description: 'Muatan Batubara 5000MT telah dibongkar di Site PLTU Suralaya. Bukti penyerahan barang (POD) tersedia untuk diunduh.',
-            time_ago: 'Kemarin, 16:45',
-            type: 'complete',
-            badge_color: 'green',
-        },
-    ];
+    // Check if any shipments currently have exception/cancellation status
+    const exceptionShipments = useMemo(() => {
+        return recentShipments.filter((s) => {
+            const st = (s.status || '').toUpperCase();
+            return st === 'CANCELLED' || st === 'DIBATALKAN';
+        });
+    }, [recentShipments]);
 
-    const getStatusBadge = (status: string, label?: string) => {
-        const text = (label || status || '').toUpperCase();
-        if (text.includes('PERJALANAN') || text.includes('IN_PROGRESS')) {
+    // Format semantic status badge (Clean text style without heavy pill backgrounds)
+    const renderStatusBadge = (status: string) => {
+        const s = (status || '').toUpperCase();
+        if (s === 'IN_PROGRESS' || s === 'IN_TRANSIT' || s === 'DALAM PERJALANAN') {
             return (
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-600">
-                    Dalam Perjalanan
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
+                    <span>Dalam Perjalanan</span>
                 </span>
             );
         }
-        if (text.includes('LOADING') || text.includes('DRAFT')) {
+        if (s === 'COMPLETED' || s === 'DELIVERED' || s === 'TERKIRIM') {
             return (
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700">
-                    Loading
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                    <span>Terkirim</span>
                 </span>
             );
         }
-        if (text.includes('TERKIRIM') || text.includes('COMPLETED') || text.includes('SELESAI')) {
+        if (s === 'CANCELLED' || s === 'DIBATALKAN') {
             return (
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600">
-                    Terkirim
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
+                    <span>Dibatalkan</span>
                 </span>
             );
         }
         return (
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">
-                {label || status}
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500">
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                <span>Persiapan Muat</span>
             </span>
         );
     };
 
     return (
-        <CustomerLayout title="Dashboard Tracking">
-            <Head title="Dashboard — Global Trans Djaya" />
+        <CustomerLayout title="Dashboard Pelanggan">
+            <Head title="Dashboard — GTD Customer Portal" />
 
-            {/* ── Top Greeting Header ── */}
-            <div className="mb-6">
-                <p className="text-yellow-600 text-xs font-semibold uppercase tracking-wider mb-1">
-                    Customer Portal
-                </p>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
-                    {greeting}, <span className="text-gray-900">{company?.company_name || 'Sejahtera Jaya'}</span> 👋
-                </h1>
-                <p className="text-sm text-gray-500 mt-1 font-medium">
-                    Berikut adalah ringkasan logistik dan pengiriman aktif Anda hari ini.
-                </p>
-            </div>
-
-            {/* ── Main Top Grid: Left (Tracking Posisi) + Right (3 Metric Cards & Pengiriman Terbaru) ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-6 items-start">
-                
-                {/* Left Column: Quick Action Card (Tracking Posisi) */}
-                <div className="lg:col-span-3 flex flex-col gap-4">
-                    <div className="p-5 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col justify-between h-full min-h-[190px]">
-                        <div>
-                            <div
-                                className="w-11 h-11 rounded-xl flex items-center justify-center mb-3.5"
-                                style={{ backgroundColor: '#6366f122' }}
-                            >
-                                <MapPin size={20} style={{ color: '#6366f1' }} strokeWidth={2} />
-                            </div>
-                            <h3 className="text-sm font-semibold text-gray-800">Tracking Posisi</h3>
-                            <p className="text-xs text-gray-500 leading-relaxed mt-1.5 font-normal">
-                                Pantau koordinat armada dan estimasi waktu sampai terkini.
-                            </p>
-                        </div>
-                        <div className="mt-5 pt-3 border-t border-gray-100">
-                            <Link
-                                href="/customer/monitoring-barang"
-                                className="inline-flex items-center gap-1.5 text-xs font-semibold text-yellow-600 hover:text-yellow-700 uppercase tracking-wider group transition-colors"
-                            >
-                                <span>Buka Monitoring</span>
-                                <ArrowRight size={13} strokeWidth={2.2} className="group-hover:translate-x-1 transition-transform" />
-                            </Link>
-                        </div>
-                    </div>
+            <div className="space-y-6">
+                {/* ── 1. Hero Greeting ── */}
+                <div className="pb-1">
+                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#06283A]">
+                        {greeting},{' '}
+                        <span className="text-slate-800">
+                            {customer?.company_name || customer?.pic_name || 'PT Customer A'}
+                        </span>
+                    </h1>
+                    <p className="text-xs sm:text-sm text-slate-500 mt-1 font-normal">
+                        Berikut adalah ringkasan logistik dan pengiriman aktif Anda hari ini.
+                    </p>
                 </div>
 
-                {/* Right Column: 3 Metric Cards + Pengiriman Terbaru Table */}
-                <div className="lg:col-span-9 flex flex-col gap-4">
-                    
-                    {/* 3 Metric Cards */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        {/* Card 1: Pengiriman Aktif */}
-                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow duration-200 flex flex-col gap-4">
-                            <div className="flex items-center justify-between">
-                                <div
-                                    className="w-11 h-11 rounded-xl flex items-center justify-center"
-                                    style={{ backgroundColor: '#F6C34322' }}
-                                >
-                                    <Package size={20} style={{ color: '#F6C343' }} strokeWidth={2} />
-                                </div>
-                                <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
-                                    +3 Aktif
-                                </span>
-                            </div>
+                {/* ── 2. Top Split Workstation: Left Action Cards + Right Metrics & Table ── */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                    {/* Left Column (Highlight & Action Cards) - 4 Cols */}
+                    <div className="lg:col-span-4 flex flex-col gap-4">
+                        {/* Card 1: Tracking Posisi Armada (Clean outline icon, no pastel box) */}
+                        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 flex flex-col justify-between min-h-[175px]">
                             <div>
-                                <p className="text-2xl font-bold text-gray-900 leading-none">
-                                    {stats?.active_shipments ?? 10}
+                                <Compass size={24} className="text-blue-600 mb-3" strokeWidth={1.8} />
+                                <h3 className="font-bold text-sm sm:text-base text-[#06283A]">
+                                    Tracking Posisi Armada
+                                </h3>
+                                <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                                    Pantau koordinat transit, status pos perjalanan, dan estimasi waktu sampai terkini secara langsung.
                                 </p>
-                                <p className="text-sm text-gray-500 mt-1 font-medium">Pengiriman Aktif</p>
+                            </div>
+                            <div className="pt-3.5 mt-2 border-t border-slate-100">
+                                <Link
+                                    href="/customer/monitoring-barang"
+                                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-900 hover:text-yellow-600 transition-colors uppercase tracking-wider group"
+                                >
+                                    <span>Buka Monitoring</span>
+                                    <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
+                                </Link>
                             </div>
                         </div>
 
-                        {/* Card 2: Dalam Perjalanan */}
-                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow duration-200 flex flex-col gap-4">
-                            <div className="flex items-center justify-between">
-                                <div
-                                    className="w-11 h-11 rounded-xl flex items-center justify-center"
-                                    style={{ backgroundColor: '#6366f122' }}
-                                >
-                                    <Truck size={20} style={{ color: '#6366f1' }} strokeWidth={2} />
+                        {/* Card 2: Status Operasional Normal / Attention Card (Clean outline icon) */}
+                        {exceptionShipments.length > 0 ? (
+                            <div className="bg-amber-50 rounded-xl border border-amber-200 p-5 shadow-sm">
+                                <div className="flex items-center gap-2 text-amber-900 font-bold text-xs mb-1.5">
+                                    <AlertTriangle size={16} className="text-amber-600 shrink-0" />
+                                    <span>Perlu Perhatian</span>
                                 </div>
-                                <span className="flex items-center gap-1 text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
-                                    Armada Aktif
-                                </span>
-                            </div>
-                            <div>
-                                <p className="text-2xl font-bold text-gray-900 leading-none">
-                                    {stats?.in_transit ?? 3}
+                                <p className="text-xs text-amber-800 leading-relaxed">
+                                    Terdapat {exceptionShipments.length} pengiriman yang dibatalkan atau membutuhkan koordinasi:
                                 </p>
-                                <p className="text-sm text-gray-500 mt-1 font-medium">Dalam Perjalanan</p>
+                                <p className="text-xs font-bold text-amber-950 mt-1">
+                                    {exceptionShipments.map((s) => `#${s.assignment_no}`).join(', ')}
+                                </p>
                             </div>
-                        </div>
-
-                        {/* Card 3: Terkirim (7 Hari) */}
-                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow duration-200 flex flex-col gap-4">
-                            <div className="flex items-center justify-between">
-                                <div
-                                    className="w-11 h-11 rounded-xl flex items-center justify-center"
-                                    style={{ backgroundColor: '#10b98122' }}
-                                >
-                                    <CheckCircle2 size={20} style={{ color: '#10b981' }} strokeWidth={2} />
+                        ) : (
+                            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 flex flex-col justify-between min-h-[175px]">
+                                <div>
+                                    <ShieldCheck size={24} className="text-emerald-600 mb-3" strokeWidth={1.8} />
+                                    <h3 className="font-bold text-sm text-[#06283A]">
+                                        Status Operasional Normal
+                                    </h3>
+                                    <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                                        Semua armada pengiriman aktif beroperasi sesuai jadwal dan rute yang telah ditentukan.
+                                    </p>
                                 </div>
-                                <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
-                                    Selesai
-                                </span>
+                                <div className="pt-3 mt-2 border-t border-slate-100 flex items-center gap-2 text-[11px] font-medium text-emerald-700">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 animate-pulse" />
+                                    <span>Pembaruan otomatis aktif</span>
+                                </div>
                             </div>
-                            <div>
-                                <p className="text-2xl font-bold text-gray-900 leading-none">
-                                    {stats?.completed_shipments ?? 15}
-                                </p>
-                                <p className="text-sm text-gray-500 mt-1 font-medium">Terkirim (7 Hari)</p>
-                            </div>
-                        </div>
+                        )}
                     </div>
 
-                    {/* Pengiriman Terbaru Table Card */}
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="font-semibold text-gray-800 text-base">Pengiriman Terbaru</h2>
-                            <Link
-                                href="/customer/monitoring-barang"
-                                className="text-xs text-gray-400 font-medium hover:text-gray-600 transition-colors"
-                            >
-                                Lihat semua
-                            </Link>
+                    {/* Right Column (Connected 3-Metrics Row + Recent Shipments Table) - 8 Cols */}
+                    <div className="lg:col-span-8 flex flex-col gap-4">
+                        {/* Connected 3-Metrics Baris Bersambung with Thin Vertical Dividers */}
+                        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
+                                {/* Metric 1: Pengiriman Aktif */}
+                                <div className="p-4 sm:p-5">
+                                    <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+                                        Pengiriman Aktif
+                                    </span>
+                                    <div className="mt-2 flex items-baseline gap-2">
+                                        <span className="text-2xl sm:text-3xl font-bold text-[#06283A] tracking-tight tabular-nums">
+                                            {Number(stats?.active_shipments ?? 0).toLocaleString('id-ID')}
+                                        </span>
+                                        <span className="text-xs text-slate-400 font-medium">armada</span>
+                                    </div>
+                                </div>
+
+                                {/* Metric 2: Terkirim 7 Hari */}
+                                <div className="p-4 sm:p-5">
+                                    <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+                                        Terkirim (7 Hari)
+                                    </span>
+                                    <div className="mt-2 flex items-baseline gap-2">
+                                        <span className="text-2xl sm:text-3xl font-bold text-[#06283A] tracking-tight tabular-nums">
+                                            {Number(stats?.completed_last_7d ?? 0).toLocaleString('id-ID')}
+                                        </span>
+                                        <span className="text-xs text-slate-400 font-medium">selesai</span>
+                                    </div>
+                                </div>
+
+                                {/* Metric 3: Total Kargo Dikelola */}
+                                <div className="p-4 sm:p-5">
+                                    <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+                                        Total Kargo
+                                    </span>
+                                    <div className="mt-2 flex items-baseline gap-2">
+                                        <span className="text-2xl sm:text-3xl font-bold text-[#06283A] tracking-tight tabular-nums truncate">
+                                            {Number(stats?.total_cargo_tonnage ?? 0).toLocaleString('id-ID')}
+                                        </span>
+                                        <span className="text-xs text-slate-400 font-medium">akumulasi</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left">
-                                <thead>
-                                    <tr className="border-b border-gray-100 text-xs font-semibold text-gray-400">
-                                        <th className="pb-3 font-semibold">ID Pengiriman</th>
-                                        <th className="pb-3 font-semibold">Tujuan</th>
-                                        <th className="pb-3 font-semibold text-center">Status</th>
-                                        <th className="pb-3 font-semibold">ETA</th>
-                                        <th className="pb-3 font-semibold text-right">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100 text-xs">
-                                    {recent_shipments.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={5} className="py-10 text-center text-gray-400 font-medium">
-                                                <div
-                                                    className="flex items-center justify-center rounded-full mb-3 mx-auto"
-                                                    style={{ width: 48, height: 48, backgroundColor: '#F6C34322' }}
-                                                >
-                                                    <Package size={22} style={{ color: '#F6C343' }} strokeWidth={1.8} />
-                                                </div>
-                                                <p className="text-sm font-medium text-gray-500">Belum ada pengiriman</p>
-                                                <p className="text-xs text-gray-400 mt-1">Data akan muncul di sini</p>
-                                            </td>
+                        {/* Recent Shipments Table Card */}
+                        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex-1 flex flex-col">
+                            <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
+                                <h2 className="font-bold text-sm sm:text-base text-[#06283A]">
+                                    Pengiriman Terbaru
+                                </h2>
+                                <Link
+                                    href="/customer/monitoring-barang"
+                                    className="text-xs font-semibold text-slate-600 hover:text-[#06283A] uppercase tracking-wider transition-colors inline-flex items-center gap-1 group"
+                                >
+                                    <span>Lihat Semua</span>
+                                    <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
+                                </Link>
+                            </div>
+
+                            <div className="overflow-x-auto flex-1">
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="bg-slate-50/80 border-b border-slate-200 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+                                            <th className="py-3 px-4">ID Pengiriman</th>
+                                            <th className="py-3 px-4">Tujuan / Rute</th>
+                                            <th className="py-3 px-4">Status</th>
+                                            <th className="py-3 px-4">ETA</th>
+                                            <th className="py-3 px-4 text-right">Aksi</th>
                                         </tr>
-                                    ) : (
-                                        recent_shipments.map((s) => (
-                                            <tr key={s.id} className="hover:bg-gray-50/70 transition-colors">
-                                                {/* ID & Cargo Name */}
-                                                <td className="py-3.5 pr-3">
-                                                    <div className="font-semibold text-gray-900 font-mono text-xs">
-                                                        #{s.assignment_no}
-                                                    </div>
-                                                    <div className="text-[11px] text-gray-400 truncate max-w-[130px]">
-                                                        {s.cargo_name}
-                                                    </div>
-                                                </td>
-
-                                                {/* Destination */}
-                                                <td className="py-3.5 pr-3">
-                                                    <div className="flex items-center gap-1.5 text-gray-700 font-medium truncate max-w-[200px]">
-                                                        <Send size={12} className="text-gray-400 shrink-0" />
-                                                        <span className="truncate">{s.destination}</span>
-                                                    </div>
-                                                    <div className="text-[10px] text-gray-400">
-                                                        Dari: {s.origin}
-                                                    </div>
-                                                </td>
-
-                                                {/* Status Badge */}
-                                                <td className="py-3.5 px-2 text-center whitespace-nowrap">
-                                                    {getStatusBadge(s.status, s.status_label)}
-                                                </td>
-
-                                                {/* ETA */}
-                                                <td className="py-3.5 pr-3 text-gray-500 whitespace-nowrap font-medium text-xs">
-                                                    {s.eta || s.updated_at || 'Hari ini, 14:00'}
-                                                </td>
-
-                                                {/* Action Button */}
-                                                <td className="py-3.5 text-right whitespace-nowrap">
-                                                    <Link
-                                                        href={`/customer/monitoring-barang/${s.id}`}
-                                                        className="px-3 py-1 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-medium transition-colors inline-block"
-                                                    >
-                                                        Detail
-                                                    </Link>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100 text-xs font-normal">
+                                        {recentShipments.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={5} className="py-10 text-center text-slate-400">
+                                                    <p className="font-semibold text-slate-600">Belum ada pengiriman aktif saat ini.</p>
+                                                    <p className="text-[11px] text-slate-400 mt-0.5">Semua data sesi kargo akan otomatis tampil di sini.</p>
                                                 </td>
                                             </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
+                                        ) : (
+                                            recentShipments.map((shipment) => (
+                                                <tr key={shipment.id} className="hover:bg-slate-50 transition-colors">
+                                                    {/* ID & Cargo */}
+                                                    <td className="py-3.5 px-4 whitespace-nowrap">
+                                                        <div className="font-mono font-semibold text-xs text-[#06283A]">
+                                                            #{shipment.assignment_no}
+                                                        </div>
+                                                        <div className="text-[11px] text-slate-500 font-normal">
+                                                            {shipment.cargo_name}
+                                                        </div>
+                                                    </td>
+
+                                                    {/* Route */}
+                                                    <td className="py-3.5 px-4">
+                                                        <div className="flex items-center gap-1.5 text-slate-800 text-xs font-medium max-w-[200px]">
+                                                            <MapPin size={13} className="text-[#F6C343] shrink-0" />
+                                                            <span className="truncate">{shipment.destination}</span>
+                                                        </div>
+                                                        <div className="text-[10px] text-slate-400 pl-4 truncate font-normal">
+                                                            Asal {shipment.origin}
+                                                        </div>
+                                                    </td>
+
+                                                    {/* Status (Clean text style) */}
+                                                    <td className="py-3.5 px-4 whitespace-nowrap">
+                                                        {renderStatusBadge(shipment.status)}
+                                                    </td>
+
+                                                    {/* ETA */}
+                                                    <td className="py-3.5 px-4 whitespace-nowrap">
+                                                        <span className="font-medium text-slate-800">
+                                                            {shipment.eta || '-'}
+                                                        </span>
+                                                    </td>
+
+                                                    {/* Detail CTA */}
+                                                    <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                                                        <Link
+                                                            href={`/customer/shipment/${shipment.id}`}
+                                                            className="px-3 py-1 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 text-[11px] font-semibold transition-all inline-flex items-center gap-1"
+                                                        >
+                                                            <span>DETAIL</span>
+                                                        </Link>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* ── Bottom Grid: Aktivitas Terbaru (Left) & Butuh Bantuan (Right) ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                
-                {/* Aktivitas Terbaru Card */}
-                <div className="lg:col-span-7 rounded-2xl bg-white border border-gray-100 shadow-sm p-6">
-                    <div className="flex items-center justify-between mb-5">
-                        <h2 className="font-semibold text-gray-800 text-base">Aktivitas Terbaru</h2>
-                        <div className="flex items-center gap-1 text-gray-400 text-xs font-medium cursor-pointer hover:text-gray-600 transition-colors">
-                            <span>Riwayat lengkap</span>
-                            <History size={13} />
-                        </div>
-                    </div>
-
-                    <div className="relative pl-6 space-y-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-[2px] before:bg-gray-100">
-                        {activityFeed.map((act) => {
-                            let dotColor = 'bg-yellow-400';
-                            if (act.badge_color === 'blue') dotColor = 'bg-indigo-500';
-                            if (act.badge_color === 'green') dotColor = 'bg-emerald-500';
-
-                            return (
-                                <div key={act.id} className="relative">
-                                    <span className={`absolute -left-[25px] top-1.5 w-2.5 h-2.5 rounded-full ${dotColor} ring-4 ring-white`} />
-                                    <h4 className="text-xs font-semibold text-gray-900 leading-snug">
-                                        {act.title}
-                                    </h4>
-                                    <p className="text-xs text-gray-500 mt-1 leading-relaxed font-normal">
-                                        {act.description}
-                                    </p>
-                                    <span className="text-[11px] font-medium text-gray-400 mt-1.5 block">
-                                        {act.time_ago}
-                                    </span>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                {/* Butuh Bantuan Card (Dark Navy GTD Gradient) */}
-                <div
-                    className="lg:col-span-5 rounded-2xl text-white p-6 shadow-sm flex flex-col justify-between relative overflow-hidden"
-                    style={{
-                        background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
-                    }}
-                >
-                    {/* Decorative gold circle */}
-                    <div
-                        className="absolute right-0 top-0 rounded-full opacity-10 pointer-events-none"
-                        style={{
-                            width: 200,
-                            height: 200,
-                            background: '#F6C343',
-                            transform: 'translate(30%, -30%)',
-                        }}
-                    />
-
-                    <div className="relative z-10">
-                        <p className="text-yellow-400 text-xs font-semibold uppercase tracking-widest mb-1">
-                            Bantuan Pelanggan
-                        </p>
-                        <h2 className="text-xl font-bold text-white tracking-tight">Butuh Bantuan?</h2>
-                        <p className="text-xs text-blue-200 mt-1.5 leading-relaxed font-normal">
-                            Layanan dukungan pelanggan kami tersedia 24/7 untuk memantau pengiriman Anda dan membantu kendala operasional.
-                        </p>
-
-                        <div className="space-y-3 mt-6">
-                            {/* Hubungi Account Manager Button */}
-                            <a
-                                href="https://wa.me/6281234567890"
-                                target="_blank"
-                                rel="noreferrer"
-                                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-white/10 hover:bg-white/15 backdrop-blur-sm border border-white/10 transition-all text-left group"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className="w-9 h-9 rounded-lg bg-yellow-400/20 text-yellow-400 flex items-center justify-center shrink-0">
-                                        <Headphones size={17} />
-                                    </div>
-                                    <div>
-                                        <div className="text-xs font-semibold text-white group-hover:text-yellow-300 transition-colors">
-                                            Hubungi Account Manager
-                                        </div>
-                                        <div className="text-[10px] text-blue-200 font-medium tracking-wide">
-                                            Respons Cepat &lt; 15 Menit
-                                        </div>
-                                    </div>
-                                </div>
-                                <ChevronRight size={15} className="text-blue-200 group-hover:text-yellow-300 group-hover:translate-x-0.5 transition-all" />
-                            </a>
-
-                            {/* Panduan Pengguna */}
+                {/* ── 3. Bottom Row: Aktivitas Terbaru (8 Cols) + Butuh Bantuan (4 Cols) ── */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                    {/* Aktivitas Terbaru (8 Columns) */}
+                    <div className="lg:col-span-8 bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+                        <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                            <h2 className="font-bold text-sm sm:text-base text-[#06283A]">
+                                Aktivitas Terbaru
+                            </h2>
                             <Link
-                                href="/customer/checkpoints"
-                                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-white/10 hover:bg-white/15 backdrop-blur-sm border border-white/10 transition-all text-left group"
+                                href="/customer/monitoring-barang"
+                                className="text-xs font-semibold text-slate-500 hover:text-slate-900 uppercase tracking-wider transition-colors inline-flex items-center gap-1"
                             >
-                                <div className="flex items-center gap-3">
-                                    <div className="w-9 h-9 rounded-lg bg-yellow-400/20 text-yellow-400 flex items-center justify-center shrink-0">
-                                        <BookOpen size={17} />
-                                    </div>
-                                    <div>
-                                        <div className="text-xs font-semibold text-white group-hover:text-yellow-300 transition-colors">
-                                            Panduan Pengguna
-                                        </div>
-                                        <div className="text-[10px] text-blue-200 font-medium tracking-wide">
-                                            Video Tutorial &amp; Dokumentasi
-                                        </div>
-                                    </div>
-                                </div>
-                                <ChevronRight size={15} className="text-blue-200 group-hover:text-yellow-300 group-hover:translate-x-0.5 transition-all" />
+                                <span>Riwayat Lengkap</span>
+                                <ExternalLink size={12} />
                             </Link>
                         </div>
+
+                        {/* Chronological Activity List */}
+                        <div className="space-y-4">
+                            {recentShipments.length > 0 ? (
+                                recentShipments.slice(0, 3).map((s, idx) => (
+                                    <div key={idx} className="flex items-start gap-3 text-xs">
+                                        <div className="w-2 h-2 rounded-full bg-[#F6C343] mt-1.5 shrink-0" />
+                                        <div className="flex-1 space-y-0.5">
+                                            <p className="font-semibold text-slate-900">
+                                                Armada #{s.assignment_no} — {s.current_checkpoint || 'Pos Operasional'}
+                                            </p>
+                                            <p className="text-slate-600 text-[11px] leading-relaxed">
+                                                Muatan {s.cargo_name} dalam proses transit rute {s.origin} menuju {s.destination}. Estimasi tiba {s.eta}.
+                                            </p>
+                                            <p className="text-[10px] text-slate-400 font-medium uppercase">
+                                                Status: {s.status === 'IN_PROGRESS' || s.status === 'IN_TRANSIT' ? 'Dalam Perjalanan' : s.status}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-xs text-slate-400 italic py-3">Belum ada aktivitas tercatat.</p>
+                            )}
+
+                            {/* Verified Document Notification Item */}
+                            <div className="flex items-start gap-3 text-xs pt-2 border-t border-slate-100">
+                                <div className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+                                <div className="flex-1 space-y-0.5">
+                                    <p className="font-semibold text-slate-900">
+                                        Document Vault &amp; Legalitas Aktif
+                                    </p>
+                                    <p className="text-slate-600 text-[11px] leading-relaxed">
+                                        Surat jalan, manifest, dan berita acara kargo yang telah disetujui Supervisor dapat langsung diunduh di halaman detail pengiriman.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div className="relative z-10 mt-6 pt-4 border-t border-white/10 flex items-center justify-between text-xs text-blue-200">
-                        <span>Layanan Monitoring Live</span>
-                        <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
-                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                            Online 24/7
-                        </span>
+                    {/* Butuh Bantuan Card (4 Columns) - Dark Navy Card */}
+                    <div className="lg:col-span-4 bg-[#0F172A] rounded-xl p-6 text-white flex flex-col justify-between shadow-sm min-h-[220px]">
+                        <div>
+                            <h3 className="text-lg font-bold tracking-tight text-white mb-2">
+                                Butuh Bantuan?
+                            </h3>
+                            <p className="text-xs text-slate-300 leading-relaxed font-normal">
+                                Layanan dukungan pelanggan kami tersedia 24/7 untuk memantau pengiriman Anda dan membantu kendala operasional.
+                            </p>
+                        </div>
+
+                        <div className="mt-5 space-y-2.5">
+                            {/* Action 1: WhatsApp Account Manager */}
+                            <a
+                                href="https://wa.me/6281234567890?text=Halo%20GTD%2C%20saya%20ingin%20koordinasi%20pengiriman%20kargo"
+                                target="_blank"
+                                rel="noreferrer"
+                                className="w-full flex items-center justify-between p-3 rounded-lg bg-slate-800/90 hover:bg-slate-700/90 border border-slate-700 transition-colors group cursor-pointer"
+                            >
+                                <div className="flex items-center gap-2.5 text-left">
+                                    <div
+                                        className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                                        style={{ backgroundColor: '#F6C343', color: '#06283A' }}
+                                    >
+                                        <PhoneCall size={14} />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-semibold text-white group-hover:text-yellow-400 transition-colors">
+                                            Hubungi Account Manager
+                                        </p>
+                                        <p className="text-[10px] text-slate-400 font-medium">
+                                            RESPONS CEPAT &lt; 15 MENIT
+                                        </p>
+                                    </div>
+                                </div>
+                                <ArrowRight size={13} className="text-slate-400 group-hover:text-white transition-colors" />
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>

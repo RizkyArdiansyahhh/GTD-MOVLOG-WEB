@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Web;
 
+use App\Enums\DocumentStatus;
+use App\Enums\SessionCheckpointStatus;
+use App\Enums\ShippingSessionStatus;
 use App\Http\Controllers\Controller;
+use App\Models\Checkpoint;
 use App\Models\Customer;
 use App\Models\Document;
-use App\Models\Report;
 use App\Models\SessionCheckpoint;
 use App\Models\ShippingSession;
 use Illuminate\Http\Request;
@@ -16,162 +19,363 @@ use Inertia\Response;
 
 class CustomerDashboardController extends Controller
 {
-    public function index(Request $request): Response
+    /**
+     * Helper to retrieve the authenticated customer profile.
+     */
+    private function getCustomer(Request $request): Customer
     {
-        $user = $request->user();
+        $customer = $request->user()?->customer;
 
-        $customer = null;
-        if ($user && method_exists($user, 'customer') && $user->customer) {
-            $customer = $user->customer;
-        } else {
-            $customer = Customer::first();
+        if (!$customer) {
+            // User berrole customer TAPI customer_id belum ter-assign — ini adalah kondisi
+            // error/data tidak konsisten, BUKAN kondisi yang boleh di-fallback ke customer lain.
+            abort(403, 'Akun Anda belum terhubung ke perusahaan customer manapun. Hubungi Admin GTD untuk menyelesaikan konfigurasi akun.');
         }
 
-        $company = [
-            'id' => $customer?->id ?? 'cust-gtd-01',
-            'company_name' => $customer?->company_name ?? ($user?->name ?? 'Sejahtera Jaya'),
-            'pic_name' => $customer?->pic_name ?? ($user?->name ?? 'Bpk. Hendra'),
-            'email' => $customer?->email ?? ($user?->email ?? 'contact@sejahterajaya.co.id'),
-            'phone' => $customer?->phone ?? ($user?->phone ?? '+62 812-8899-7700'),
-        ];
+        return $customer;
+    }
 
-        $totalShipments = ShippingSession::count();
-        $activeShipments = ShippingSession::whereNotIn('status', ['COMPLETED', 'CANCELLED'])->count();
-        $inTransitShipments = ShippingSession::whereIn('status', ['IN_PROGRESS', 'DALAM PERJALANAN'])->count();
-        $completedShipments = ShippingSession::where('status', 'COMPLETED')->count();
-        $totalCargoTonnage = (float) ShippingSession::sum('total_quantity');
+    /**
+     * Calculate progress percentage for a shipping session.
+     */
+    private function calculateProgress(ShippingSession $session): int
+    {
+        $total = $session->sessionCheckpoints->count();
+        if ($total === 0) {
+            return 0;
+        }
+
+        $completed = $session->sessionCheckpoints->filter(function ($sc) {
+            $statusVal = is_object($sc->status) ? ($sc->status->value ?? (string) $sc->status) : (string) $sc->status;
+            return in_array(strtoupper($statusVal), ['COMPLETED', 'SELESAI'], true);
+        })->count();
+
+        return (int) round(($completed / $total) * 100);
+    }
+
+    /**
+     * Estimate ETA based on remaining checkpoints (2 days per remaining checkpoint).
+     */
+    private function estimateEta(ShippingSession $session): string
+    {
+        $total = $session->sessionCheckpoints->count();
+        $completedOrSkipped = $session->sessionCheckpoints->filter(function ($sc) {
+            $statusVal = is_object($sc->status) ? ($sc->status->value ?? (string) $sc->status) : (string) $sc->status;
+            return in_array(strtoupper($statusVal), ['COMPLETED', 'SKIPPED', 'SELESAI', 'DILEWATI'], true);
+        })->count();
+
+        $remaining = max(0, $total - $completedOrSkipped);
+        $days = $remaining * 2;
+
+        return now()->addDays($days)->format('d M Y');
+    }
+
+    /**
+     * Helper to normalize status strings.
+     */
+    private function normalizeStatus(mixed $status): string
+    {
+        if (is_object($status)) {
+            return strtoupper($status->value ?? (string) $status);
+        }
+        return strtoupper((string) $status);
+    }
+
+    /**
+     * Customer Dashboard
+     */
+    public function index(Request $request): Response
+    {
+        $customer = $this->getCustomer($request);
+
+        // Calculate Real-time Stats
+        $totalShipments = ShippingSession::where('customer_id', $customer->id)->count();
+
+        $activeShipments = ShippingSession::where('customer_id', $customer->id)
+            ->whereIn('status', ['IN_PROGRESS', 'in_transit', 'IN_TRANSIT'])
+            ->count();
+
+        $inTransit = ShippingSession::where('customer_id', $customer->id)
+            ->whereIn('status', ['IN_PROGRESS', 'in_transit', 'IN_TRANSIT'])
+            ->whereNotNull('current_checkpoint_id')
+            ->count();
+
+        $completedLast7d = ShippingSession::where('customer_id', $customer->id)
+            ->whereIn('status', ['COMPLETED', 'completed', 'delivered', 'DELIVERED'])
+            ->where('updated_at', '>=', now()->subDays(7))
+            ->count();
+
+        $totalCargoTonnage = (float) ShippingSession::where('customer_id', $customer->id)
+            ->whereNotIn('status', ['CANCELLED', 'cancelled'])
+            ->sum('total_quantity');
 
         $stats = [
-            'total_shipments' => $totalShipments > 0 ? $totalShipments : 18,
-            'active_shipments' => $activeShipments > 0 ? $activeShipments : 10,
-            'in_transit' => $inTransitShipments > 0 ? $inTransitShipments : 3,
-            'completed_shipments' => $completedShipments > 0 ? $completedShipments : 15,
-            'total_cargo_tonnage' => $totalCargoTonnage > 0 ? $totalCargoTonnage : 45000,
+            'total_shipments'     => $totalShipments,
+            'active_shipments'    => $activeShipments,
+            'in_transit'          => $inTransit,
+            'completed_last_7d'   => $completedLast7d,
+            'total_cargo_tonnage' => $totalCargoTonnage,
         ];
 
-        $sessions = ShippingSession::with(['customer', 'currentCheckpoint', 'sessionCheckpoints.checkpoint'])
+        // 5 Recent Shipments
+        $sessions = ShippingSession::with([
+            'customer',
+            'currentCheckpoint',
+            'sessionCheckpoints.checkpoint',
+            'units',
+        ])
+            ->where('customer_id', $customer->id)
             ->latest()
             ->take(5)
             ->get();
 
-        if ($sessions->isNotEmpty()) {
-            $recentShipments = $sessions->map(function ($s) {
-                $statusVal = is_object($s->status) ? ($s->status->value ?? (string) $s->status) : (string) $s->status;
-                $statusUpper = strtoupper($statusVal);
+        $recentShipments = $sessions->map(function ($s) {
+            return [
+                'id'                 => (string) $s->id,
+                'assignment_no'      => (string) $s->assignment_no,
+                'cargo_name'         => (string) $s->cargo_name,
+                'origin'             => (string) ($s->origin ?? '-'),
+                'destination'        => (string) ($s->destination ?? '-'),
+                'status'             => $this->normalizeStatus($s->status),
+                'quantity'           => (float) ($s->total_quantity ?? 0),
+                'unit'               => (string) ($s->unit ?? 'MT'),
+                'current_checkpoint' => $s->currentCheckpoint?->name ?? 'Belum ditentukan',
+                'progress_percent'   => $this->calculateProgress($s),
+                'eta'                => $this->estimateEta($s),
+                'units'              => $s->units->map(fn ($u) => [
+                    'name' => (string) $u->unit_name,
+                    'qty'  => (int) $u->quantity,
+                ])->values()->toArray(),
+            ];
+        })->toArray();
 
-                $statusLabel = match ($statusUpper) {
-                    'IN_PROGRESS', 'DALAM PERJALANAN' => 'DALAM PERJALANAN',
-                    'LOADING', 'DRAFT' => 'LOADING',
-                    'COMPLETED' => 'TERKIRIM',
-                    default => $statusUpper,
-                };
-
+        // Checkpoint Groups Overview
+        $checkpointGroups = Checkpoint::with([
+            'shippingSessions' => fn ($q) => $q->where('customer_id', $customer->id)
+                ->whereIn('status', ['IN_PROGRESS', 'in_transit', 'IN_TRANSIT']),
+        ])
+            ->orderBy('sequence')
+            ->get()
+            ->map(function ($cp) {
                 return [
-                    'id' => (string) $s->id,
-                    'assignment_no' => $s->assignment_no ?? 'LTR-' . substr((string) $s->id, 0, 5),
-                    'cargo_name' => $s->cargo_name ?? 'General Cargo',
-                    'total_quantity' => (float) ($s->total_quantity ?? 0),
-                    'unit' => $s->unit ?? 'MT',
-                    'origin' => $s->origin ?? 'Pelabuhan Merak',
-                    'destination' => $s->destination ?? 'Kalimantan Selatan, PT Bara',
-                    'status' => $statusUpper,
-                    'status_label' => $statusLabel,
-                    'current_checkpoint' => $s->currentCheckpoint?->name ?? 'Pos Operasional',
-                    'progress_percentage' => 65,
-                    'total_checkpoints' => $s->sessionCheckpoints->count(),
-                    'completed_checkpoints' => $s->sessionCheckpoints->where('status', 'COMPLETED')->count(),
-                    'eta' => $s->updated_at ? $s->updated_at->format('d M Y') : 'Hari ini, 14:00',
-                    'updated_at' => $s->updated_at ? $s->updated_at->diffForHumans() : 'Baru saja',
+                    'id'            => (int) $cp->id,
+                    'name'          => (string) $cp->name,
+                    'sequence'      => (int) $cp->sequence,
+                    'active_fleets' => (int) $cp->shippingSessions->count(),
+                    'shipments'     => $cp->shippingSessions->take(3)->map(fn ($ss) => [
+                        'id'            => (string) $ss->id,
+                        'assignment_no' => (string) $ss->assignment_no,
+                        'cargo_name'    => (string) $ss->cargo_name,
+                    ])->values()->toArray(),
                 ];
             })->toArray();
-        } else {
-            $recentShipments = [
-                [
-                    'id' => '1',
-                    'assignment_no' => 'LTR-88291',
-                    'cargo_name' => 'General Cargo',
-                    'total_quantity' => 2500,
-                    'unit' => 'MT',
-                    'origin' => 'Pelabuhan Tanjung Priok',
-                    'destination' => 'Kalimantan Selatan, PT Bara',
-                    'status' => 'IN_PROGRESS',
-                    'status_label' => 'DALAM PERJALANAN',
-                    'current_checkpoint' => 'Alur Laut Jawa',
-                    'progress_percentage' => 60,
-                    'total_checkpoints' => 5,
-                    'completed_checkpoints' => 3,
-                    'eta' => 'Hari ini, 14:00',
-                    'updated_at' => '10 menit yang lalu',
-                ],
-                [
-                    'id' => '2',
-                    'assignment_no' => 'LTR-88304',
-                    'cargo_name' => 'Heavy Machinery',
-                    'total_quantity' => 120,
-                    'unit' => 'Unit',
-                    'origin' => 'Pelabuhan Merak',
-                    'destination' => 'Samarinda (Site Alpha)',
-                    'status' => 'LOADING',
-                    'status_label' => 'LOADING',
-                    'current_checkpoint' => 'Pelabuhan Asal',
-                    'progress_percentage' => 20,
-                    'total_checkpoints' => 4,
-                    'completed_checkpoints' => 1,
-                    'eta' => '12 Okt 2023',
-                    'updated_at' => '1 jam yang lalu',
-                ],
-                [
-                    'id' => '3',
-                    'assignment_no' => 'LTR-88285',
-                    'cargo_name' => 'Bulk Cargo',
-                    'total_quantity' => 5000,
-                    'unit' => 'MT',
-                    'origin' => 'Pelabuhan Gresik',
-                    'destination' => 'Kalimantan Timur, Jaya Emas',
-                    'status' => 'COMPLETED',
-                    'status_label' => 'TERKIRIM',
-                    'current_checkpoint' => 'Site PLTU Suralaya',
-                    'progress_percentage' => 100,
-                    'total_checkpoints' => 5,
-                    'completed_checkpoints' => 5,
-                    'eta' => 'Kemarin, 11:20',
-                    'updated_at' => 'Kemarin',
-                ],
-            ];
-        }
-
-        $activities = [
-            [
-                'id' => 'act-1',
-                'title' => 'Manifest Berhasil Diunggah',
-                'description' => 'Dokumen pengiriman #LTR-88304 telah diverifikasi oleh admin. Proses pemuatan di pelabuhan asal dapat segera dimulai.',
-                'time_ago' => '10 MENIT YANG LALU',
-                'type' => 'document',
-                'badge_color' => 'yellow',
-            ],
-            [
-                'id' => 'act-2',
-                'title' => 'Armada Memasuki Checkpoint 4',
-                'description' => 'Unit DT-104 (Barge Titan 2) tiba di Area Transit Pelabuhan Merak. Estimasi keberangkatan menuju tujuan akhir pukul 19:00.',
-                'time_ago' => '1 JAM YANG LALU',
-                'type' => 'checkpoint',
-                'badge_color' => 'blue',
-            ],
-            [
-                'id' => 'act-3',
-                'title' => 'Pengiriman Selesai',
-                'description' => 'Muatan Batubara 5000MT telah dibongkar di Site PLTU Suralaya. Bukti penyerahan barang (POD) tersedia untuk diunduh.',
-                'time_ago' => 'KEMARIN, 16:45',
-                'type' => 'complete',
-                'badge_color' => 'green',
-            ],
-        ];
 
         return Inertia::render('Customer/Dashboard', [
-            'company' => $company,
-            'stats' => $stats,
-            'recent_shipments' => $recentShipments,
-            'activities' => $activities,
+            'customer' => [
+                'id'           => (string) $customer->id,
+                'company_name' => (string) $customer->company_name,
+                'pic_name'     => $customer->pic_name,
+            ],
+            'stats'            => $stats,
+            'recentShipments'  => $recentShipments,
+            'checkpointGroups' => $checkpointGroups,
+        ]);
+    }
+
+    /**
+     * Customer Cargo Monitoring
+     */
+    public function monitoring(Request $request): Response
+    {
+        $customer = $this->getCustomer($request);
+
+        $query = ShippingSession::with([
+            'currentCheckpoint',
+            'sessionCheckpoints.checkpoint',
+            'units',
+        ])->where('customer_id', $customer->id);
+
+        // Status Filter
+        if ($request->filled('status') && $request->status !== 'all') {
+            $statusInput = strtolower((string) $request->status);
+            if ($statusInput === 'in_progress') {
+                $query->whereIn('status', ['IN_PROGRESS', 'in_transit', 'IN_TRANSIT']);
+            } elseif ($statusInput === 'completed') {
+                $query->whereIn('status', ['COMPLETED', 'completed', 'delivered', 'DELIVERED']);
+            } elseif ($statusInput === 'draft') {
+                $query->whereIn('status', ['DRAFT', 'draft', 'pending', 'PENDING']);
+            } else {
+                $query->where('status', $request->status);
+            }
+        }
+
+        // Search Filter
+        if ($request->filled('search')) {
+            $search = '%' . trim((string) $request->search) . '%';
+            $query->where(function ($q) use ($search) {
+                $q->where('assignment_no', 'ILIKE', $search)
+                    ->orWhere('cargo_name', 'ILIKE', $search)
+                    ->orWhere('origin', 'ILIKE', $search)
+                    ->orWhere('destination', 'ILIKE', $search);
+            });
+        }
+
+        $paginated = $query->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
+
+        $paginated->through(function ($s) {
+            return [
+                'id'                 => (string) $s->id,
+                'assignment_no'      => (string) $s->assignment_no,
+                'cargo_name'         => (string) $s->cargo_name,
+                'origin'             => (string) ($s->origin ?? '-'),
+                'destination'        => (string) ($s->destination ?? '-'),
+                'status'             => $this->normalizeStatus($s->status),
+                'quantity'           => (float) ($s->total_quantity ?? 0),
+                'unit'               => (string) ($s->unit ?? 'MT'),
+                'current_checkpoint' => $s->currentCheckpoint?->name ?? 'Belum terdeteksi',
+                'progress_percent'   => $this->calculateProgress($s),
+                'eta'                => $this->estimateEta($s),
+                'created_at'         => $s->created_at ? $s->created_at->format('d M Y') : '-',
+                'units'              => $s->units->map(fn ($u) => [
+                    'name' => (string) $u->unit_name,
+                    'qty'  => (int) $u->quantity,
+                ])->values()->toArray(),
+            ];
+        });
+
+        return Inertia::render('Customer/MonitoringBarang', [
+            'shipments' => $paginated,
+            'filters'   => [
+                'search' => (string) ($request->search ?? ''),
+                'status' => (string) ($request->status ?? 'all'),
+            ],
+        ]);
+    }
+
+    /**
+     * Checkpoint Overview Page
+     */
+    public function checkpoints(Request $request): Response
+    {
+        $customer = $this->getCustomer($request);
+
+        $checkpointGroups = Checkpoint::with([
+            'shippingSessions' => fn ($q) => $q->where('customer_id', $customer->id)
+                ->whereIn('status', ['IN_PROGRESS', 'in_transit', 'IN_TRANSIT']),
+        ])
+            ->orderBy('sequence')
+            ->get()
+            ->map(function ($cp) {
+                return [
+                    'id'            => (int) $cp->id,
+                    'name'          => (string) $cp->name,
+                    'sequence'      => (int) $cp->sequence,
+                    'active_fleets' => (int) $cp->shippingSessions->count(),
+                    'shipments'     => $cp->shippingSessions->map(fn ($ss) => [
+                        'id'             => (string) $ss->id,
+                        'assignment_no'  => (string) $ss->assignment_no,
+                        'cargo_name'     => (string) $ss->cargo_name,
+                        'total_quantity' => (float) $ss->total_quantity,
+                        'unit'           => (string) $ss->unit,
+                        'origin'         => (string) ($ss->origin ?? '-'),
+                        'destination'    => (string) ($ss->destination ?? '-'),
+                        'status_label'   => 'Dalam Perjalanan',
+                    ])->values()->toArray(),
+                ];
+            })->toArray();
+
+        $totalInTransit = ShippingSession::where('customer_id', $customer->id)
+            ->whereIn('status', ['IN_PROGRESS', 'in_transit', 'IN_TRANSIT'])
+            ->count();
+
+        return Inertia::render('Customer/Checkpoint', [
+            'checkpoints'      => $checkpointGroups,
+            'total_in_transit' => $totalInTransit,
+        ]);
+    }
+
+    /**
+     * Shipment Detail Page
+     */
+    public function detail(Request $request, string $id): Response
+    {
+        $this->getCustomer($request);
+
+        $session = ShippingSession::with([
+            'customer',
+            'currentCheckpoint',
+            'sessionCheckpoints.checkpoint',
+            'sessionCheckpoints.picUser',
+            'units',
+            'documents.documentType',
+            'documents.uploadedBy',
+            'documents.verifiedBy',
+        ])->findOrFail($id);
+
+        $this->authorize('view', $session);
+
+        // Dokumen: HANYA yang VERIFIED / APPROVED
+        $verifiedDocs = $session->documents->filter(function ($doc) {
+            $statusVal = is_object($doc->status) ? ($doc->status->value ?? (string) $doc->status) : (string) $doc->status;
+            return in_array(strtoupper((string) $statusVal), ['VERIFIED', 'APPROVED'], true);
+        })->map(function ($doc) {
+            return [
+                'id'                 => (string) $doc->id,
+                'file_name'          => (string) $doc->file_name,
+                'file_path'          => (string) $doc->file_path,
+                'document_type'      => (string) ($doc->documentType?->name ?? 'Dokumen'),
+                'document_type_code' => (string) ($doc->documentType?->name ?? 'DOC'),
+                'verified_at'        => $doc->verified_at ? $doc->verified_at->format('d M Y H:i') : '-',
+                'verified_by'        => (string) ($doc->verifiedBy?->name ?? 'Supervisor GTD'),
+                'remarks'            => $doc->remarks,
+            ];
+        })->values()->toArray();
+
+        // Timeline: Sorted by checkpoint sequence
+        $sortedCheckpoints = $session->sessionCheckpoints->sortBy(fn ($sc) => $sc->checkpoint?->sequence ?? 0);
+
+        $timeline = $sortedCheckpoints->map(function ($sc) {
+            return [
+                'checkpoint_name' => (string) ($sc->checkpoint?->name ?? 'Pos Operasional'),
+                'sequence'        => (int) ($sc->checkpoint?->sequence ?? 0),
+                'status'          => $this->normalizeStatus($sc->status),
+                'actual_start'    => $sc->actual_start ? $sc->actual_start->format('d M Y H:i') : null,
+                'actual_finish'   => $sc->actual_finish ? $sc->actual_finish->format('d M Y H:i') : null,
+                'pic_name'        => $sc->picUser?->name,
+            ];
+        })->values()->toArray();
+
+        // Units
+        $units = $session->units->map(function ($u) {
+            return [
+                'unit_name' => (string) $u->unit_name,
+                'quantity'  => (int) $u->quantity,
+                'notes'     => $u->notes,
+            ];
+        })->values()->toArray();
+
+        // Shipment Payload
+        $shipmentPayload = [
+            'id'                 => (string) $session->id,
+            'assignment_no'      => (string) $session->assignment_no,
+            'cargo_name'         => (string) $session->cargo_name,
+            'total_quantity'     => (float) $session->total_quantity,
+            'unit'               => (string) ($session->unit ?? 'MT'),
+            'origin'             => (string) ($session->origin ?? '-'),
+            'destination'        => (string) ($session->destination ?? '-'),
+            'status'             => $this->normalizeStatus($session->status),
+            'notes'              => $session->notes,
+            'created_at'         => $session->created_at ? $session->created_at->format('d M Y') : '-',
+            'progress_percent'   => $this->calculateProgress($session),
+            'eta'                => $this->estimateEta($session),
+            'current_checkpoint' => $session->currentCheckpoint?->name ?? 'Pos Operasional GTD',
+        ];
+
+        return Inertia::render('Customer/DetailShipment', [
+            'shipment'  => $shipmentPayload,
+            'units'     => $units,
+            'timeline'  => $timeline,
+            'documents' => $verifiedDocs,
         ]);
     }
 }

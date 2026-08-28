@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-<<<<<<< HEAD
+use App\Http\Controllers\Web\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Web\Auth\RegisteredUserController;
+use App\Http\Controllers\Web\Customer\NotificationController as CustomerNotificationController;
+use App\Http\Controllers\Web\Customer\ProfileController as CustomerProfileController;
 use App\Http\Controllers\Web\CustomerDashboardController;
-=======
 use App\Http\Controllers\Web\GlobalSearchController;
 use App\Http\Controllers\Web\KelolaAkunController;
 use App\Http\Controllers\Web\SesiPekerjaController;
->>>>>>> 87a76e6dce21f620680cefc100ed84c6fe3be853
 use App\Http\Controllers\Web\UserController;
 use App\Http\Controllers\Web\VerifikasiBerkasController;
 use Illuminate\Support\Facades\Route;
@@ -16,11 +17,7 @@ use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
-<<<<<<< HEAD
 | Web Routes — GTD-MoveLog (Inertia.js + React + TypeScript)
-=======
-| Web Routes Ã¢â‚¬â€ Admin Dashboard (Inertia.js + React + TypeScript)
->>>>>>> 87a76e6dce21f620680cefc100ed84c6fe3be853
 |--------------------------------------------------------------------------
 |
 | Authentication: Laravel Session (web guard)
@@ -36,34 +33,78 @@ Route::middleware('guest')->group(function () {
     Route::get('login', fn () => Inertia::render('Auth/Login'))
         ->name('login');
 
-    Route::post('login', [\App\Http\Controllers\Web\Auth\AuthenticatedSessionController::class, 'store'])
+    Route::post('login', [AuthenticatedSessionController::class, 'store'])
         ->name('login.store');
 
     Route::get('register', fn () => Inertia::render('Auth/Register'))
         ->name('register');
 
-    Route::post('register', [\App\Http\Controllers\Web\Auth\RegisteredUserController::class, 'store'])
+    Route::post('register', [RegisteredUserController::class, 'store'])
         ->name('register.store');
 });
 
 // --- Authenticated routes --------------------------------------------------
 Route::middleware(['auth', 'verified'])->group(function () {
 
-<<<<<<< HEAD
-    // Dashboard (Default & Customer Portal)
-    Route::get('/', [CustomerDashboardController::class, 'index'])
-        ->name('dashboard');
-=======
-    // Dashboard
-    Route::get('/', function () {
+    // Dashboard (Admin / Staff / Customer Redirect)
+    Route::get('/', function (\Illuminate\Http\Request $request) {
+        if ($request->user()?->hasRole('customer')) {
+            return redirect()->route('customer.dashboard');
+        }
+
         $stats = [
             'total_users'        => \App\Models\User::count(),
             'total_shipments'    => \App\Models\ShippingSession::count(),
             'active_drivers'     => \App\Models\User::whereHas('roles', fn ($q) => $q->where('name', 'field-worker'))->count(),
             'pending_deliveries' => \App\Models\ShippingSession::whereIn('status', ['in_transit', 'pending'])->count(),
         ];
-        return Inertia::render('Dashboard/Index', ['stats' => $stats]);
+        return Inertia::render('Dashboard/Index', [
+            'stats' => $stats,
+            'recentSessions' => \App\Models\ShippingSession::with(['customer', 'currentCheckpoint'])->latest()->take(5)->get(),
+            'masterCheckpoints' => \App\Models\Checkpoint::orderBy('sequence')->get(),
+        ]);
     })->name('dashboard');
+
+    // Customer Portal Routes
+    Route::middleware('role:customer')->prefix('customer')->name('customer.')->group(function () {
+        Route::get('/', [CustomerDashboardController::class, 'index'])
+            ->name('index');
+
+        Route::get('/dashboard', [CustomerDashboardController::class, 'index'])
+            ->name('dashboard');
+
+        Route::get('/monitoring-barang', [CustomerDashboardController::class, 'monitoring'])
+            ->name('monitoring');
+
+        Route::get('/monitoring-barang/{id}', [CustomerDashboardController::class, 'detail'])
+            ->name('monitoring.detail');
+
+        Route::get('/checkpoints', [CustomerDashboardController::class, 'checkpoints'])
+            ->name('checkpoints');
+
+        Route::get('/shipment/{id}', [CustomerDashboardController::class, 'detail'])
+            ->name('shipment.detail');
+
+        // Customer Profile Management
+        Route::get('/profil', [CustomerProfileController::class, 'edit'])
+            ->name('profile.edit');
+
+        Route::post('/profil', [CustomerProfileController::class, 'update'])
+            ->name('profile.update');
+
+        Route::put('/profil/password', [CustomerProfileController::class, 'updatePassword'])
+            ->name('profile.password.update');
+
+        // Customer Notifications
+        Route::get('/notifications', [CustomerNotificationController::class, 'index'])
+            ->name('notifications.index');
+
+        Route::post('/notifications/{id}/read', [CustomerNotificationController::class, 'markAsRead'])
+            ->name('notifications.read');
+
+        Route::post('/notifications/read-all', [CustomerNotificationController::class, 'markAllAsRead'])
+            ->name('notifications.read-all');
+    });
 
     // Global Search Endpoints
     Route::get('global-search/quick', [GlobalSearchController::class, 'quick'])
@@ -85,9 +126,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Kelola Sesi Pekerja
         Route::get('sesi-pekerja', [SesiPekerjaController::class, 'index'])
-            ->name('kelola-sesi');
+            ->name('sesi-pekerja');
         Route::get('sesi-pekerja/tambah', [SesiPekerjaController::class, 'create'])
-            ->name('kelola-sesi.create');
+            ->name('sesi-pekerja.create');
     });
 
     // --- Supervisor Routes --------------------------------------------
@@ -96,33 +137,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('verifikasi-berkas', [VerifikasiBerkasController::class, 'index'])
             ->name('verifikasi-berkas');
     });
->>>>>>> 87a76e6dce21f620680cefc100ed84c6fe3be853
-
-    Route::get('/customer', [CustomerDashboardController::class, 'index'])
-        ->name('customer.index');
-
-    Route::get('/customer/dashboard', [CustomerDashboardController::class, 'index'])
-        ->name('customer.dashboard');
-
-    // Customer Portal Pages
-    Route::get('/customer/monitoring-barang', fn () => Inertia::render('Customer/MonitoringBarang'))
-        ->name('customer.monitoring-barang');
-
-    Route::get('/customer/checkpoints', fn () => Inertia::render('Customer/Checkpoint'))
-        ->name('customer.checkpoints');
 
     // User Management
     Route::resource('users', UserController::class);
 
-    // Verifikasi Berkas
-    Route::get('verifikasi-berkas', [VerifikasiBerkasController::class, 'index'])
-        ->name('verifikasi-berkas');
-
-    // Kelola Sesi Pekerja
-    Route::get('sesi-pekerja', [SesiPekerjaController::class, 'index'])
-        ->name('sesi-pekerja');
-    Route::get('sesi-pekerja/tambah', [SesiPekerjaController::class, 'create'])
-        ->name('sesi-pekerja.create');
+    // Sesi Pekerja Operations
     Route::post('sesi-pekerja', [SesiPekerjaController::class, 'store'])
         ->name('sesi-pekerja.store');
     Route::get('sesi-pekerja/{session}', [SesiPekerjaController::class, 'show'])
@@ -131,10 +150,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('sesi-pekerja.stages.assign');
     Route::post('sesi-pekerja/{session}/stages/{stage}/complete', [SesiPekerjaController::class, 'completeStage'])
         ->name('sesi-pekerja.stages.complete');
+
+    // Verifikasi Berkas Detail
     Route::get('verifikasi-berkas/{contractNumber}', [VerifikasiBerkasController::class, 'show'])
         ->name('verifikasi-berkas.show');
 
     // Logout
-    Route::post('logout', [\App\Http\Controllers\Web\Auth\AuthenticatedSessionController::class, 'destroy'])
+    Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 });

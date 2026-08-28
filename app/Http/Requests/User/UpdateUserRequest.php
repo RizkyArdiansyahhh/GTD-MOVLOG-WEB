@@ -41,12 +41,31 @@ class UpdateUserRequest extends FormRequest
         $userId = $userParam instanceof \App\Models\User ? $userParam->id : $userParam;
 
         return [
+            'customer_id' => [
+                'nullable',
+                Rule::requiredIf(fn () => $this->input('role') === UserRole::Customer->value || $this->input('role') === 'customer'),
+                'string',
+                'exists:customers,id',
+            ],
             'name'     => ['required', 'string', 'max:255'],
             'email'    => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($userId)],
             'password' => ['nullable', 'confirmed', Password::min(8)->mixedCase()->numbers()],
             'status'   => ['required', Rule::enum(UserStatus::class)],
             'role'     => ['nullable', Rule::enum(UserRole::class)],
             'phone'    => ['nullable', 'string', 'max:20'],
+        ];
+    }
+
+    /**
+     * Get custom validation messages.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'customer_id.required_if' => 'Perusahaan customer wajib dipilih untuk pengguna dengan role customer.',
+            'customer_id.exists' => 'Perusahaan customer yang dipilih tidak valid.',
         ];
     }
 }

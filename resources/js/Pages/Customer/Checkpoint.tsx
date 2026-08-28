@@ -1,95 +1,108 @@
 import { Head, Link } from '@inertiajs/react';
 import CustomerLayout from '@/Layouts/CustomerLayout';
+import { useRealtimeUpdates } from '@/hooks/useRealtimeUpdates';
 import type { CheckpointOverviewGroup } from '@/types/customer';
-import { MapPin, ArrowRight, Package } from 'lucide-react';
+import { MapPin, ArrowRight, ArrowLeft } from 'lucide-react';
 
 interface CheckpointPageProps {
     checkpoints: CheckpointOverviewGroup[];
     total_in_transit: number;
 }
 
-export default function Checkpoint({ checkpoints, total_in_transit }: CheckpointPageProps) {
+export default function Checkpoint({ checkpoints = [], total_in_transit = 0 }: CheckpointPageProps) {
+    useRealtimeUpdates();
+
+    const activeCheckpoints = checkpoints.filter((cp) => cp.active_fleets > 0);
+    const displayedCheckpoints = activeCheckpoints.length > 0 ? activeCheckpoints : checkpoints;
+
     return (
-        <CustomerLayout title="Monitoring Checkpoint">
-            <Head title="Monitoring Checkpoint — Global Trans Djaya" />
+        <CustomerLayout title="Monitoring Pos Checkpoint">
+            <Head title="Pos Checkpoint — GTD Customer Portal" />
 
-            {/* Header */}
-            <div className="mb-6">
-                <p className="text-yellow-600 text-xs font-semibold uppercase tracking-wider mb-1">
-                    Checkpoint Network
-                </p>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
-                    Sebaran Armada di Titik Checkpoint
-                </h1>
-                <p className="text-sm text-gray-500 mt-1 font-medium">
-                    Tinjauan posisi {total_in_transit} pengiriman kargo aktif yang sedang transit di berbagai pos operasional GTD.
-                </p>
-            </div>
-
-            {checkpoints.length === 0 ? (
-                <div className="p-12 rounded-2xl bg-white border border-gray-100 text-center text-gray-400 text-sm shadow-sm">
-                    <div
-                        className="flex items-center justify-center rounded-full mb-3 mx-auto"
-                        style={{ width: 48, height: 48, backgroundColor: '#F6C34322' }}
+            <div className="space-y-6">
+                {/* ── Header ── */}
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6">
+                    <Link
+                        href="/customer/monitoring-barang"
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors mb-2"
                     >
-                        <MapPin size={22} style={{ color: '#F6C343' }} strokeWidth={1.8} />
-                    </div>
-                    <p className="font-semibold text-gray-700">Tidak ada armada di titik checkpoint</p>
-                    <p className="text-xs text-gray-400 mt-1">Saat ini tidak ada armada aktif yang sedang berada di titik checkpoint transit.</p>
+                        <ArrowLeft size={13} />
+                        <span>Buka Monitoring Kargo Lengkap</span>
+                    </Link>
+                    <h1 className="text-xl sm:text-2xl font-bold text-[#06283A] tracking-tight">
+                        Pos Checkpoint Transit
+                    </h1>
+                    <p className="text-xs sm:text-sm text-slate-500 mt-1 font-normal">
+                        Distribusi {total_in_transit} pengiriman kargo aktif yang sedang melintasi pos operasional GTD.
+                    </p>
                 </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                    {checkpoints.map((group) => (
-                        <div
-                            key={group.checkpoint_name}
-                            className="rounded-2xl bg-white border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col"
-                        >
-                            {/* Card Header */}
-                            <div className="p-4 bg-gray-50/60 border-b border-gray-100 flex items-center justify-between">
-                                <div className="flex items-center gap-2.5">
-                                    <div
-                                        className="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs text-gray-900"
-                                        style={{ backgroundColor: '#F6C343' }}
-                                    >
-                                        {group.sequence < 900 ? group.sequence : '📍'}
-                                    </div>
-                                    <h3 className="font-semibold text-gray-900 text-sm">{group.checkpoint_name}</h3>
-                                </div>
-                                <span className="px-2.5 py-0.5 rounded-full bg-yellow-50 text-yellow-800 text-xs font-semibold">
-                                    {group.shipments.length} Armada
-                                </span>
-                            </div>
 
-                            {/* Shipments at this checkpoint */}
-                            <div className="p-4 flex-1 divide-y divide-gray-100 space-y-3">
-                                {group.shipments.map((s, idx) => (
-                                    <div key={s.id} className={idx > 0 ? 'pt-3' : ''}>
-                                        <div className="flex items-center justify-between">
-                                            <span className="font-mono text-xs font-semibold text-yellow-600">
-                                                #{s.assignment_no}
-                                            </span>
-                                            <span className="text-xs font-medium text-gray-400">{s.status_label}</span>
-                                        </div>
-                                        <p className="text-xs font-semibold text-gray-800 mt-1">{s.cargo_name}</p>
-                                        <p className="text-xs text-gray-500 mt-0.5">
-                                            {s.total_quantity.toLocaleString('id-ID')} {s.unit} • {s.origin} ➔ {s.destination}
-                                        </p>
-                                        <div className="mt-2 text-right">
-                                            <Link
-                                                href={`/customer/monitoring-barang/${s.id}`}
-                                                className="text-xs font-semibold text-yellow-600 hover:text-yellow-700 inline-flex items-center gap-1"
-                                            >
-                                                <span>Detail Shipment</span>
-                                                <ArrowRight size={11} />
-                                            </Link>
-                                        </div>
+                {displayedCheckpoints.length === 0 ? (
+                    <div className="p-12 rounded-xl bg-white border border-slate-200 text-center text-slate-400 text-xs shadow-sm">
+                        <MapPin size={26} className="mx-auto mb-2 text-slate-300" />
+                        <p className="font-semibold text-slate-700 text-sm">Tidak ada armada di titik checkpoint</p>
+                        <p className="text-xs text-slate-400 mt-1">Saat ini tidak ada armada aktif yang sedang berada di titik checkpoint transit.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                        {displayedCheckpoints.map((group) => (
+                            <div
+                                key={group.id || group.name}
+                                className="rounded-xl bg-white border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between"
+                            >
+                                {/* Card Header */}
+                                <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                                    <div className="flex items-center gap-2.5">
+                                        <span className="w-6 h-6 rounded-md bg-[#0F172A] text-[#F6C343] font-bold text-xs flex items-center justify-center">
+                                            {group.sequence < 900 ? group.sequence : '•'}
+                                        </span>
+                                        <h3 className="font-bold text-[#06283A] text-xs sm:text-sm">{group.name}</h3>
                                     </div>
-                                ))}
+                                    <span className="px-2.5 py-0.5 rounded-md bg-blue-50 text-blue-800 border border-blue-200 text-[11px] font-semibold">
+                                        {group.active_fleets} Sesi
+                                    </span>
+                                </div>
+
+                                {/* Shipments at this checkpoint */}
+                                <div className="p-4 flex-1 divide-y divide-slate-100 space-y-3">
+                                    {group.shipments.length === 0 ? (
+                                        <p className="text-xs text-slate-400 italic py-2 font-normal">Tidak ada armada di pos ini.</p>
+                                    ) : (
+                                        group.shipments.map((s, idx) => (
+                                            <div key={s.id} className={idx > 0 ? 'pt-3' : ''}>
+                                                <div className="flex items-center justify-between">
+                                                    <span className="font-mono text-xs font-semibold text-[#06283A]">
+                                                        #{s.assignment_no}
+                                                    </span>
+                                                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-600">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
+                                                        <span>Dalam Perjalanan</span>
+                                                    </span>
+                                                </div>
+                                                <p className="text-xs font-semibold text-slate-800 mt-1">{s.cargo_name}</p>
+                                                {s.total_quantity && (
+                                                    <p className="text-[11px] text-slate-500 mt-0.5 font-normal">
+                                                        {Number(s.total_quantity).toLocaleString('id-ID')} {s.unit}
+                                                    </p>
+                                                )}
+                                                <div className="mt-2.5 text-right">
+                                                    <Link
+                                                        href={`/customer/shipment/${s.id}`}
+                                                        className="text-xs font-semibold text-slate-700 hover:text-slate-900 inline-flex items-center gap-1"
+                                                    >
+                                                        <span>Detail Pengiriman</span>
+                                                        <ArrowRight size={11} />
+                                                    </Link>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
-            )}
+                        ))}
+                    </div>
+                )}
+            </div>
         </CustomerLayout>
     );
 }
