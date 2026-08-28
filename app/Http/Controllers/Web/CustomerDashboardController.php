@@ -24,11 +24,23 @@ class CustomerDashboardController extends Controller
      */
     private function getCustomer(Request $request): Customer
     {
-        $customer = $request->user()?->customer;
+        $user = $request->user();
+        $customer = $user?->customer;
+
+        if (!$customer && $user) {
+            $customer = Customer::firstOrCreate(
+                ['email' => $user->email],
+                [
+                    'company_name' => $user->name,
+                    'pic_name'     => $user->name,
+                    'email'        => $user->email,
+                ]
+            );
+            $user->update(['customer_id' => $customer->id]);
+            $user->setRelation('customer', $customer);
+        }
 
         if (!$customer) {
-            // User berrole customer TAPI customer_id belum ter-assign — ini adalah kondisi
-            // error/data tidak konsisten, BUKAN kondisi yang boleh di-fallback ke customer lain.
             abort(403, 'Akun Anda belum terhubung ke perusahaan customer manapun. Hubungi Admin GTD untuk menyelesaikan konfigurasi akun.');
         }
 
