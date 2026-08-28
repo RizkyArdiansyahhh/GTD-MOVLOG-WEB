@@ -51,7 +51,7 @@ class Document extends Model
     {
         return $this->belongsTo(
             ShippingSession::class,
-            'session_id'
+            'shipping_session_id'
         );
     }
 

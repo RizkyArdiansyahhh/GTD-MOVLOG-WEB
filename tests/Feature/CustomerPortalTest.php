@@ -214,7 +214,7 @@ class CustomerPortalTest extends TestCase
             'document_data'       => ['ref' => 'BL-001'],
             'file_name'           => 'BL_LTR5501_Verified.pdf',
             'file_path'           => 'documents/BL_LTR5501_Verified.pdf',
-            'status'              => DocumentStatus::APPROVED,
+            'status'              => DocumentStatus::VERIFIED,
             'uploaded_by'         => $this->customerUser->id,
             'verified_by'         => $supervisor->id,
             'verified_at'         => now(),
@@ -357,7 +357,7 @@ class CustomerPortalTest extends TestCase
             'uploaded_by'         => $this->customerUser->id,
         ]);
 
-        $doc->update(['status' => DocumentStatus::APPROVED]);
+        $doc->update(['status' => DocumentStatus::VERIFIED]);
 
         Event::assertDispatched(DocumentVerified::class, function ($event) {
             return $event->customerId === (string) $this->customer->id && $event->assignmentNo === 'LTR-EVENT-01';

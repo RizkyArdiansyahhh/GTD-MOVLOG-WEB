@@ -146,7 +146,7 @@ class CustomerNotificationTest extends TestCase
         ]);
 
         // Trigger document verification
-        $doc->update(['status' => DocumentStatus::APPROVED]);
+        $doc->update(['status' => DocumentStatus::VERIFIED]);
 
         $this->customerUserA->refresh();
         $this->assertCount(1, $this->customerUserA->notifications);

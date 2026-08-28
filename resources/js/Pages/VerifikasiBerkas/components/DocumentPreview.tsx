@@ -1,16 +1,14 @@
+import { useState } from 'react';
 import type { VerificationDocument } from '../types';
-import { FileText } from 'lucide-react';
-import InsurancePreview from '../documents/InsurancePreview';
-import BillOfLadingPreview from '../documents/BillOfLadingPreview';
-import CommercialInvoicePreview from '../documents/CommercialInvoicePreview';
-import PackingListPreview from '../documents/PackingListPreview';
-import CertificateOfOriginPreview from '../documents/CertificateOfOriginPreview';
+import { FileText, ExternalLink, AlertTriangle } from 'lucide-react';
 
 interface DocumentPreviewProps {
     document: VerificationDocument | null;
 }
 
 export default function DocumentPreview({ document }: DocumentPreviewProps) {
+    const [hasError, setHasError] = useState(false);
+
     if (!document) {
         return (
             <div className="w-full flex-1 flex flex-col items-center justify-center p-8 bg-gray-50/50 rounded-xl border border-dashed border-gray-200 text-center min-h-[360px]">
@@ -20,36 +18,70 @@ export default function DocumentPreview({ document }: DocumentPreviewProps) {
                 >
                     <FileText size={28} strokeWidth={1.5} />
                 </div>
-                <h3 className="text-sm font-semibold text-gray-700">Tidak ada dokumen dipilih</h3>
+                <h3 className="text-sm font-semibold text-gray-700">No document selected</h3>
                 <p className="text-xs text-gray-400 mt-1 max-w-xs">
-                    Pilih salah satu dokumen dari daftar sebelah kiri untuk menampilkan pratinjau dan verifikasi berkas.
+                    Select a document from the list on the left to preview and verify.
                 </p>
             </div>
         );
     }
 
-    const typeKey = document.documentType.toLowerCase();
+    const previewUrl = document.previewUrl || document.fileUrl || `/verifikasi-berkas/file/${document.id}`;
+
+    if (hasError || !previewUrl) {
+        return (
+            <div className="w-full flex-1 flex flex-col items-center justify-center p-8 bg-amber-50/40 rounded-xl border border-dashed border-amber-200 text-center min-h-[360px]">
+                <div
+                    className="flex items-center justify-center rounded-full mb-3 bg-amber-100 text-amber-600"
+                    style={{ width: 52, height: 52 }}
+                >
+                    <AlertTriangle size={26} strokeWidth={1.8} />
+                </div>
+                <h3 className="text-sm font-semibold text-gray-800">Document preview unavailable</h3>
+                <p className="text-xs text-gray-500 mt-1 max-w-xs">
+                    The uploaded file could not be previewed directly in the browser.
+                </p>
+                {previewUrl && (
+                    <a
+                        href={previewUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-4 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 text-white hover:bg-slate-800 transition-all"
+                    >
+                        <ExternalLink size={13} />
+                        <span>Open / Download PDF</span>
+                    </a>
+                )}
+            </div>
+        );
+    }
 
     return (
-        <div className="w-full flex flex-col justify-start bg-gray-100/70 p-4 rounded-xl border border-gray-200 overflow-y-auto max-h-[500px] md:max-h-[560px] shadow-inner">
-            {(() => {
-                if (typeKey.includes('insurance')) {
-                    return <InsurancePreview document={document} />;
-                }
-                if (typeKey.includes('bill of lading') || typeKey.includes('bill-of-lading')) {
-                    return <BillOfLadingPreview document={document} />;
-                }
-                if (typeKey.includes('commercial invoice') || typeKey.includes('commercial-invoice')) {
-                    return <CommercialInvoicePreview document={document} />;
-                }
-                if (typeKey.includes('packing list') || typeKey.includes('packing-list')) {
-                    return <PackingListPreview document={document} />;
-                }
-                if (typeKey.includes('certificate of origin') || typeKey.includes('coo')) {
-                    return <CertificateOfOriginPreview document={document} />;
-                }
-                return <BillOfLadingPreview document={document} />;
-            })()}
+        <div className="w-full flex flex-col bg-slate-100/80 p-2.5 rounded-xl border border-slate-200 shadow-inner">
+            <div className="flex items-center justify-between px-2 py-1.5 mb-2 bg-white rounded-lg border border-slate-200/80 text-xs">
+                <span className="text-slate-600 font-medium truncate max-w-[240px]" title={document.fileName || document.title}>
+                    {document.fileName || document.title}
+                </span>
+                <a
+                    href={previewUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 hover:text-slate-900 transition-colors"
+                >
+                    <ExternalLink size={12} />
+                    <span>Open in new tab</span>
+                </a>
+            </div>
+
+            <div className="relative w-full rounded-lg overflow-hidden bg-white border border-slate-200" style={{ height: 480 }}>
+                <iframe
+                    key={document.id}
+                    src={previewUrl}
+                    title={document.title || 'Document PDF Preview'}
+                    className="w-full h-full border-0"
+                    onError={() => setHasError(true)}
+                />
+            </div>
         </div>
     );
 }

@@ -13,7 +13,6 @@ import {
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import type { PageProps } from '@/types';
 import type { VerificationDocument, VerificationStatus } from './types';
-import { useDocumentStore } from './hooks/useDocumentStore';
 import { groupDocumentsByShipment, detectFieldMismatches } from './utils/shipmentUtils';
 import DocumentList from './components/DocumentList';
 import DocumentPagination from './components/DocumentPagination';
@@ -26,38 +25,33 @@ import ToastNotification, { type ToastMessage } from '../KelolaAkun/components/T
 
 const ITEMS_PER_PAGE = 5;
 
-interface ShowProps {
+interface ShowProps extends PageProps {
     contractNumber: string;
+    documents?: VerificationDocument[];
 }
 
-export default function VerifikasiBerkasShow({ contractNumber }: ShowProps) {
-    const { auth } = usePage<PageProps>().props;
+export default function VerifikasiBerkasShow({ contractNumber, documents = [] }: ShowProps) {
+    const { auth } = usePage<ShowProps>().props;
 
     // ── Supervisor Role Check ──
     const isSupervisor = useMemo(() => {
         if (!auth?.user) return true;
         const userRoles = (auth.user.roles || []).map((r) => r.toLowerCase());
-        return userRoles.includes('supervisor');
+        return userRoles.includes('supervisor') || userRoles.includes('super-admin');
     }, [auth]);
 
-    // ── All Documents State ──
-    const [allDocuments, updateDocumentStatus] = useDocumentStore();
-
-    // Get shipment group for this contract number (5 documents)
+    // ── Shipment Group ──
     const shipmentGroup = useMemo(() => {
-        const groups = groupDocumentsByShipment(allDocuments);
-        return groups.find((g) => g.contractNumber === contractNumber) || null;
-    }, [allDocuments, contractNumber]);
+        const groups = groupDocumentsByShipment(documents);
+        return groups.find((g) => g.contractNumber === contractNumber) || groups[0] || null;
+    }, [documents, contractNumber]);
 
-    const shipmentDocuments = shipmentGroup?.documents || [];
+    const shipmentDocuments = shipmentGroup?.documents || documents;
 
     // ── Selected document ──
     const [selectedDocId, setSelectedDocId] = useState<string | null>(() => {
-        const initialGroups = groupDocumentsByShipment(allDocuments);
-        const currentGroup = initialGroups.find((g) => g.contractNumber === contractNumber);
-        const docs = currentGroup?.documents || [];
-        const pendingDoc = docs.find((d) => d.status === 'Pending');
-        return pendingDoc?.id || docs[0]?.id || null;
+        const pendingDoc = shipmentDocuments.find((d) => d.status === 'Pending');
+        return pendingDoc?.id || shipmentDocuments[0]?.id || null;
     });
 
     // ── Pagination ──
@@ -82,7 +76,7 @@ export default function VerifikasiBerkasShow({ contractNumber }: ShowProps) {
     const mismatchWarnings = useMemo(() => {
         if (!selectedDocument) return [];
         const approvedDocs = shipmentDocuments.filter(
-            (d) => d.status === 'Approved' && d.id !== selectedDocument.id
+            (d) => (d.status === 'Approved' || d.status === 'Verified') && d.id !== selectedDocument.id
         );
         if (approvedDocs.length === 0) return [];
         return detectFieldMismatches(selectedDocument, approvedDocs);
@@ -92,9 +86,10 @@ export default function VerifikasiBerkasShow({ contractNumber }: ShowProps) {
     const approvedCount = shipmentGroup?.approvedCount ?? 0;
     const pendingCount = shipmentGroup?.pendingCount ?? 0;
     const rejectedCount = shipmentGroup?.rejectedCount ?? 0;
+    const totalCount = shipmentGroup?.totalDocuments ?? shipmentDocuments.length;
 
     let progressTextColor = 'text-slate-500';
-    if (approvedCount === 5) {
+    if (approvedCount === totalCount && totalCount > 0) {
         progressTextColor = 'text-emerald-600';
     } else if (rejectedCount > 0) {
         progressTextColor = 'text-rose-600';
@@ -123,31 +118,39 @@ export default function VerifikasiBerkasShow({ contractNumber }: ShowProps) {
         notes: string
     ) => {
         setIsSubmitting(true);
+        const isApproval = status === 'Approved' || status === 'Verified';
+        const endpoint = isApproval
+            ? `/verifikasi-berkas/${doc.id}/verify`
+            : `/verifikasi-berkas/${doc.id}/reject`;
 
-        const supervisorName = auth?.user?.name || 'Supervisor Logistik';
-        const nowFormatted = new Date().toLocaleString('id-ID', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-        }) + ' WIB';
-
-        // Persist to localStorage via hook
-        updateDocumentStatus(doc.id, status, notes || '', supervisorName, nowFormatted);
-
-        setIsSubmitting(false);
-        setModalDoc(null);
-        setTargetStatus(null);
-
-        const isApproval = status === 'Approved';
-        setToast({
-            id: String(Date.now()),
-            type: isApproval ? 'success' : 'error',
-            message: isApproval
-                ? `Berkas ${doc.documentNumber} (${doc.documentType}) berhasil disetujui.`
-                : `Berkas ${doc.documentNumber} (${doc.documentType}) ditolak.`,
-        });
+        router.post(
+            endpoint,
+            { notes },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setIsSubmitting(false);
+                    setModalDoc(null);
+                    setTargetStatus(null);
+                    setToast({
+                        id: String(Date.now()),
+                        type: isApproval ? 'success' : 'error',
+                        message: isApproval
+                            ? `Document ${doc.documentNumber} (${doc.documentType}) successfully verified.`
+                            : `Document ${doc.documentNumber} (${doc.documentType}) rejected.`,
+                    });
+                },
+                onError: (errors) => {
+                    setIsSubmitting(false);
+                    const msg = Object.values(errors).join(', ') || 'Failed to update document verification status.';
+                    setToast({
+                        id: String(Date.now()),
+                        type: 'error',
+                        message: msg,
+                    });
+                },
+            }
+        );
     };
 
     // ── Back navigation ──
@@ -158,7 +161,7 @@ export default function VerifikasiBerkasShow({ contractNumber }: ShowProps) {
     if (!isSupervisor) {
         return (
             <DashboardLayout>
-                <Head title="Verifikasi Berkas — Global Trans Djaya" />
+                <Head title="Document Verification — Global Trans Djaya" />
                 <div className="bg-white rounded-2xl border border-red-100 shadow-sm p-8 text-center my-8">
                     <div
                         className="flex items-center justify-center rounded-full mx-auto mb-4"
@@ -166,19 +169,19 @@ export default function VerifikasiBerkasShow({ contractNumber }: ShowProps) {
                     >
                         <AlertCircle size={28} className="text-red-500" strokeWidth={1.8} />
                     </div>
-                    <h2 className="text-lg font-bold text-gray-900 mb-1">Akses Ditolak</h2>
+                    <h2 className="text-lg font-bold text-gray-900 mb-1">Access Denied</h2>
                     <p className="text-sm text-gray-500 max-w-md mx-auto">
-                        Halaman <strong>Verifikasi Berkas</strong> hanya dapat diakses oleh pengguna dengan role <strong>Supervisor</strong>.
+                        The <strong>Document Verification</strong> page is restricted to users with the <strong>Supervisor</strong> role.
                     </p>
                 </div>
             </DashboardLayout>
         );
     }
 
-    if (!shipmentGroup) {
+    if (!shipmentGroup || shipmentDocuments.length === 0) {
         return (
             <DashboardLayout>
-                <Head title="Shipment Tidak Ditemukan — Global Trans Djaya" />
+                <Head title="Shipment Not Found — Global Trans Djaya" />
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center my-8">
                     <div
                         className="flex items-center justify-center rounded-full mx-auto mb-4 bg-gray-100 text-gray-400"
@@ -186,9 +189,9 @@ export default function VerifikasiBerkasShow({ contractNumber }: ShowProps) {
                     >
                         <Ship size={28} strokeWidth={1.8} />
                     </div>
-                    <h2 className="text-lg font-bold text-gray-900 mb-1">Shipment Tidak Ditemukan</h2>
+                    <h2 className="text-lg font-bold text-gray-900 mb-1">Shipment Not Found</h2>
                     <p className="text-sm text-gray-500 max-w-md mx-auto mb-4">
-                        Kontrak <strong>{contractNumber}</strong> tidak ditemukan dalam sistem.
+                        Contract / Assignment <strong>{contractNumber}</strong> could not be found in the system.
                     </p>
                     <button
                         type="button"
@@ -196,7 +199,7 @@ export default function VerifikasiBerkasShow({ contractNumber }: ShowProps) {
                         className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-slate-900 text-white hover:bg-slate-800 active:scale-[0.98] transition-all cursor-pointer"
                     >
                         <ArrowLeft size={16} />
-                        Kembali ke Daftar
+                        Back to Queue
                     </button>
                 </div>
             </DashboardLayout>
@@ -208,7 +211,7 @@ export default function VerifikasiBerkasShow({ contractNumber }: ShowProps) {
 
     return (
         <DashboardLayout>
-            <Head title={`${contractNumber} — Verifikasi Berkas`} />
+            <Head title={`${contractNumber} — Document Verification`} />
 
             {/* Toast Notification */}
             <ToastNotification toast={toast} onClose={() => setToast(null)} />
@@ -233,7 +236,7 @@ export default function VerifikasiBerkasShow({ contractNumber }: ShowProps) {
                         type="button"
                         onClick={handleBack}
                         className="w-8 h-8 shrink-0 rounded-lg bg-white border border-[#E2E8F0] text-slate-500 flex items-center justify-center hover:bg-slate-50 hover:text-slate-800 transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                        title="Kembali ke daftar shipment"
+                        title="Back to queue"
                     >
                         <ArrowLeft size={15} strokeWidth={2} />
                     </button>
@@ -245,9 +248,8 @@ export default function VerifikasiBerkasShow({ contractNumber }: ShowProps) {
                             >
                                 {contractNumber}
                             </h1>
-                            {/* Plain text progress indicator */}
                             <span className={`text-xs font-semibold ${progressTextColor}`}>
-                                {approvedCount}/5 lengkap
+                                {approvedCount}/{totalCount} verified
                             </span>
                         </div>
                         <div className="flex items-center gap-1.5 mt-0.5 text-xs text-slate-500">
@@ -255,7 +257,7 @@ export default function VerifikasiBerkasShow({ contractNumber }: ShowProps) {
                             <ArrowRight size={11} className="text-slate-400" />
                             <span className="font-normal text-slate-600">{podShort}</span>
                             <span className="text-slate-300 mx-1">•</span>
-                            <span className="text-slate-400">{shipmentGroup.shipperName}</span>
+                            <span className="text-slate-400">{shipmentGroup.customerName}</span>
                         </div>
                     </div>
                 </div>
@@ -263,19 +265,17 @@ export default function VerifikasiBerkasShow({ contractNumber }: ShowProps) {
 
             {/* ──────── MASTER-DETAIL LAYOUT ──────── */}
             <div className="flex flex-col lg:flex-row gap-[20px] items-stretch">
-                {/* ── LEFT PANEL: 5 Required Document Slots ── */}
+                {/* ── LEFT PANEL: Documents List ── */}
                 <div className="w-full lg:w-[58%] md:w-[45%] bg-white rounded-[12px] border border-[#E2E8F0] shadow-sm p-5 flex flex-col justify-between">
-                    {/* Card Header */}
                     <div>
                         <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
                             <div className="flex items-center gap-2">
                                 <FileCheck2 size={18} className="text-slate-600" strokeWidth={2} />
                                 <h2 className="text-[16px] font-semibold text-[#06283A] leading-tight">
-                                    Dokumen Shipment
+                                    Shipment Documents
                                 </h2>
                             </div>
 
-                            {/* Minimalist plain-text counter items (no solid pills) */}
                             <div className="flex items-center gap-3.5 text-xs">
                                 {pendingCount > 0 && (
                                     <span className="inline-flex items-center gap-1 text-slate-500">
@@ -286,13 +286,13 @@ export default function VerifikasiBerkasShow({ contractNumber }: ShowProps) {
                                 {approvedCount > 0 && (
                                     <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
                                         <CheckCircle2 size={12} className="text-emerald-500" />
-                                        <span>{approvedCount} approved</span>
+                                        <span>{approvedCount} verified</span>
                                     </span>
                                 )}
                                 {rejectedCount > 0 && (
                                     <span className="inline-flex items-center gap-1 text-rose-600 font-medium">
                                         <XCircle size={12} className="text-rose-500" />
-                                        <span>{rejectedCount} ditolak</span>
+                                        <span>{rejectedCount} rejected</span>
                                     </span>
                                 )}
                             </div>
@@ -317,9 +317,8 @@ export default function VerifikasiBerkasShow({ contractNumber }: ShowProps) {
                     />
                 </div>
 
-                {/* ── RIGHT PANEL ── */}
+                {/* ── RIGHT PANEL: PDF Preview & Verification ── */}
                 <div className="w-full lg:w-[42%] md:w-[55%] bg-white rounded-[12px] border border-[#E2E8F0] shadow-sm p-5 flex flex-col justify-between gap-4">
-                    {/* Panel Header */}
                     <div>
                         <div className="flex items-center justify-between border-b border-gray-100 pb-3 mb-3">
                             <div>
@@ -327,7 +326,7 @@ export default function VerifikasiBerkasShow({ contractNumber }: ShowProps) {
                                     {selectedDocument?.documentNumber || 'No Document Selected'}
                                 </span>
                                 <h3 className="text-base font-semibold text-[#06283A] mt-1.5 truncate max-w-[280px]">
-                                    {selectedDocument ? selectedDocument.title : 'Pratinjau Dokumen'}
+                                    {selectedDocument ? selectedDocument.title : 'Document Preview'}
                                 </h3>
                             </div>
                             {selectedDocument && (
@@ -337,10 +336,10 @@ export default function VerifikasiBerkasShow({ contractNumber }: ShowProps) {
                             )}
                         </div>
 
-                        {/* Embedded A4 Preview */}
+                        {/* Embedded PDF Viewer */}
                         <DocumentPreview document={selectedDocument} />
 
-                        {/* Mismatch Warnings (shown below preview for uploaded docs) */}
+                        {/* Mismatch Warnings */}
                         <MismatchWarnings warnings={mismatchWarnings} />
                     </div>
 

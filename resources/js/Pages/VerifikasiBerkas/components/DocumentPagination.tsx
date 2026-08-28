@@ -13,44 +13,32 @@ export default function DocumentPagination({
     totalItems,
     onPageChange,
 }: DocumentPaginationProps) {
-    if (totalPages <= 1) {
-        return (
-            <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500 font-medium">
-                <span>Total {totalItems} Berkas</span>
-                <span>Halaman 1 dari 1</span>
-            </div>
-        );
-    }
+    if (totalPages <= 1) return null;
 
     return (
-        <div className="pt-3 border-t border-gray-100 flex items-center justify-between gap-2 shrink-0">
-            <span className="text-xs text-gray-500 font-medium hidden sm:inline">
-                Halaman <strong className="text-gray-800">{currentPage}</strong> dari{' '}
-                <strong className="text-gray-800">{totalPages}</strong> ({totalItems} berkas)
+        <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-xs text-slate-500">
+            <span>
+                Showing page <strong className="text-slate-700">{currentPage}</strong> of{' '}
+                <strong className="text-slate-700">{totalPages}</strong> ({totalItems} documents)
             </span>
 
-            <span className="text-xs text-gray-500 font-medium sm:hidden">
-                {currentPage} / {totalPages}
-            </span>
-
-            <div className="flex items-center gap-1.5 ml-auto">
+            <div className="flex items-center gap-1">
                 <button
                     type="button"
                     onClick={() => onPageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+                    disabled={currentPage <= 1}
+                    className="p-1 rounded border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                    title="Previous page"
                 >
                     <ChevronLeft size={14} />
-                    <span>Sebelumnya</span>
                 </button>
-
                 <button
                     type="button"
                     onClick={() => onPageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+                    disabled={currentPage >= totalPages}
+                    className="p-1 rounded border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                    title="Next page"
                 >
-                    <span>Selanjutnya</span>
                     <ChevronRight size={14} />
                 </button>
             </div>

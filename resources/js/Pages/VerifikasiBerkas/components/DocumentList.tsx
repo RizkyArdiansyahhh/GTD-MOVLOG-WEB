@@ -22,9 +22,9 @@ export default function DocumentList({
                 >
                     <FileSearch size={24} strokeWidth={1.8} />
                 </div>
-                <p className="text-sm font-semibold text-gray-800">Tidak ada dokumen</p>
+                <p className="text-sm font-semibold text-gray-800">No documents found</p>
                 <p className="text-xs text-gray-500 mt-1">
-                    Tidak ditemukan berkas yang sesuai dengan kriteria penyaringan saat ini.
+                    There are no documents matching the current filter criteria.
                 </p>
             </div>
         );

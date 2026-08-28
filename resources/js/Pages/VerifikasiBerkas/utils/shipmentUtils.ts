@@ -8,10 +8,10 @@ import {
 
 /**
  * Determine the priority rank for sorting:
- * 1. Minimal 1 dokumen ditolak (Paling urgent, butuh revisi dari pihak pengirim).
- * 2. Dokumen pending verifikasi (Sudah diupload, menunggu ditinjau supervisor).
- * 3. Dokumen belum diupload sama sekali / belum lengkap (Perlu follow-up ke pihak luar).
- * 4. 5/5 approved / selesai (Selalu di paling bawah).
+ * 1. Has rejected documents (highest priority, needs revision).
+ * 2. Has pending documents (waiting for supervisor review).
+ * 3. Incomplete documents.
+ * 4. Completed (all verified/approved).
  */
 function getShipmentPriorityRank(group: ShipmentGroup): number {
     if (group.rejectedCount > 0) return 1;
@@ -21,15 +21,7 @@ function getShipmentPriorityRank(group: ShipmentGroup): number {
 }
 
 /**
- * Group a flat list of documents by their contractNumber into ShipmentGroup[].
- * Each shipment contains all 5 required document types:
- * Commercial Invoice, Bill of Lading, Packing List, Insurance, Certificate of Origin (COO).
- *
- * Sorting Priority (Urgency):
- * 1. Shipments with rejected documents (needs revision from sender - highest urgency).
- * 2. Shipments with pending verification documents (waiting for supervisor review), sorted by oldest pending date.
- * 3. Shipments with documents not uploaded yet / missing docs (needs follow-up to external parties).
- * 4. Shipments with 5/5 approved documents (completed) -> always at the bottom.
+ * Group a flat list of documents by their assignment reference / contract number into ShipmentGroup[].
  */
 export function groupDocumentsByShipment(
     documents: VerificationDocument[]
@@ -37,7 +29,7 @@ export function groupDocumentsByShipment(
     const map = new Map<string, VerificationDocument[]>();
 
     for (const doc of documents) {
-        const key = doc.contractNumber || 'UNKNOWN';
+        const key = doc.assignmentNoRef || doc.contractNumber || doc.shipmentReference || 'UNKNOWN';
         const group = map.get(key);
         if (group) {
             group.push(doc);
@@ -50,9 +42,9 @@ export function groupDocumentsByShipment(
 
     for (const [contractNumber, uploadedDocs] of map) {
         // Extract common fields from the first doc that has them
-        const firstWithShipper = uploadedDocs.find((d) => d.shipper);
-        const firstWithConsignee = uploadedDocs.find((d) => d.consignee);
-        const firstWithTransport = uploadedDocs.find((d) => d.transportDetail);
+        const firstWithShipper = uploadedDocs.find((d) => d.shipper?.name);
+        const firstWithConsignee = uploadedDocs.find((d) => d.consignee?.name);
+        const firstWithTransport = uploadedDocs.find((d) => d.transportDetail?.portOfLoading);
 
         // Sort documents in standard order: Commercial Invoice, Bill of Lading, Packing List, Insurance, Certificate of Origin
         const orderedDocs = [...uploadedDocs].sort((a, b) => {
@@ -61,12 +53,16 @@ export function groupDocumentsByShipment(
             return (indexA === -1 ? 99 : indexA) - (indexB === -1 ? 99 : indexB);
         });
 
-        const approvedCount = orderedDocs.filter((d) => d.status === 'Approved').length;
-        const pendingCount = orderedDocs.filter((d) => d.status === 'Pending').length;
-        const rejectedCount = orderedDocs.filter((d) => d.status === 'Rejected').length;
+        const isDocApproved = (d: VerificationDocument) => d.status === 'Approved' || d.status === 'Verified';
+        const isDocRejected = (d: VerificationDocument) => d.status === 'Rejected';
+        const isDocPending = (d: VerificationDocument) => d.status === 'Pending';
+
+        const approvedCount = orderedDocs.filter(isDocApproved).length;
+        const pendingCount = orderedDocs.filter(isDocPending).length;
+        const rejectedCount = orderedDocs.filter(isDocRejected).length;
 
         // Oldest pending date for sorting
-        const pendingDocs = orderedDocs.filter((d) => d.status === 'Pending' && d.uploadDate);
+        const pendingDocs = orderedDocs.filter((d) => isDocPending(d) && d.uploadDate);
         const oldestPendingDate =
             pendingDocs.length > 0
                 ? pendingDocs.reduce((oldest, d) =>
@@ -75,10 +71,10 @@ export function groupDocumentsByShipment(
                 : null;
 
         // Check for any mismatches among approved docs
-        const approvedDocs = orderedDocs.filter((d) => d.status === 'Approved');
+        const approvedDocs = orderedDocs.filter(isDocApproved);
         let hasWarnings = false;
         for (const doc of orderedDocs) {
-            if (doc.status !== 'Approved' && approvedDocs.length > 0) {
+            if (!isDocApproved(doc) && approvedDocs.length > 0) {
                 const warnings = detectFieldMismatches(doc, approvedDocs);
                 if (warnings.length > 0) {
                     hasWarnings = true;
@@ -87,9 +83,13 @@ export function groupDocumentsByShipment(
             }
         }
 
+        const customerName = uploadedDocs[0]?.customerName
+            || uploadedDocs[0]?.uploadedBy
+            || '-';
+
         groups.push({
             contractNumber,
-            customerName: uploadedDocs[0]?.uploadedBy || '-',
+            customerName,
             shipperName: firstWithShipper?.shipper?.name || '-',
             consigneeName: firstWithConsignee?.consignee?.name || '-',
             portOfLoading: firstWithTransport?.transportDetail?.portOfLoading || '-',
@@ -98,17 +98,17 @@ export function groupDocumentsByShipment(
             approvedCount,
             pendingCount,
             rejectedCount,
-            totalDocuments: TOTAL_REQUIRED_DOCUMENTS, // Always 5
+            totalDocuments: orderedDocs.length || TOTAL_REQUIRED_DOCUMENTS,
             oldestPendingDate,
             hasWarnings,
         });
     }
 
     // Sort according to priority (urgency):
-    // 1. Minimal 1 dokumen ditolak (Paling urgent)
-    // 2. Pending verifikasi (Diurutkan dari yang paling lama menunggu)
-    // 3. Dokumen belum diupload / belum lengkap
-    // 4. Selesai (5/5 approved)
+    // 1. Rejected documents (highest priority)
+    // 2. Pending verification (sorted by oldest pending date)
+    // 3. Incomplete / unuploaded documents
+    // 4. Completed (all approved/verified)
     groups.sort((a, b) => {
         const rankA = getShipmentPriorityRank(a);
         const rankB = getShipmentPriorityRank(b);
@@ -117,8 +117,7 @@ export function groupDocumentsByShipment(
             return rankA - rankB;
         }
 
-        // Rank 1: Rejected docs -> sort by oldest pending date if present, then contractNumber
-        if (rankA === 1) {
+        if (rankA === 1 || rankA === 2) {
             if (a.oldestPendingDate && b.oldestPendingDate) {
                 return a.oldestPendingDate.localeCompare(b.oldestPendingDate);
             }
@@ -127,17 +126,6 @@ export function groupDocumentsByShipment(
             return a.contractNumber.localeCompare(b.contractNumber);
         }
 
-        // Rank 2: Pending verification -> oldest pending date first (longest waiting)
-        if (rankA === 2) {
-            if (a.oldestPendingDate && b.oldestPendingDate) {
-                return a.oldestPendingDate.localeCompare(b.oldestPendingDate);
-            }
-            if (a.oldestPendingDate) return -1;
-            if (b.oldestPendingDate) return 1;
-            return a.contractNumber.localeCompare(b.contractNumber);
-        }
-
-        // Rank 3 (Unuploaded) and Rank 4 (Completed): sort alphabetically by contractNumber
         return a.contractNumber.localeCompare(b.contractNumber);
     });
 
@@ -147,11 +135,6 @@ export function groupDocumentsByShipment(
 /**
  * Detect field mismatches between a document and already-approved documents
  * in the same shipment. Returns an array of warnings.
- *
- * Fields compared:
- * - Shipper (name, address, taxId)
- * - Consignee (name, address, taxId)
- * - Transport Detail (portOfLoading, portOfDischarge, shipName, voyage)
  */
 export function detectFieldMismatches(
     document: VerificationDocument,
@@ -160,7 +143,7 @@ export function detectFieldMismatches(
     const warnings: FieldMismatchWarning[] = [];
 
     for (const approved of approvedDocs) {
-        // ── Shipper comparison ──
+        // Shipper comparison
         if (document.shipper && approved.shipper) {
             if (document.shipper.name && approved.shipper.name &&
                 document.shipper.name !== approved.shipper.name) {
@@ -194,7 +177,7 @@ export function detectFieldMismatches(
             }
         }
 
-        // ── Consignee comparison ──
+        // Consignee comparison
         if (document.consignee && approved.consignee) {
             if (document.consignee.name && approved.consignee.name &&
                 document.consignee.name !== approved.consignee.name) {
@@ -228,7 +211,7 @@ export function detectFieldMismatches(
             }
         }
 
-        // ── Transport Detail comparison ──
+        // Transport Detail comparison
         if (document.transportDetail && approved.transportDetail) {
             if (document.transportDetail.portOfLoading && approved.transportDetail.portOfLoading &&
                 document.transportDetail.portOfLoading !== approved.transportDetail.portOfLoading) {
@@ -250,13 +233,14 @@ export function detectFieldMismatches(
                     referenceDocType: approved.documentType,
                 });
             }
-            if (document.transportDetail.shipName && approved.transportDetail.shipName &&
-                document.transportDetail.shipName !== approved.transportDetail.shipName) {
+            const shipNameA = document.transportDetail.shipName || document.transportDetail.shippName;
+            const shipNameB = approved.transportDetail.shipName || approved.transportDetail.shippName;
+            if (shipNameA && shipNameB && shipNameA !== shipNameB) {
                 warnings.push({
                     field: 'Ship Name',
                     documentType: document.documentType,
-                    expected: approved.transportDetail.shipName,
-                    actual: document.transportDetail.shipName,
+                    expected: shipNameB,
+                    actual: shipNameA,
                     referenceDocType: approved.documentType,
                 });
             }
@@ -273,7 +257,7 @@ export function detectFieldMismatches(
         }
     }
 
-    // Deduplicate warnings by field + actual + expected
+    // Deduplicate warnings
     const unique = new Map<string, FieldMismatchWarning>();
     for (const w of warnings) {
         const key = `${w.field}|${w.actual}|${w.expected}`;

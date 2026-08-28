@@ -1,33 +1,34 @@
-﻿import { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Head, usePage, router } from '@inertiajs/react';
 import { FileCheck2, Search, AlertCircle, Ship, Clock } from 'lucide-react';
 import './shipment-table.css';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import type { PageProps } from '@/types';
-import { useDocumentStore } from './hooks/useDocumentStore';
+import type { VerificationDocument } from './types';
 import { groupDocumentsByShipment } from './utils/shipmentUtils';
 import ShipmentCard from './components/ShipmentCard';
 
-type ShipmentFilter = 'Semua' | 'Perlu Revisi' | 'Perlu Verifikasi' | 'Lengkap';
+type ShipmentFilter = 'All' | 'Needs Revision' | 'Pending Verification' | 'Completed';
+
+interface IndexProps extends PageProps {
+    documents: VerificationDocument[];
+}
 
 export default function VerifikasiBerkasIndex() {
-    const { auth } = usePage<PageProps>().props;
+    const { auth, documents = [] } = usePage<IndexProps>().props;
 
     // ── Supervisor Role Check ──
     const isSupervisor = useMemo(() => {
-        if (!auth?.user) return true; // fallback for preview/testing
+        if (!auth?.user) return true;
         const userRoles = (auth.user.roles || []).map((r) => r.toLowerCase());
-        return userRoles.includes('supervisor');
+        return userRoles.includes('supervisor') || userRoles.includes('super-admin');
     }, [auth]);
 
     // ── State ──
     const [searchQuery, setSearchQuery] = useState('');
-    const [statusFilter, setStatusFilter] = useState<ShipmentFilter>('Semua');
+    const [statusFilter, setStatusFilter] = useState<ShipmentFilter>('All');
 
-    // ── Documents from persistent store ──
-    const [documents] = useDocumentStore();
-
-    // ── Group documents into shipments (always 5 documents per shipment) ──
+    // ── Group documents into shipments ──
     const shipmentGroups = useMemo(
         () => groupDocumentsByShipment(documents),
         [documents]
@@ -36,18 +37,16 @@ export default function VerifikasiBerkasIndex() {
     // ── Filtered shipments ──
     const filteredShipments = useMemo(() => {
         return shipmentGroups.filter((group) => {
-            // Status filter (Perlu Revisi -> Perlu Verifikasi -> Lengkap)
-            if (statusFilter === 'Perlu Revisi') {
+            if (statusFilter === 'Needs Revision') {
                 if (group.rejectedCount === 0) return false;
             }
-            if (statusFilter === 'Perlu Verifikasi') {
+            if (statusFilter === 'Pending Verification') {
                 if (group.pendingCount === 0) return false;
             }
-            if (statusFilter === 'Lengkap') {
-                if (group.approvedCount !== 5) return false;
+            if (statusFilter === 'Completed') {
+                if (group.approvedCount !== group.totalDocuments) return false;
             }
 
-            // Search filter
             if (searchQuery) {
                 const q = searchQuery.toLowerCase();
                 const matchContract = group.contractNumber.toLowerCase().includes(q);
@@ -81,8 +80,8 @@ export default function VerifikasiBerkasIndex() {
     };
 
     return (
-        <DashboardLayout title="Verifikasi Berkas">
-            <Head title="Verifikasi Berkas — Global Trans Djaya" />
+        <DashboardLayout title="Document Verification">
+            <Head title="Document Verification — Global Trans Djaya" />
 
             {!isSupervisor ? (
                 /* ── Unauthorized Access Guard Screen ── */
@@ -93,9 +92,9 @@ export default function VerifikasiBerkasIndex() {
                     >
                         <AlertCircle size={28} className="text-red-500" strokeWidth={1.8} />
                     </div>
-                    <h2 className="text-lg font-bold text-gray-900 mb-1">Akses Ditolak</h2>
+                    <h2 className="text-lg font-bold text-gray-900 mb-1">Access Denied</h2>
                     <p className="text-sm text-gray-500 max-w-md mx-auto">
-                        Halaman <strong>Verifikasi Berkas</strong> hanya dapat diakses oleh pengguna dengan role <strong>Supervisor</strong>.
+                        The <strong>Document Verification</strong> page is restricted to users with the <strong>Supervisor</strong> role.
                     </p>
                 </div>
             ) : (
@@ -107,19 +106,18 @@ export default function VerifikasiBerkasIndex() {
                                 className="text-[24px] font-semibold leading-tight"
                                 style={{ color: '#06283A' }}
                             >
-                                Verifikasi Berkas
+                                Document Verification
                             </h1>
                             <p className="text-xs text-slate-500 mt-1 font-normal">
-                                Verifikasi kelengkapan dan keabsahan 5 dokumen pengiriman per shipment.
+                                Verify the completeness and validity of submitted shipment documents.
                             </p>
                         </div>
 
-                        {/* Single primary notification badge in header */}
                         {pendingVerificationCount > 0 && (
                             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/80 shrink-0">
                                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                                 <Clock size={12} className="text-amber-600" />
-                                <span>{pendingVerificationCount} shipment perlu verifikasi</span>
+                                <span>{pendingVerificationCount} shipment(s) pending verification</span>
                             </span>
                         )}
                     </div>
@@ -134,19 +132,19 @@ export default function VerifikasiBerkasIndex() {
                                     type="text"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    placeholder="Cari no. kontrak, shipper, pelabuhan, no. dokumen..."
+                                    placeholder="Search contract no, customer, shipper, port, document no..."
                                     className="w-full pl-8 pr-3 py-1.5 rounded-[6px] border border-slate-200 text-xs focus:border-slate-400 focus:ring-1 focus:ring-slate-200 outline-none transition-all"
                                 />
                             </div>
 
-                            {/* Status Filter Tabs — Neutral Clean Styling */}
+                            {/* Status Filter Tabs */}
                             <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
                                 {(
                                     [
-                                        'Semua',
-                                        'Perlu Revisi',
-                                        'Perlu Verifikasi',
-                                        'Lengkap',
+                                        'All',
+                                        'Needs Revision',
+                                        'Pending Verification',
+                                        'Completed',
                                     ] as ShipmentFilter[]
                                 ).map((f) => (
                                     <button
@@ -172,7 +170,7 @@ export default function VerifikasiBerkasIndex() {
                         <div className="flex items-center gap-2">
                             <FileCheck2 size={16} className="text-slate-600" strokeWidth={2} />
                             <h2 className="text-sm font-semibold text-[#06283A]">
-                                Daftar Shipment
+                                Shipment Queue
                             </h2>
                             <span className="text-xs text-slate-400 font-normal ml-0.5">
                                 ({filteredShipments.length})
@@ -180,7 +178,7 @@ export default function VerifikasiBerkasIndex() {
                         </div>
                     </div>
 
-                    {/* ──────── SHIPMENT CARDS STACK (Full-Width, 1 per baris) ──────── */}
+                    {/* ──────── SHIPMENT CARDS STACK ──────── */}
                     {filteredShipments.length === 0 ? (
                         <div className="bg-white rounded-[10px] border border-dashed border-slate-200 shadow-sm p-8 text-center">
                             <div
@@ -189,9 +187,9 @@ export default function VerifikasiBerkasIndex() {
                             >
                                 <Ship size={22} strokeWidth={1.6} />
                             </div>
-                            <p className="text-sm font-medium text-slate-800">Tidak ada shipment</p>
+                            <p className="text-sm font-medium text-slate-800">No pending documents</p>
                             <p className="text-xs text-slate-500 mt-1">
-                                Tidak ditemukan shipment yang sesuai dengan kriteria filter saat ini.
+                                There are currently no documents waiting for verification.
                             </p>
                         </div>
                     ) : (

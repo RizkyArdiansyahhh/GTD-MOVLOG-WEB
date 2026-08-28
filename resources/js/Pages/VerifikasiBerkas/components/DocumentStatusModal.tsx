@@ -31,12 +31,12 @@ export default function DocumentStatusModal({
 
     if (!isOpen || !document || !targetStatus) return null;
 
-    const isApproval = targetStatus === 'Approved';
+    const isApproval = targetStatus === 'Approved' || targetStatus === 'Verified';
 
     const handleFormSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!isApproval && !notes.trim()) {
-            setError('Alasan penolakan wajib diisi.');
+            setError('Rejection reason is required.');
             return;
         }
         setError('');
@@ -73,7 +73,7 @@ export default function DocumentStatusModal({
                     </div>
                     <div>
                         <h3 className="text-base font-bold text-gray-900 leading-tight">
-                            {isApproval ? 'Konfirmasi Persetujuan Berkas' : 'Konfirmasi Penolakan Berkas'}
+                            {isApproval ? 'Confirm Document Verification' : 'Confirm Document Rejection'}
                         </h3>
                         <p className="text-xs text-gray-500 mt-0.5 font-mono">
                             {document.documentNumber} • {document.documentType}
@@ -83,8 +83,8 @@ export default function DocumentStatusModal({
 
                 {/* Description */}
                 <p className="text-xs text-gray-600 leading-relaxed">
-                    Apakah Anda yakin ingin {isApproval ? 'menyetujui' : 'menolak'} berkas{' '}
-                    <strong className="text-gray-900">{document.title}</strong> dari{' '}
+                    Are you sure you want to {isApproval ? 'verify' : 'reject'} document{' '}
+                    <strong className="text-gray-900">{document.title}</strong> uploaded by{' '}
                     <strong className="text-gray-900">{document.uploadedBy}</strong>?
                 </p>
 
@@ -92,7 +92,7 @@ export default function DocumentStatusModal({
                 <form onSubmit={handleFormSubmit} className="flex flex-col gap-4">
                     <div>
                         <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                            Catatan Verifikasi {isApproval ? '(Opsional)' : '(Wajib)'}
+                            {isApproval ? 'Verification Notes (Optional)' : 'Rejection Reason (Required)'}
                         </label>
                         <textarea
                             rows={3}
@@ -103,8 +103,8 @@ export default function DocumentStatusModal({
                             }}
                             placeholder={
                                 isApproval
-                                    ? 'Tambahkan catatan persetujuan jika ada...'
-                                    : 'Berikan alasan jelas penolakan dokumen (Wajib)...'
+                                    ? 'Add verification notes if any...'
+                                    : 'Provide a clear reason for rejecting this document (Required)...'
                             }
                             required={!isApproval}
                             className={[
@@ -125,7 +125,7 @@ export default function DocumentStatusModal({
                         <div className="flex items-start gap-2 p-2.5 bg-rose-50 rounded-lg text-[11px] text-rose-700">
                             <AlertCircle size={14} className="shrink-0 mt-0.5 text-rose-500" />
                             <span>
-                                Penolakan berkas akan memberitahukan pihak pengunggah untuk memperbarui dokumen.
+                                Rejecting this document will notify the uploader to submit a revised document.
                             </span>
                         </div>
                     )}
@@ -138,7 +138,7 @@ export default function DocumentStatusModal({
                             disabled={isSubmitting}
                             className="px-4 py-2 rounded-lg text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
                         >
-                            Batal
+                            Cancel
                         </button>
                         <button
                             type="submit"
@@ -151,10 +151,10 @@ export default function DocumentStatusModal({
                             ].join(' ')}
                         >
                             {isSubmitting
-                                ? 'Memproses...'
+                                ? 'Processing...'
                                 : isApproval
-                                ? 'Ya, Setujui Berkas'
-                                : 'Ya, Tolak Berkas'}
+                                ? 'Yes, Verify Document'
+                                : 'Yes, Reject Document'}
                         </button>
                     </div>
                 </form>

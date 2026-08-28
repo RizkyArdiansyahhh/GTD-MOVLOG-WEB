@@ -126,6 +126,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Verifikasi Berkas
         Route::get('verifikasi-berkas', [VerifikasiBerkasController::class, 'index'])
             ->name('verifikasi-berkas');
+        Route::get('verifikasi-berkas/{contractNumber}', [VerifikasiBerkasController::class, 'show'])
+            ->name('verifikasi-berkas.show');
+        Route::post('verifikasi-berkas/{document}/verify', [VerifikasiBerkasController::class, 'verify'])
+            ->name('verifikasi-berkas.verify');
+        Route::post('verifikasi-berkas/{document}/reject', [VerifikasiBerkasController::class, 'reject'])
+            ->name('verifikasi-berkas.reject');
+        Route::get('verifikasi-berkas/file/{document}', [VerifikasiBerkasController::class, 'serveFile'])
+            ->name('verifikasi-berkas.file');
     });
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
@@ -144,11 +152,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('sesi-pekerja/{session}/stages/{stage}/complete', [SesiPekerjaController::class, 'completeStage'])
         ->name('sesi-pekerja.stages.complete');
-
-
-    // Verifikasi Berkas Detail
-    Route::get('verifikasi-berkas/{contractNumber}', [VerifikasiBerkasController::class, 'show'])
-        ->name('verifikasi-berkas.show');
 
 
     // Monitoring Barang

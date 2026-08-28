@@ -18,13 +18,17 @@ export const TOTAL_REQUIRED_DOCUMENTS = REQUIRED_DOCUMENT_TYPES.length; // 5
 export type VerificationStatus =
     | 'Pending'
     | 'Approved'
+    | 'Verified'
     | 'Rejected'
-    | 'WaitingForResubmission'; // Prepared for future integration with Submit Dokumen module
+    | 'Draft'
+    | 'WaitingForResubmission';
 
 export enum VerificationStatusEnum {
     PENDING = 'Pending',
     APPROVED = 'Approved',
+    VERIFIED = 'Verified',
     REJECTED = 'Rejected',
+    DRAFT = 'Draft',
     WAITING_FOR_RESUBMISSION = 'WaitingForResubmission',
 }
 
@@ -37,72 +41,75 @@ export interface CompanyEntity {
 export interface TransportDetail {
     portOfLoading: string;
     portOfDischarge: string;
-    shipName: string;
-    voyage: string;
+    shippName?: string;
+    shipName?: string;
+    voyage?: string;
 }
 
 export interface CargoItem {
-    description: string;
-    quantityGoods?: number;
+    id?: string;
+    description?: string;
+    descriptionOfGoods?: string;
+    quantityGoods?: number | string;
+    quantityOfGoods?: string;
     goodsUnit?: string;
-    quantityPackage?: number;
+    goodsUnitMeasurement?: string;
+    quantityPackage?: number | string;
+    quantityOfPackage?: string;
     packageUnit?: string;
+    packageUnitMeasurement?: string;
     currency?: string;
-    price?: number;
+    price?: number | string;
+    priceOfGoods?: string;
     type?: string;
     brand?: string;
     hsCodePOL?: string;
+    hsCodePol?: string;
     hsCodePOD?: string;
+    hsCodePod?: string;
     netWeight?: string;
     grossWeight?: string;
     volume?: string;
+    volumeDimension?: string;
+    packages?: string;
 }
 
 export interface VerificationDocument {
     id: string;
+    assignmentNoRef?: string;
     documentNumber: string;
     documentType: SupportedDocumentType;
     title: string;
     uploadedBy: string;
+    customerName?: string;
     uploadDate: string;
     timeAgo: string;
     shipmentReference: string;
     status: VerificationStatus;
-    notes?: string;
-    rejectionReason?: string;
-    verifiedBy?: string;
-    verifiedAt?: string;
-    previewUrl?: string;
+    rawStatus?: string;
+    notes?: string | null;
+    rejectionReason?: string | null;
+    verifiedBy?: string | null;
+    verifiedAt?: string | null;
+    fileUrl?: string | null;
+    previewUrl?: string | null;
+    fileName?: string | null;
     thumbnail?: string;
 
-    // Detailed fields from Custom Clearance Document PDF spec
+    // Detailed fields from custom clearance document structure
     contractNumber?: string;
     termOfShipment?: 'FOB' | 'CIF';
     oceanFreight?: string;
     insuranceFee?: string;
-    shipper?: CompanyEntity;
-    consignee?: CompanyEntity;
-    notifyParty?: CompanyEntity;
-    transportDetail?: TransportDetail;
-    cargoDetails?: CargoItem[];
-    totals?: {
-        totalGrossWeight?: string;
-        totalPackages?: string;
-        totalVolume?: string;
-        totalGoods?: string;
-        totalPrice?: string;
-    };
-    relatedDocumentNumbers?: {
-        commercialInvoiceNumber?: string;
-        commercialInvoiceDate?: string;
-        billOfLadingNumber?: string;
-        billOfLadingDate?: string;
-        cooNumber?: string;
-        cooDate?: string;
-        packingListNumber?: string;
-        insuranceNumber?: string;
-    };
-    amountInsured?: string;
+    shipper?: CompanyEntity | null;
+    consignee?: CompanyEntity | null;
+    notifyParty?: CompanyEntity | null;
+    transportDetail?: TransportDetail | null;
+    cargoDetails?: CargoItem[] | null;
+    totals?: any;
+    relatedDocumentNumbers?: Record<string, any> | null;
+    amountInsured?: string | null;
+    documentData?: Record<string, any> | null;
 }
 
 export interface DocumentStats {
@@ -134,3 +141,4 @@ export interface FieldMismatchWarning {
     actual: string;
     referenceDocType: string;
 }
+
