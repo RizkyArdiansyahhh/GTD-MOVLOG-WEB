@@ -4,24 +4,26 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Web\Auth;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+
 
 /**
  * Registered User Controller (Web)
  *
- * Handles web (session-based) user registration for the admin dashboard.
+ * Handles web user registration.
  */
 class RegisteredUserController extends Controller
 {
     /**
      * POST /register
-     * Create a new registered user and log them in.
+     * Create a new registered user and redirect to login page.
      */
     public function store(Request $request): RedirectResponse
     {
@@ -49,16 +51,30 @@ class RegisteredUserController extends Controller
             'terms.accepted'     => 'Anda harus menyetujui Syarat & Ketentuan.',
         ]);
 
+        $customer = Customer::firstOrCreate(
+            ['email' => $request->email],
+            [
+                'company_name' => $request->name,
+                'pic_name'     => $request->name,
+                'email'        => $request->email,
+            ]
+        );
+
         $user = User::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
-            'password' => Hash::make($request->password),
+            'customer_id' => $customer->id,
+            'name'        => $request->name,
+            'email'       => $request->email,
+            'password'    => Hash::make($request->password),
         ]);
+
+
+        if (method_exists($user, 'assignRole') && !$user->roles()->exists()) {
+            $user->assignRole(UserRole::Customer->value);
+        }
 
         event(new Registered($user));
 
-        Auth::login($user);
-
-        return redirect()->intended(route('dashboard'));
+        // Do not auto-login, instead redirect to login with a success message
+        return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan masuk menggunakan akun baru Anda.');
     }
 }

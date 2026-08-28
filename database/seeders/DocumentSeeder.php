@@ -61,23 +61,25 @@ class DocumentSeeder extends Seeder
                 'uploaded_by'         => $staff?->id,
                 'verified_by'         => $supervisor?->id,
                 'verified_at'         => now()->subDays(2),
-                'remarks'             => 'Dokumen sah dan terverifikasi',
+                'remarks'             => 'Dokumen B/L valid dan telah ditandatangani pihak agen',
             ],
             [
-                'shipping_session_id' => $session2?->id,
+                'shipping_session_id' => $session1?->id,
                 'document_type_id'    => $typePacking?->id,
                 'document_data'       => [
-                    'document_number'    => 'PL-2026-015',
-                    'title'              => 'Packing List CAT 320 GC & Spareparts',
-                    'gross_weight'       => '22,400 KG',
-                    'packages'           => '2 Units + 4 Crates',
-                    'shipment_reference' => 'SES-2048',
+                    'document_number'    => 'PL-2026-022',
+                    'title'              => 'Packing List Alat Berat & Spareparts',
+                    'total_packages'     => '3 Units / 12 Crates',
+                    'total_gross_weight' => '48,500 KG',
+                    'shipment_reference' => 'TRK-2024-001',
                 ],
-                'file_name'           => 'PL-2026-015_Packing_List.pdf',
-                'file_path'           => 'documents/PL-2026-015.pdf',
-                'status'              => 'PENDING',
+                'file_name'           => 'PL-2026-022_Packing_List.pdf',
+                'file_path'           => 'documents/PL-2026-022.pdf',
+                'status'              => 'APPROVED',
                 'uploaded_by'         => $staff?->id,
-                'remarks'             => 'Menunggu verifikasi manifest kargo',
+                'verified_by'         => $supervisor?->id,
+                'verified_at'         => now()->subDays(2),
+                'remarks'             => 'Jumlah koli dan tonase sesuai manifest',
             ],
             [
                 'shipping_session_id' => $session2?->id,
@@ -85,17 +87,15 @@ class DocumentSeeder extends Seeder
                 'document_data'       => [
                     'document_number'    => 'INS-2026-003',
                     'title'              => 'Marine Cargo Insurance Policy',
-                    'insurer'            => 'Asuransi Wahana Tata',
-                    'coverage'           => 'All Risks Institute Cargo Clauses (A)',
+                    'insurance_company'  => 'PT Asuransi Wahana Tata',
+                    'sum_insured'        => 'IDR 5,000,000,000',
                     'shipment_reference' => 'SES-2048',
                 ],
-                'file_name'           => 'INS-2026-003_Marine_Insurance.pdf',
+                'file_name'           => 'INS-2026-003_Insurance_Policy.pdf',
                 'file_path'           => 'documents/INS-2026-003.pdf',
-                'status'              => 'APPROVED',
+                'status'              => 'PENDING',
                 'uploaded_by'         => $staff?->id,
-                'verified_by'         => $supervisor?->id,
-                'verified_at'         => now()->subDay(),
-                'remarks'             => 'Polis asuransi valid aktif',
+                'remarks'             => 'Menunggu konfirmasi klausul cover risiko perairan dangkal',
             ],
             [
                 'shipping_session_id' => $session3?->id,
@@ -116,6 +116,10 @@ class DocumentSeeder extends Seeder
 
         foreach ($docs as $item) {
             if ($item['shipping_session_id'] && $item['document_type_id'] && $item['uploaded_by']) {
+                $session = ShippingSession::find($item['shipping_session_id']);
+                $item['customer_id'] = $session?->customer_id;
+                $item['assignment_no_ref'] = $session?->assignment_no ?? 'TRK-2024-001';
+
                 Document::firstOrCreate(
                     [
                         'shipping_session_id' => $item['shipping_session_id'],

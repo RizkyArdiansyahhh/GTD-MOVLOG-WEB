@@ -4,7 +4,14 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Models\Document;
+use App\Models\SessionCheckpoint;
+use App\Models\ShippingSession;
 use App\Models\User;
+use App\Observers\DocumentObserver;
+use App\Observers\SessionCheckpointObserver;
+use App\Observers\ShippingSessionObserver;
+use App\Policies\ShippingSessionPolicy;
 use App\Policies\UserPolicy;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Eloquent\UserRepository;
@@ -16,13 +23,6 @@ use Illuminate\Support\ServiceProvider;
 
 /**
  * Application Service Provider
- *
- * Central place for:
- * - Binding Repository Interfaces to their Eloquent implementations
- * - Registering Policies
- * - Configuring Rate Limiters
- *
- * IMPORTANT: When adding a new Repository, always register the binding here.
  */
 class AppServiceProvider extends ServiceProvider
 {
@@ -31,9 +31,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // ─── Repository Bindings ───────────────────────────────────────────
-        // Bind each Repository Interface to its Eloquent Implementation.
-        // This enables Dependency Injection throughout the application.
         $this->app->bind(
             UserRepositoryInterface::class,
             UserRepository::class,
@@ -45,17 +42,20 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // ─── Policy Registrations ──────────────────────────────────────────
         Gate::policy(User::class, UserPolicy::class);
+        Gate::policy(ShippingSession::class, ShippingSessionPolicy::class);
 
-        // ─── API Rate Limiting ─────────────────────────────────────────────
+        // Observers
+        ShippingSession::observe(ShippingSessionObserver::class);
+        SessionCheckpoint::observe(SessionCheckpointObserver::class);
+        Document::observe(DocumentObserver::class);
+
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(
                 (int) config('api.rate_limit', 60)
             )->by($request->user()?->id ?: $request->ip());
         });
 
-        // ─── Strict mode for local/testing environments ────────────────────
         if ($this->app->isLocal()) {
             \Illuminate\Database\Eloquent\Model::shouldBeStrict();
         }

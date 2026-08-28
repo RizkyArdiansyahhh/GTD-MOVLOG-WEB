@@ -51,7 +51,7 @@ export default function KelolaSesiCreate({ fieldWorkers: propFieldWorkers }: Kel
             '/sesi-pekerja',
             {
                 id_sesi: idSesi,
-                units: units,
+                units: units as any,
                 kapal_pic_user_id: kapalPicUserId,
                 kapal_worker_ids: kapalWorkerIds,
                 notes: notes,

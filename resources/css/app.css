@@ -1,10 +1,53 @@
 @import 'tailwindcss';
 
 @theme {
-    --font-sans: 'Poppins', sans-serif;
+    --font-sans: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-heading: 'Poppins', sans-serif;
     --font-body: 'Poppins', sans-serif;
 
+    /* GTD Brand Colors */
+    --color-brand-gold: #F6C343;
+    --color-brand-gold-hover: #E0AD2C;
+    --color-brand-gold-muted: #F8D169;
+    --color-brand-navy: #0F172A;
+    --color-brand-navy-dark: #06283A;
+    --color-brand-navy-light: #1E293B;
+
+    /* Canvas & Surface */
+    --color-bg-page: #F5F7FC;
+    --color-surface-card: #FFFFFF;
+    --color-surface-hover: #F8FAFC;
+    --color-surface-muted: #F1F5F9;
+
+    /* Borders & Hairlines */
+    --color-border-subtle: #E2E8F0;
+    --color-border-muted: #CBD5E1;
+    --color-border-hairline: #E2E8F0;
+
+    /* Text & Typography */
+    --color-text-title: #06283A;
+    --color-text-body: #1E293B;
+    --color-text-secondary: #64748B;
+    --color-text-muted: #94A3B8;
+
+    /* Semantic Status Colors */
+    --color-status-success: #16A34A;
+    --color-status-success-bg: #ECFDF5;
+    --color-status-success-border: #A7F3D0;
+
+    --color-status-warning: #D97706;
+    --color-status-warning-bg: #FEF3C7;
+    --color-status-warning-border: #FDE68A;
+
+    --color-status-danger: #DC2626;
+    --color-status-danger-bg: #FEF2F2;
+    --color-status-danger-border: #FECACA;
+
+    --color-status-info: #2563EB;
+    --color-status-info-bg: #EFF6FF;
+    --color-status-info-border: #BFDBFE;
+
+    /* Legacy / Internal compat */
     --color-primary: #6366f1;
     --color-primary-foreground: #ffffff;
     --color-sidebar: #0f172a;
@@ -18,8 +61,26 @@
     --color-gold-hover: #d9a400;
 }
 
+:root {
+    --font-primary: 'Poppins', sans-serif;
+    --color-accent: #F6C343;
+    --color-accent-hover: #E0AD2C;
+    --color-bg-page: #F5F7FC;
+    --color-navy: #0F172A;
+    --color-navy-dark: #06283A;
+    --color-border: #E2E8F0;
+    --border-hairline: 0.5px solid #E2E8F0;
+    --border-standard: 1px solid #E2E8F0;
+    --radius-card: 12px;
+    --radius-button: 8px;
+    --radius-input: 8px;
+    --radius-badge: 6px;
+}
+
 body {
     font-family: 'Poppins', sans-serif;
+    background-color: var(--color-bg-page);
+    color: #1E293B;
 }
 
 /* ── Liquid-Glass Design System ────────────────────────────────── */
@@ -40,15 +101,13 @@ body {
     inset: 0;
     border-radius: inherit;
     padding: 1.4px;
-    background: linear-gradient(
-        180deg,
-        rgba(255, 255, 255, 0.45) 0%,
-        rgba(255, 255, 255, 0.15) 20%,
-        rgba(255, 255, 255, 0) 40%,
-        rgba(255, 255, 255, 0) 60%,
-        rgba(255, 255, 255, 0.15) 80%,
-        rgba(255, 255, 255, 0.45) 100%
-    );
+    background: linear-gradient(180deg,
+            rgba(255, 255, 255, 0.45) 0%,
+            rgba(255, 255, 255, 0.15) 20%,
+            rgba(255, 255, 255, 0) 40%,
+            rgba(255, 255, 255, 0) 60%,
+            rgba(255, 255, 255, 0.15) 80%,
+            rgba(255, 255, 255, 0.45) 100%);
     -webkit-mask: linear-gradient(#fff 0 0) content-box,
         linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
@@ -72,15 +131,13 @@ body {
     inset: 0;
     border-radius: inherit;
     padding: 1.4px;
-    background: linear-gradient(
-        180deg,
-        rgba(255, 255, 255, 0.5) 0%,
-        rgba(255, 255, 255, 0.2) 20%,
-        rgba(255, 255, 255, 0) 40%,
-        rgba(255, 255, 255, 0.6) 60%,
-        rgba(255, 255, 255, 0.2) 80%,
-        rgba(255, 255, 255, 0.5) 100%
-    );
+    background: linear-gradient(180deg,
+            rgba(255, 255, 255, 0.5) 0%,
+            rgba(255, 255, 255, 0.2) 20%,
+            rgba(255, 255, 255, 0) 40%,
+            rgba(255, 255, 255, 0.6) 60%,
+            rgba(255, 255, 255, 0.2) 80%,
+            rgba(255, 255, 255, 0.5) 100%);
     -webkit-mask: linear-gradient(#fff 0 0) content-box,
         linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;

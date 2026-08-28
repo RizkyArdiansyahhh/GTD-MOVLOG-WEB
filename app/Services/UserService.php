@@ -11,6 +11,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Spatie\LaravelData\Optional;
 
 /**
  * User Service
@@ -54,13 +55,19 @@ class UserService extends BaseService
     public function create(UserDTO $dto): User
     {
         return DB::transaction(function () use ($dto): User {
-            /** @var User $user */
-            $user = $this->userRepository->create([
+            $userData = [
                 'name'     => $dto->name,
                 'email'    => $dto->email,
                 'password' => Hash::make($dto->password),
                 'status'   => $dto->status->value,
-            ]);
+            ];
+
+            if ($dto->customer_id && !($dto->customer_id instanceof Optional)) {
+                $userData['customer_id'] = $dto->customer_id;
+            }
+
+            /** @var User $user */
+            $user = $this->userRepository->create($userData);
 
             if ($dto->role) {
                 $user->assignRole($dto->role);
@@ -81,6 +88,10 @@ class UserService extends BaseService
                 'email'  => $dto->email,
                 'status' => $dto->status->value,
             ];
+
+            if ($dto->customer_id !== null && !($dto->customer_id instanceof Optional)) {
+                $data['customer_id'] = $dto->customer_id;
+            }
 
             if (is_string($dto->password) && $dto->password !== '') {
                 $data['password'] = Hash::make($dto->password);

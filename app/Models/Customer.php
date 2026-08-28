@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Customer extends Model
 {
+    use HasFactory;
     use HasUlids;
 
     /**
@@ -33,10 +35,31 @@ class Customer extends Model
     }
 
     /**
+     * Override toArray() untuk menambahkan companyName dan picName
+     * sebagai alias camelCase tanpa menggunakan accessor Attribute::make()
+     * yang berkonflik dengan HasUlids + Laravel 12 magic accessor routing.
+     */
+    public function toArray(): array
+    {
+        $array = parent::toArray();
+        $array['companyName'] = $this->attributes['company_name'] ?? null;
+        $array['picName']     = $this->attributes['pic_name'] ?? null;
+        return $array;
+    }
+
+    /**
      * Get all shipping sessions for this customer.
      */
     public function shippingSessions(): HasMany
     {
         return $this->hasMany(ShippingSession::class);
+    }
+
+    /**
+     * Get all users registered under this customer company.
+     */
+    public function users(): HasMany
+    {
+        return $this->hasMany(User::class, 'customer_id');
     }
 }

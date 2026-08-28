@@ -32,7 +32,7 @@ const menuItems: MenuItem[] = [
     { label: 'Monitoring Barang', href: '/monitoring-barang', icon: PackageSearch },
     { label: 'Monitoring Checkpoint', href: '/monitoring-cp', icon: MapPin },
     { label: 'Kelola Sesi Pekerja', href: '/sesi-pekerja', routeName: 'kelola-sesi', icon: ClipboardList, roles: ['super-admin'] },
-    { label: 'Submit Dokumen', href: '/submit-dokumen', routeName: 'submit-dokumen', icon: FileUp },
+    { label: 'Submit Dokumen', href: '/submit-berkas', routeName: 'submit-berkas.index', icon: FileUp },
     { label: 'Verifikasi Berkas', href: '/verifikasi-berkas', routeName: 'verifikasi-berkas', icon: FileCheck2, roles: ['supervisor'] },
     { label: 'Laporan', href: '/laporan', icon: BarChart3 },
 ];
@@ -162,7 +162,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 className="hidden lg:flex fixed left-0 bottom-0 z-40 flex-col"
                 style={{
                     width: '276px',
-                    top: 'var(--navbar-h)',
+                    top: `${NAVBAR_HEIGHT}px`,
                     paddingTop: '16px',
                     paddingLeft: '16px',
                     paddingBottom: '16px',

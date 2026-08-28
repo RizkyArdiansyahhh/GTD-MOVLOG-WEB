@@ -6,15 +6,18 @@ use App\Enums\UserStatus;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
+use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
+    use HasApiTokens;
     use HasFactory;
     use Notifiable;
     use HasUlids;
@@ -41,6 +44,7 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
+        'customer_id',
         'name',
         'email',
         'password',
@@ -94,6 +98,14 @@ class User extends Authenticatable
         return Attribute::make(
             get: fn () => $this->avatar ? Storage::url($this->avatar) : null,
         );
+    }
+
+    /**
+     * The customer company this user represents (only applicable for role 'customer').
+     */
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class, 'customer_id');
     }
 
     /**

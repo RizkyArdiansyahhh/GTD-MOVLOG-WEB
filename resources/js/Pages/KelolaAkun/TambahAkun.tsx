@@ -59,7 +59,7 @@ export default function TambahAkun() {
         e.preventDefault();
         setIsSubmitting(true);
 
-        router.post('/kelola-akun/tambah', form, {
+        router.post('/kelola-akun/tambah', form as any, {
             preserveScroll: true,
             onSuccess: () => {
                 setIsSubmitting(false);

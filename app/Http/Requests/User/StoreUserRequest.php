@@ -34,6 +34,12 @@ class StoreUserRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'customer_id' => [
+                'nullable',
+                Rule::requiredIf(fn () => $this->input('role') === UserRole::Customer->value || $this->input('role') === 'customer'),
+                'string',
+                'exists:customers,id',
+            ],
             'name'     => ['required', 'string', 'max:255'],
             'email'    => ['required', 'string', 'email:rfc,dns', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()],
@@ -52,6 +58,8 @@ class StoreUserRequest extends FormRequest
     {
         return [
             'email.unique' => 'This email address is already registered.',
+            'customer_id.required_if' => 'Perusahaan customer wajib dipilih untuk pengguna dengan role customer.',
+            'customer_id.exists' => 'Perusahaan customer yang dipilih tidak valid.',
         ];
     }
 }

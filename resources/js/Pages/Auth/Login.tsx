@@ -2,6 +2,7 @@ import { Head, useForm } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { useState, type FormEventHandler } from 'react';
 import BlurText from './BlurText';
+import Toast from '@/Components/Toast';
 
 /* ── Animation helpers ─────────────────────────────────────────── */
 const fadeBlurUp = (delay: number) => ({
@@ -33,6 +34,7 @@ export default function Login() {
     return (
         <>
             <Head title="Masuk" />
+            <Toast />
 
             {/* Google Fonts */}
             <link rel="preconnect" href="https://fonts.googleapis.com" />
