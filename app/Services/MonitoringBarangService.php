@@ -13,6 +13,7 @@ class MonitoringBarangService
 {
     /**
      * Mengambil dan memetakan seluruh assignment berkas menjadi data monitoring barang.
+     * Menggunakan pendekatan konsolidasi data kargo (merged cargo) seperti pada step Preview PIB.
      */
     public function getMonitoringItems(): Collection
     {
@@ -35,25 +36,94 @@ class MonitoringBarangService
             $bolData = $bolDoc?->document_data ?? [];
             $ciData  = $ciDoc?->document_data ?? [];
             $plData  = $plDoc?->document_data ?? [];
+            $cooData = $cooDoc?->document_data ?? [];
 
-            // 1. Ekstraksi Cargo Detail
-            $firstCargo = $bolData['cargoDetail'][0] 
-                ?? $ciData['cargoDetail'][0] 
-                ?? $plData['cargoDetail'][0] 
-                ?? [];
-            
-            $itemName = !empty($firstCargo['descriptionOfGoods'])
-                ? $firstCargo['descriptionOfGoods']
-                : ('Kargo ' . $assignmentRef);
+            // 1. Ekstraksi & Konsolidasi Data Barang Utama (Merged Cargo CI + PL + BL)
+            $ciCargoList  = $ciData['cargoDetail'] ?? [];
+            $plCargoList  = $plData['cargoDetail'] ?? [];
+            $bolCargoList = $bolData['cargoDetail'] ?? [];
 
-            $itemCode = $firstCargo['hsCodePol'] 
-                ?? $firstCargo['hsCodePod'] 
-                ?? $firstCargo['id'] 
-                ?? '-';
+            // Basis data kargo mengutamakan CI, fallback ke PL atau BL jika belum ada CI
+            $primaryCargoList = !empty($ciCargoList) 
+                ? $ciCargoList 
+                : (!empty($plCargoList) ? $plCargoList : $bolCargoList);
 
-            // 2. Ekstraksi Transport & Lokasi
-            $transport = $bolData['transportDetail'] 
-                ?? $ciData['transportDetail'] 
+            if (!is_array($primaryCargoList)) {
+                $primaryCargoList = [];
+            }
+
+            $cargos = [];
+            $namesList = [];
+            $typesList = [];
+            $brandsList = [];
+            $codesList = [];
+
+            foreach ($primaryCargoList as $idx => $cargo) {
+                $plItem  = $plCargoList[$idx] ?? [];
+                $bolItem = $bolCargoList[$idx] ?? [];
+
+                $name  = trim((string) ($cargo['descriptionOfGoods'] ?? $plItem['descriptionOfGoods'] ?? $bolItem['descriptionOfGoods'] ?? ''));
+                $type  = trim((string) ($cargo['type'] ?? $plItem['type'] ?? ''));
+                $brand = trim((string) ($cargo['brand'] ?? $plItem['brand'] ?? ''));
+                $code  = trim((string) ($cargo['hsCodePol'] ?? $cargo['hsCodePod'] ?? $plItem['hsCodePol'] ?? $bolItem['hsCodePol'] ?? ''));
+                
+                $qty   = $cargo['quantityOfGoods'] ?? $plItem['quantityOfGoods'] ?? $cargo['quantityOfPackage'] ?? $plItem['quantityOfPackage'] ?? '-';
+                $unit  = $cargo['goodsUnitMeasurement'] ?? $plItem['goodsUnitMeasurement'] ?? $cargo['packageUnitMeasurement'] ?? $plItem['packageUnitMeasurement'] ?? '';
+                
+                $netWeight   = !empty($plItem['netWeight']) ? (string) $plItem['netWeight'] : '';
+                $grossWeight = !empty($plItem['grossWeight']) ? (string) $plItem['grossWeight'] : (!empty($bolItem['grossWeight']) ? (string) $bolItem['grossWeight'] : '');
+                
+                $price = '';
+                if (!empty($cargo['priceOfGoods'])) {
+                    $currency = $cargo['currency'] ?? 'USD';
+                    $price = $cargo['priceOfGoods'] . ' ' . $currency;
+                }
+
+                if (empty($name) && empty($type) && empty($brand)) {
+                    continue;
+                }
+
+                if (!empty($name)) {
+                    $namesList[] = $name;
+                }
+                if (!empty($type) && $type !== '-') {
+                    $typesList[] = $type;
+                }
+                if (!empty($brand) && $brand !== '-') {
+                    $brandsList[] = $brand;
+                }
+                if (!empty($code) && $code !== '-') {
+                    $codesList[] = $code;
+                }
+
+                $cargos[] = [
+                    'id'                 => (string) ($cargo['id'] ?? ($idx + 1)),
+                    'descriptionOfGoods' => $name ?: ('Barang #' . ($idx + 1)),
+                    'type'               => $type ?: '-',
+                    'brand'              => $brand ?: '-',
+                    'quantity'           => $qty,
+                    'unit'               => $unit,
+                    'netWeight'          => $netWeight,
+                    'grossWeight'        => $grossWeight,
+                    'price'              => $price,
+                    'hsCode'             => $code ?: '-',
+                ];
+            }
+
+            $uniqueNames  = array_values(array_unique($namesList));
+            $uniqueTypes  = array_values(array_unique($typesList));
+            $uniqueBrands = array_values(array_unique($brandsList));
+            $uniqueCodes  = array_values(array_unique($codesList));
+
+            // Format ringkasan
+            $itemName     = !empty($uniqueNames) ? implode(', ', $uniqueNames) : ('Kargo ' . $assignmentRef);
+            $itemType     = !empty($uniqueTypes) ? implode(', ', $uniqueTypes) : '-';
+            $manufacturer = !empty($uniqueBrands) ? implode(', ', $uniqueBrands) : '-';
+            $itemCode     = !empty($uniqueCodes) ? implode(', ', $uniqueCodes) : '-';
+
+            // 2. Ekstraksi Transport & Rute Lokasi
+            $transport = $ciData['transportDetail'] 
+                ?? $bolData['transportDetail'] 
                 ?? $plData['transportDetail'] 
                 ?? [];
 
@@ -65,31 +135,27 @@ class MonitoringBarangService
                 ? $transport['portOfDischarge'] 
                 : '-';
 
-            // 3. Ekstraksi No Kontrak
+            // 3. Ekstraksi No Kontrak (Dari CI / PL / BL)
             $contractId = $ciData['documentDetail']['shipmentContractNumber']
                 ?? $plData['documentDetail']['shipmentContractNumber']
                 ?? $bolData['documentDetail']['number']
-                ?? $assignmentRef;
+                ?? '-';
 
-            // 4. Ekstraksi Berat Total
+            // 4. Ekstraksi Berat Keseluruhan (Dari Bill of Lading / Packing List)
             $totalWeight = '-';
             if (!empty($bolData['quantity']['totalGrossWeight'])) {
                 $unit = $bolData['quantity']['totalGrossWeightUnit'] ?? 'kg';
                 $totalWeight = $bolData['quantity']['totalGrossWeight'] . ' ' . $unit;
-            } elseif (!empty($firstCargo['grossWeight'])) {
-                $totalWeight = $firstCargo['grossWeight'] . ' kg';
+            } elseif (!empty($plCargoList)) {
+                $sumNet = array_reduce($plCargoList, function ($carry, $item) {
+                    return $carry + (float) ($item['netWeight'] ?? 0);
+                }, 0);
+                if ($sumNet > 0) {
+                    $totalWeight = $sumNet . ' kg';
+                }
             }
 
-            // 5. Ekstraksi Model & Manufaktur
-            $model = $plData['cargoDetail'][0]['type'] 
-                ?? $ciData['cargoDetail'][0]['type'] 
-                ?? '-';
-
-            $manufacturer = $plData['cargoDetail'][0]['brand'] 
-                ?? $ciData['cargoDetail'][0]['brand'] 
-                ?? '-';
-
-            // 6. Normalisasi dan Mapping Status Dokumen & Pengiriman
+            // 5. Normalisasi Status
             $statuses = $docs->map(function ($doc) {
                 if ($doc->status instanceof DocumentStatus) {
                     return $doc->status->value;
@@ -104,7 +170,7 @@ class MonitoringBarangService
                 default                                              => 'Menunggu',
             };
 
-            // 7. Mapping Dokumen Lampiran
+            // 6. Dokumen Lampiran
             $documentItems = $docs->map(function ($doc) {
                 $rawStatus = $doc->status instanceof DocumentStatus ? $doc->status->value : (string) $doc->status;
                 $statusLabel = match ($rawStatus) {
@@ -134,7 +200,10 @@ class MonitoringBarangService
                 'shippingSession'      => $assignmentRef,
                 'customerName'         => $customer?->company_name ?? 'Customer Tidak Diketahui',
                 'itemName'             => $itemName,
-                'itemType'             => $firstCargo['type'] ?? 'General Cargo',
+                'itemNames'            => $uniqueNames,
+                'itemType'             => $itemType,
+                'itemTypes'            => $uniqueTypes,
+                'itemCount'            => count($cargos),
                 'origin'               => $origin,
                 'destination'          => $destination,
                 'status'               => $status,
@@ -147,9 +216,10 @@ class MonitoringBarangService
                 'itemCode'             => $itemCode,
                 'currentLocation'      => $origin,
                 'totalWeight'          => $totalWeight,
-                'model'                => $model,
+                'model'                => $itemType,
                 'manufacturer'         => $manufacturer,
                 'finalDestination'     => $destination,
+                'cargos'               => $cargos,
                 'checkpoints'          => [
                     [
                         'id' => 'cp1',

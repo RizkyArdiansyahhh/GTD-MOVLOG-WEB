@@ -68,13 +68,29 @@ export interface ActivityItem {
   role?: string;
 }
 
+export interface CiCargoDetail {
+  id: string;
+  descriptionOfGoods: string;
+  type: string;
+  brand: string;
+  quantity?: number | string;
+  unit?: string;
+  netWeight?: string;
+  grossWeight?: string;
+  price?: string;
+  hsCode?: string;
+}
+
 export interface MonitoringItem {
   id: string;
   contractId: string;
   shippingSession: string;
   customerName: string;
   itemName: string;
+  itemNames?: string[];
   itemType: string;
+  itemTypes?: string[];
+  itemCount?: number;
   origin: string;
   destination: string;
   status: ShippingStatus;
@@ -89,11 +105,12 @@ export interface MonitoringItem {
   reports: ReportItem[];
   photos: PhotoItem[];
   activities: ActivityItem[];
-  // ── Field baru untuk Drawer Detail Barang ──
+  // ── Field Detail Barang ──
   itemCode?: string;
   currentLocation?: string;
   totalWeight?: string;
   model?: string;
   manufacturer?: string;
   finalDestination?: string;
+  cargos?: CiCargoDetail[];
 }
