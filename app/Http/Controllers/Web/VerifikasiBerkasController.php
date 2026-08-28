@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Web;
 
 use App\Enums\DocumentStatus;
+use App\Enums\ShippingSessionStatus;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Models\Checkpoint;
 use App\Models\Document;
+use App\Models\ShippingSession;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,6 +23,11 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  * Verifikasi Berkas Controller (Web / Inertia)
  *
  * Used by Supervisors to verify shipment documents submitted via Submit Berkas.
+ *
+ * Side effect penting: ketika SELURUH 5 dokumen wajib untuk 1 assignment_no_ref
+ * sudah berstatus VERIFIED, controller ini otomatis membuat 1 row shipping_sessions
+ * (lihat maybeGenerateShippingSession()), yang menjadi sumber data bagi modul
+ * MonitoringCheckpoint dan modul lain yang bergantung pada shipping_sessions.
  */
 class VerifikasiBerkasController extends Controller
 {
@@ -134,6 +142,10 @@ class VerifikasiBerkasController extends Controller
             'remarks'     => $validated['notes'] ?? null,
         ]);
 
+        // Jika ini melengkapi kelima dokumen wajib untuk assignment ini,
+        // otomatis buat shipping_sessions (sumber data MonitoringCheckpoint dkk).
+        $this->maybeGenerateShippingSession($document->assignment_no_ref);
+
         if ($request->wantsJson()) {
             return response()->json([
                 'message'  => "Document {$document->file_name} successfully verified.",
@@ -192,6 +204,87 @@ class VerifikasiBerkasController extends Controller
             'Content-Disposition' => 'inline; filename="' . basename($document->file_name ?? 'document.pdf') . '"',
             'Cache-Control'       => 'private, max-age=3600',
         ]);
+    }
+
+    /**
+     * Cek apakah SELURUH dokumen wajib (5 jenis) untuk 1 assignment_no_ref
+     * sudah berstatus VERIFIED. Jika ya dan shipping_sessions untuk assignment
+     * ini belum ada, buat 1 row baru berdasarkan data Commercial Invoice.
+     *
+     * Filter selalu ketat berdasarkan assignment_no_ref yang sedang diproses,
+     * TIDAK pernah mengambil data dari assignment lain meski customer sama
+     * (1 customer bisa punya banyak shipping_sessions dari waktu ke waktu;
+     * yang unik adalah assignment_no, bukan customer_id).
+     *
+     * Idempotent: aman dipanggil berkali-kali, tidak akan membuat duplikat
+     * shipping_sessions untuk assignment_no_ref yang sama.
+     */
+    private function maybeGenerateShippingSession(string $assignmentNoRef): void
+    {
+        $alreadyExists = ShippingSession::query()
+            ->where('assignment_no', $assignmentNoRef)
+            ->exists();
+
+        if ($alreadyExists) {
+            return;
+        }
+
+        // Ambil SEMUA dokumen milik assignment ini (filter ketat, tidak boleh bocor ke assignment lain).
+        $documents = Document::query()
+            ->where('assignment_no_ref', $assignmentNoRef)
+            ->with('documentType')
+            ->get();
+
+        $isComplete = $documents->count() === count(self::REQUIRED_DOCUMENT_TYPES);
+        $allVerified = $documents->every(function (Document $doc) {
+            $status = $doc->status instanceof DocumentStatus ? $doc->status->value : (string) $doc->status;
+            return strtoupper($status) === DocumentStatus::VERIFIED->value;
+        });
+
+        if (!$isComplete || !$allVerified) {
+            return;
+        }
+
+        // customer_id diambil dari dokumen DALAM assignment ini saja (aman).
+        $customerId = $documents->first()->customer_id;
+
+        $ciDocument = $documents->first(
+            fn (Document $doc) => $doc->documentType?->name === 'Commercial Invoice'
+        );
+
+        if (!$ciDocument) {
+            report(new \RuntimeException(
+                "Commercial Invoice not found for assignment {$assignmentNoRef}, shipping_sessions not generated."
+            ));
+            return;
+        }
+
+        $ciData = $ciDocument->document_data ?? [];
+
+        $cargoNames = collect($ciData['cargoDetail'] ?? [])
+            ->pluck('descriptionOfGoods')
+            ->filter()
+            ->implode(', ');
+
+        $firstCheckpoint = Checkpoint::query()->orderBy('id')->first();
+
+        $shippingSession = ShippingSession::create([
+            'customer_id'           => $customerId,
+            'created_by'            => auth()->id(),
+            'assignment_no'         => $assignmentNoRef,
+            'cargo_name'            => $cargoNames !== '' ? $cargoNames : '-',
+            'total_quantity'        => (float) ($ciData['totalQuantity']['totalGoods'] ?? 0),
+            'unit'                  => $ciData['totalQuantity']['totalGoodsUnit'] ?? '-',
+            'origin'                => $ciData['transportDetail']['portOfLoading'] ?? null,
+            'destination'           => $ciData['transportDetail']['portOfDischarge'] ?? null,
+            'current_checkpoint_id' => $firstCheckpoint?->id,
+            'status'                => ShippingSessionStatus::PENDING->value,
+        ]);
+
+        // Isi shipping_session_id di seluruh dokumen assignment ini (sebelumnya kosong).
+        Document::query()
+            ->where('assignment_no_ref', $assignmentNoRef)
+            ->update(['shipping_session_id' => $shippingSession->id]);
     }
 
     /**
@@ -278,4 +371,3 @@ class VerifikasiBerkasController extends Controller
         ];
     }
 }
-
