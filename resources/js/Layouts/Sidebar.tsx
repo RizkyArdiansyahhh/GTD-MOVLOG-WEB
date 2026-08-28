@@ -33,7 +33,7 @@ const menuItems: MenuItem[] = [
     { label: 'Monitoring Checkpoint', href: '/monitoring-cp', icon: MapPin },
     { label: 'Kelola Sesi Pekerja', href: '/sesi-pekerja', routeName: 'kelola-sesi', icon: ClipboardList, roles: ['super-admin'] },
     { label: 'Submit Dokumen', href: '/submit-berkas', routeName: 'submit-berkas.index', icon: FileUp, roles: ['super-admin', 'staff'] },
-    { label: 'Verifikasi Dokumen', href: '/verifikasi-berkas', routeName: 'verifikasi-berkas', icon: FileCheck2, roles: ['super-admin', 'supervisor'] },
+    { label: 'Verifikasi Dokumen', href: '/verifikasi-berkas', routeName: 'verifikasi-berkas', icon: FileCheck2, roles: ['supervisor'] },
     { label: 'Laporan', href: '/laporan', icon: BarChart3 },
 ];
 
