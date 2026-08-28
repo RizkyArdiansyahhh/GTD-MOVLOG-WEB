@@ -81,10 +81,11 @@ class VerifikasiBerkasTest extends TestCase
         $response->assertStatus(403);
     }
 
-    public function test_supervisor_sees_only_pending_documents_in_queue(): void
+    public function test_supervisor_sees_submitted_shipments_in_queue(): void
     {
         $asgPending = 'ASG-' . uniqid();
         $asgVerified = 'ASG-' . uniqid();
+        $asgDraft = 'ASG-' . uniqid();
 
         // Create a PENDING document
         Document::create([
@@ -117,15 +118,31 @@ class VerifikasiBerkasTest extends TestCase
             'verified_at'       => now(),
         ]);
 
+        // Create an unsubmitted DRAFT document (different assignment)
+        Document::create([
+            'assignment_no_ref' => $asgDraft,
+            'customer_id'       => $this->customer->id,
+            'document_type_id'  => $this->docTypeINV->id,
+            'document_data'     => [
+                'documentDetail' => ['number' => 'INV-DRAFT-001', 'date' => '2026-08-28'],
+            ],
+            'file_name'         => 'inv_draft.pdf',
+            'file_path'         => 'documents/' . $asgDraft . '/inv_draft.pdf',
+            'status'            => DocumentStatus::DRAFT,
+            'uploaded_by'       => $this->customerUser->id,
+        ]);
+
         $response = $this->actingAs($this->supervisorUser)->get('/verifikasi-berkas');
 
         $response->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('VerifikasiBerkas/Index', false)
                 ->has('documents')
-                ->where('documents', function ($docs) use ($asgPending, $asgVerified) {
+                ->where('documents', function ($docs) use ($asgPending, $asgVerified, $asgDraft) {
                     $asgRefs = collect($docs)->pluck('assignmentNoRef');
-                    return $asgRefs->contains($asgPending) && !$asgRefs->contains($asgVerified);
+                    return $asgRefs->contains($asgPending)
+                        && $asgRefs->contains($asgVerified)
+                        && !$asgRefs->contains($asgDraft);
                 })
             );
     }
@@ -273,5 +290,82 @@ class VerifikasiBerkasTest extends TestCase
 
         $response->assertOk();
         $response->assertHeader('Content-Type', 'application/pdf');
+    }
+    public function test_revision_resubmission_keeps_verified_documents_intact(): void
+    {
+        $asg = 'ASG-' . uniqid();
+
+        // 1. Doc BL is already VERIFIED
+        $docBL = Document::create([
+            'assignment_no_ref' => $asg,
+            'customer_id'       => $this->customer->id,
+            'document_type_id'  => 1,
+            'document_data'     => ['documentDetail' => ['number' => 'BL-001', 'date' => '2026-08-28']],
+            'file_name'         => 'bl.pdf',
+            'file_path'         => "documents/{$asg}/bl.pdf",
+            'status'            => DocumentStatus::VERIFIED,
+            'uploaded_by'       => $this->customerUser->id,
+            'verified_by'       => $this->supervisorUser->id,
+            'verified_at'       => now(),
+            'remarks'           => 'Verified ok',
+        ]);
+
+        // 2. Doc INV was REJECTED with note
+        $docINV = Document::create([
+            'assignment_no_ref' => $asg,
+            'customer_id'       => $this->customer->id,
+            'document_type_id'  => 2,
+            'document_data'     => ['documentDetail' => ['number' => 'INV-001', 'date' => '2026-08-28']],
+            'file_name'         => 'inv.pdf',
+            'file_path'         => "documents/{$asg}/inv.pdf",
+            'status'            => DocumentStatus::REJECTED,
+            'uploaded_by'       => $this->customerUser->id,
+            'verified_by'       => $this->supervisorUser->id,
+            'remarks'           => 'Typo in total price',
+        ]);
+
+        // 3-5. Create docs 3, 4, 5 as VERIFIED
+        for ($i = 3; $i <= 5; $i++) {
+            Document::create([
+                'assignment_no_ref' => $asg,
+                'customer_id'       => $this->customer->id,
+                'document_type_id'  => $i,
+                'document_data'     => ['documentDetail' => ['number' => "DOC-00{$i}"]],
+                'file_name'         => "doc_{$i}.pdf",
+                'file_path'         => "documents/{$asg}/doc_{$i}.pdf",
+                'status'            => DocumentStatus::VERIFIED,
+                'uploaded_by'       => $this->customerUser->id,
+                'verified_by'       => $this->supervisorUser->id,
+                'verified_at'       => now(),
+            ]);
+        }
+
+        // Customer revises doc INV via saveStep
+        $service = app(\App\Services\DocumentSubmissionService::class);
+        $service->saveStep([
+            'assignment_no_ref' => $asg,
+            'customer_id'       => $this->customer->id,
+            'document_type_id'  => 2,
+            'document_data'     => ['documentDetail' => ['number' => 'INV-001-FIXED', 'date' => '2026-08-28']],
+            'file_name'         => 'inv_fixed.pdf',
+            'file_path'         => "documents/{$asg}/inv_fixed.pdf",
+        ], $this->customerUser->id);
+
+        $docINV->refresh();
+        $this->assertEquals(DocumentStatus::DRAFT, $docINV->status);
+        $this->assertNull($docINV->remarks);
+
+        // Customer finalizes resubmission
+        $service->submitFinal($asg);
+
+        $docBL->refresh();
+        $docINV->refresh();
+
+        // BL must REMAIN VERIFIED
+        $this->assertEquals(DocumentStatus::VERIFIED, $docBL->status);
+
+        // INV must be PENDING (ready for re-review)
+        $this->assertEquals(DocumentStatus::PENDING, $docINV->status);
+        $this->assertNull($docINV->remarks);
     }
 }

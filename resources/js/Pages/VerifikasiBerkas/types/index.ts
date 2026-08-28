@@ -1,16 +1,16 @@
 export type SupportedDocumentType =
-    | 'Commercial Invoice'
     | 'Bill of Lading'
+    | 'Commercial Invoice'
     | 'Packing List'
-    | 'Insurance'
-    | 'Certificate of Origin (COO)';
+    | 'Certificate of Origin (COO)'
+    | 'Insurance';
 
 export const REQUIRED_DOCUMENT_TYPES: SupportedDocumentType[] = [
-    'Commercial Invoice',
     'Bill of Lading',
+    'Commercial Invoice',
     'Packing List',
-    'Insurance',
     'Certificate of Origin (COO)',
+    'Insurance',
 ];
 
 export const TOTAL_REQUIRED_DOCUMENTS = REQUIRED_DOCUMENT_TYPES.length; // 5

@@ -27,11 +27,11 @@ class VerifikasiBerkasController extends Controller
      * The 5 mandatory document types required for every shipment verification.
      */
     public const REQUIRED_DOCUMENT_TYPES = [
-        'Commercial Invoice',
         'Bill of Lading',
+        'Commercial Invoice',
         'Packing List',
-        'Insurance',
         'Certificate of Origin (COO)',
+        'Insurance',
     ];
 
     /**
@@ -61,16 +61,16 @@ class VerifikasiBerkasController extends Controller
     {
         $this->checkSupervisorAuthorization($request);
 
-        // Retrieve assignment references that contain at least one PENDING document
-        $pendingAssignments = Document::query()
-            ->where('status', DocumentStatus::PENDING->value)
+        // Retrieve assignment references that contain submitted documents (non-draft)
+        $submittedAssignments = Document::query()
+            ->where('status', '!=', DocumentStatus::DRAFT->value)
             ->pluck('assignment_no_ref')
             ->unique()
             ->values();
 
-        // Fetch all documents associated with these pending assignments to allow full shipment-level context
+        // Fetch all documents associated with these assignments to allow full shipment-level context
         $documents = Document::query()
-            ->whereIn('assignment_no_ref', $pendingAssignments)
+            ->whereIn('assignment_no_ref', $submittedAssignments)
             ->with(['customer', 'documentType', 'uploadedBy', 'verifiedBy'])
             ->orderBy('created_at', 'desc')
             ->get();

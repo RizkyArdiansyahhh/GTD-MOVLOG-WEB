@@ -226,6 +226,7 @@ export interface StepRecord<T> {
   pdf: PdfFile | null;
   completed: boolean;
   remarks: string | null;
+  status?: string | null;
 }
 
 export interface WizardData {

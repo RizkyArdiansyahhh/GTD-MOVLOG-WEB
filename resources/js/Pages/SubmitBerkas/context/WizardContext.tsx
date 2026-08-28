@@ -104,6 +104,7 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
 
     existingDocs.forEach((doc) => {
       const typeId = Number(doc.document_type_id);
+      const typeName = (doc.document_type?.name ?? doc.documentType?.name ?? '').toLowerCase();
       const record = {
         data: doc.document_data,
         pdf: doc.file_name ? { name: doc.file_name, sizeLabel: 'PDF', url: doc.file_path } : null,
@@ -111,11 +112,11 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
         remarks: doc.remarks ?? null,
       };
 
-      if (typeId === 1) newWizardData.billOfLading = record as any;
-      if (typeId === 2) newWizardData.commercialInvoice = record as any;
-      if (typeId === 3) newWizardData.packingList = record as any;
-      if (typeId === 4) newWizardData.certificateOfOrigin = record as any;
-      if (typeId === 5) newWizardData.insurance = record as any;
+      if (typeId === 1 || typeName.includes('lading')) newWizardData.billOfLading = record as any;
+      else if (typeId === 2 || typeName.includes('invoice')) newWizardData.commercialInvoice = record as any;
+      else if (typeId === 3 || typeName.includes('packing')) newWizardData.packingList = record as any;
+      else if (typeId === 4 || typeName.includes('origin')) newWizardData.certificateOfOrigin = record as any;
+      else if (typeId === 5 || typeName.includes('insurance')) newWizardData.insurance = record as any;
     });
 
     setWizardData(newWizardData);
@@ -152,7 +153,7 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
   const saveStepData = useCallback(<T,>(key: FormStepKey, data: T, pdf: PdfFile | null) => {
     setWizardData((prev) => ({
       ...prev,
-      [key]: { data, pdf, completed: true },
+      [key]: { data, pdf, completed: true, remarks: null, status: 'DRAFT' },
     }));
   }, []);
 

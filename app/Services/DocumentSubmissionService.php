@@ -53,6 +53,7 @@ class DocumentSubmissionService
                     'file_name'      => $fileName,
                     'file_path'      => $filePath,
                     'status'         => DocumentStatus::DRAFT,
+                    'remarks'        => null,
                     'uploaded_by'    => $uploadedBy ?? auth()->id(),
                     'uploaded_at'    => now(),
                 ]
@@ -84,12 +85,12 @@ class DocumentSubmissionService
                 DB::raw('MAX(created_at) as created_at'),
                 DB::raw('COUNT(id) as total_documents'),
                 DB::raw("
-                    MAX(CASE
-                        WHEN status = 'VERIFIED'  THEN 'VERIFIED'
-                        WHEN status = 'REJECTED'  THEN 'REJECTED'
-                        WHEN status = 'PENDING'   THEN 'PENDING'
-                        ELSE 'DRAFT'
-                    END) as dominant_status
+                    CASE
+                        WHEN SUM(CASE WHEN status = 'REJECTED' THEN 1 ELSE 0 END) > 0 THEN 'REJECTED'
+                        WHEN SUM(CASE WHEN status = 'PENDING'  THEN 1 ELSE 0 END) > 0 THEN 'PENDING'
+                        WHEN SUM(CASE WHEN status = 'DRAFT'    THEN 1 ELSE 0 END) > 0 THEN 'DRAFT'
+                        ELSE 'VERIFIED'
+                    END as dominant_status
                 ")
             )
             ->with('customer:id,company_name,pic_name')
@@ -122,9 +123,10 @@ class DocumentSubmissionService
                 ->get();
 
             $this->assertComplete($documents, $assignmentNoRef);
-            $this->assertAllDraft($documents);
 
+            // Update only documents that are not already verified (e.g. DRAFT or REJECTED) to PENDING
             Document::where('assignment_no_ref', $assignmentNoRef)
+                ->where('status', '!=', DocumentStatus::VERIFIED->value)
                 ->update([
                     'status'     => DocumentStatus::PENDING->value,
                     'updated_at' => now(),
