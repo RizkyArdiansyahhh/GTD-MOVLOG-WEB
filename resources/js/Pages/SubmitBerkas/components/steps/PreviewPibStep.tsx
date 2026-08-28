@@ -337,8 +337,66 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
     };
 
 
+    const revisedStepsWithRemarks = useMemo(() => {
+        const items: { label: string; remarks: string; index: number }[] = [];
+        if (bol?.remarks) items.push({ label: 'Bill of Lading', remarks: bol.remarks, index: 0 });
+        if (ci?.remarks) items.push({ label: 'Commercial Invoice', remarks: ci.remarks, index: 1 });
+        if (pl?.remarks) items.push({ label: 'Packing List', remarks: pl.remarks, index: 2 });
+        if (coo?.remarks) items.push({ label: 'Certificate of Origin (COO)', remarks: coo.remarks, index: 3 });
+        if (insurance?.remarks) items.push({ label: 'Insurance', remarks: insurance.remarks, index: 4 });
+        return items;
+    }, [bol?.remarks, ci?.remarks, pl?.remarks, coo?.remarks, insurance?.remarks]);
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            {revisedStepsWithRemarks.length > 0 && (
+                <div
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 6,
+                        padding: '10px 14px',
+                        background: '#FEF3C7',
+                        border: '1px solid #FCD34D',
+                        borderRadius: 8,
+                        fontSize: 12,
+                        width: 'fit-content',
+                        maxWidth: '100%',
+                    }}
+                >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <AlertCircle size={14} color="#B45309" />
+                        <span style={{ fontWeight: 700, color: '#78350F', fontSize: 12 }}>
+                            Catatan Revisi dari Verifikator:
+                        </span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingLeft: 20 }}>
+                        {revisedStepsWithRemarks.map((item) => (
+                            <div key={item.index} style={{ fontSize: 12, color: '#92400E', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                                <strong style={{ color: '#78350F' }}>• {item.label}:</strong>
+                                <span>{item.remarks}</span>
+                                <button
+                                    type="button"
+                                    onClick={() => goToStep(item.index)}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: '#0284C7',
+                                        cursor: 'pointer',
+                                        fontSize: 11,
+                                        fontWeight: 600,
+                                        padding: 0,
+                                        marginLeft: 2,
+                                    }}
+                                >
+                                    (Ubah Step)
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {incompleteSteps.length > 0 && (
                 <div
                     style={{
@@ -420,9 +478,9 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
                 icon={<FileText size={17} color="#06283A" />}
                 title="4. Commercial Invoice"
                 rows={[
-                    { label: 'Number', value: ci?.data?.documentDetail.number ?? '' },
-                    { label: 'Date', value: ci?.data?.documentDetail.date ?? '' },
-                    { label: 'Term of Shipment', value: ci?.data?.documentDetail.termOfShipment ?? '' },
+                    { label: 'Number', value: ci?.data?.documentDetail?.number ?? '' },
+                    { label: 'Date', value: ci?.data?.documentDetail?.date ?? '' },
+                    { label: 'Term of Shipment', value: ci?.data?.documentDetail?.termOfShipment ?? '' },
                 ]}
             />
 
@@ -430,8 +488,8 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
                 icon={<FileText size={17} color="#06283A" />}
                 title="5. Bill of Lading"
                 rows={[
-                    { label: 'Number', value: bol?.data?.documentDetail.number ?? '' },
-                    { label: 'Date', value: bol?.data?.documentDetail.date ?? '' },
+                    { label: 'Number', value: bol?.data?.documentDetail?.number ?? '' },
+                    { label: 'Date', value: bol?.data?.documentDetail?.date ?? '' },
                 ]}
             />
 
@@ -439,8 +497,8 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
                 icon={<FileText size={17} color="#06283A" />}
                 title="6. Packing List"
                 rows={[
-                    { label: 'Number', value: pl?.data?.documentDetail.number ?? '' },
-                    { label: 'Date', value: pl?.data?.documentDetail.date ?? '' },
+                    { label: 'Number', value: pl?.data?.documentDetail?.number ?? '' },
+                    { label: 'Date', value: pl?.data?.documentDetail?.date ?? '' },
                 ]}
             />
 
@@ -448,8 +506,8 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
                 icon={<FileText size={17} color="#06283A" />}
                 title="7. Certificate of Origin (COO)"
                 rows={[
-                    { label: 'Number', value: coo?.data?.documentDetail.number ?? '' },
-                    { label: 'Date', value: coo?.data?.documentDetail.date ?? '' },
+                    { label: 'Number', value: coo?.data?.documentDetail?.number ?? '' },
+                    { label: 'Date', value: coo?.data?.documentDetail?.date ?? '' },
                 ]}
             />
 
@@ -460,27 +518,27 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
                     {
                         label: 'Premi Insurance (CI)',
                         value:
-                            isFob && ci?.data?.documentDetail.insurance
-                                ? `${ci.data.documentDetail.insurance} ${ci.data.documentDetail.insuranceCurrency}`
+                            isFob && ci?.data?.documentDetail?.insurance
+                                ? `${ci.data.documentDetail.insurance} ${ci.data.documentDetail.insuranceCurrency || ''}`
                                 : '',
                     },
                     {
                         label: 'Ocean Freight',
                         value:
-                            isFob && ci?.data?.documentDetail.oceanFreight
-                                ? `${ci.data.documentDetail.oceanFreight} ${ci.data.documentDetail.oceanFreightCurrency}`
+                            isFob && ci?.data?.documentDetail?.oceanFreight
+                                ? `${ci.data.documentDetail.oceanFreight} ${ci.data.documentDetail.oceanFreightCurrency || ''}`
                                 : '',
                     },
                     {
                         label: 'Total of Package',
-                        value: ci?.data?.totalQuantity.totalPackages
-                            ? `${ci.data.totalQuantity.totalPackages} ${ci.data.totalQuantity.totalPackagesUnit}`
+                        value: ci?.data?.totalQuantity?.totalPackages
+                            ? `${ci.data.totalQuantity.totalPackages} ${ci.data.totalQuantity.totalPackagesUnit || ''}`
                             : '',
                     },
                     {
                         label: 'Total Gross Weight',
-                        value: bol?.data?.quantity.totalGrossWeight
-                            ? `${bol.data.quantity.totalGrossWeight} ${bol.data.quantity.totalGrossWeightUnit}`
+                        value: bol?.data?.quantity?.totalGrossWeight
+                            ? `${bol.data.quantity.totalGrossWeight} ${bol.data.quantity.totalGrossWeightUnit || ''}`
                             : '',
                     },
                     {
@@ -489,8 +547,8 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
                     },
                     {
                         label: 'Total Volume',
-                        value: bol?.data?.quantity.totalVolume
-                            ? `${bol.data.quantity.totalVolume} ${bol.data.quantity.totalVolumeUnit}`
+                        value: bol?.data?.quantity?.totalVolume
+                            ? `${bol.data.quantity.totalVolume} ${bol.data.quantity.totalVolumeUnit || ''}`
                             : '',
                     },
                 ]}

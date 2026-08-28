@@ -143,7 +143,10 @@ function SubmitBerkasHubContent({
 
           {/* Banner Catatan Revisi jika ada */}
           {currentStepRemarks && (
-            <RevisionRemarksBanner remarks={currentStepRemarks} />
+            <RevisionRemarksBanner
+              remarks={currentStepRemarks}
+              stepName={['Bill of Lading', 'Commercial Invoice', 'Packing List', 'Certificate of Origin (COO)', 'Insurance'][currentStepIndex]}
+            />
           )}
 
           {currentStepIndex === 0 && <BillOfLadingStep />}

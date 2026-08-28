@@ -9,11 +9,11 @@ interface ShipmentRowProps {
 }
 
 const REQUIRED_DOCS: { type: SupportedDocumentType; code: string }[] = [
-    { type: 'Commercial Invoice', code: 'CI' },
     { type: 'Bill of Lading', code: 'BOL' },
+    { type: 'Commercial Invoice', code: 'CI' },
     { type: 'Packing List', code: 'PL' },
-    { type: 'Insurance', code: 'INS' },
     { type: 'Certificate of Origin (COO)', code: 'COO' },
+    { type: 'Insurance', code: 'INS' },
 ];
 
 export default function ShipmentRow({

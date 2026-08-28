@@ -46,7 +46,7 @@ export function groupDocumentsByShipment(
         const firstWithConsignee = uploadedDocs.find((d) => d.consignee?.name);
         const firstWithTransport = uploadedDocs.find((d) => d.transportDetail?.portOfLoading);
 
-        // Sort documents in standard order: Commercial Invoice, Bill of Lading, Packing List, Insurance, Certificate of Origin
+        // Sort documents in standard order: Bill of Lading, Commercial Invoice, Packing List, Certificate of Origin, Insurance
         const orderedDocs = [...uploadedDocs].sort((a, b) => {
             const indexA = REQUIRED_DOCUMENT_TYPES.indexOf(a.documentType);
             const indexB = REQUIRED_DOCUMENT_TYPES.indexOf(b.documentType);

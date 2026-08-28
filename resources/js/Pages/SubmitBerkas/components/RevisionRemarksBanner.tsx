@@ -6,30 +6,34 @@ interface RevisionRemarksBannerProps {
     stepName?: string;
 }
 
-export function RevisionRemarksBanner({ remarks, stepName }: RevisionRemarksBannerProps) {
+export function RevisionRemarksBanner({ remarks }: RevisionRemarksBannerProps) {
     if (!remarks) return null;
 
     return (
         <div
             style={{
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'flex-start',
-                gap: 12,
-                padding: '14px 18px',
-                background: '#FFFBEB',
+                gap: 8,
+                padding: '7px 12px',
+                background: '#FEF3C7',
                 border: '1px solid #FCD34D',
-                borderRadius: 12,
-                boxShadow: '0 1px 3px rgba(217, 119, 6, 0.08)',
+                borderRadius: 8,
+                fontSize: 12,
+                lineHeight: 1.4,
+                width: 'fit-content',
+                maxWidth: 680,
+                boxSizing: 'border-box',
             }}
         >
-            <AlertCircle size={20} color="#D97706" style={{ flexShrink: 0, marginTop: 1 }} />
-            <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#92400E' }}>
-                    Catatan Revisi dari Verifikator {stepName ? `(${stepName})` : ''}:
-                </div>
-                <div style={{ fontSize: 13, color: '#78350F', marginTop: 3, lineHeight: 1.5 }}>
+            <AlertCircle size={14} color="#B45309" style={{ marginTop: 2, flexShrink: 0 }} />
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'baseline' }}>
+                <span style={{ fontWeight: 700, color: '#78350F', fontSize: 12 }}>
+                    Catatan Revisi:
+                </span>
+                <span style={{ color: '#92400E', fontSize: 12, fontWeight: 500 }}>
                     {remarks}
-                </div>
+                </span>
             </div>
         </div>
     );
