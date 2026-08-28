@@ -11,6 +11,7 @@ use App\Http\Controllers\Web\GlobalSearchController;
 use App\Http\Controllers\Web\KelolaAkunController;
 use App\Http\Controllers\Web\SesiPekerjaController;
 use App\Http\Controllers\Web\LaporanController;
+use App\Http\Controllers\Web\MonitoringBarangController;
 use App\Http\Controllers\Web\MonitoringCheckpointController;
 use App\Http\Controllers\Web\SubmitBerkasController;
 use App\Http\Controllers\Web\UserController;

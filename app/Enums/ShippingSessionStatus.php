@@ -9,7 +9,6 @@ enum ShippingSessionStatus: string
     case PENDING = 'pending';
     case IN_TRANSIT = 'in_transit';
     case DELIVERED = 'delivered';
-    case CANCELLED = 'cancelled';
 
     public function label(): string
     {
@@ -17,7 +16,6 @@ enum ShippingSessionStatus: string
             self::PENDING => 'Menunggu',
             self::IN_TRANSIT => 'Dalam Perjalanan',
             self::DELIVERED => 'Selesai',
-            self::CANCELLED => 'Dibatalkan',
         };
     }
 
