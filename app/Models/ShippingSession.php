@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\SessionCheckpointStatus;
 use App\Enums\ShippingSessionStatus;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class ShippingSession extends Model
 {
+    use HasFactory;
     use HasUlids;
 
     protected $fillable = [

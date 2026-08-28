@@ -61,6 +61,10 @@ class AuthenticatedSessionController extends Controller
             $user->touch();
         }
 
+        if ($user && $user->hasRole('customer')) {
+            return redirect()->intended(route('customer.dashboard'));
+        }
+
         return redirect()->intended(route('dashboard'));
     }
 
