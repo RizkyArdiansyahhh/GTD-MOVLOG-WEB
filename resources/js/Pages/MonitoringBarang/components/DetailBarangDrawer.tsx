@@ -196,7 +196,7 @@ export function DetailBarangDrawer({ item, onClose }: DetailBarangDrawerProps) {
 
                             <div>
                                 <div style={{ fontSize: 10, color: '#9A3412', fontWeight: 600 }}>
-                                    MANUFAKTUR / BRAND
+                                    BRAND
                                 </div>
                                 <div style={{ fontSize: 12, fontWeight: 600, color: '#1E293B', marginTop: 1 }}>
                                     {item.manufacturer && item.manufacturer !== '-' ? item.manufacturer : '-'}

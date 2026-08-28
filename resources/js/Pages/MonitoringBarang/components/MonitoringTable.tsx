@@ -32,7 +32,7 @@ export function MonitoringTable({ data, onViewDetail, selectedId, itemsPerPage =
       <table className="w-full border-collapse">
         <thead>
           <tr style={{ height: 42, borderBottom: '1px solid #F1F5F9' }}>
-            {['No Kontrak & Assignment', 'Daftar Barang & Tipe', 'Asal', 'Tujuan', 'Status', 'Update Terakhir', 'Aksi'].map((col) => (
+            {['No Kontrak & Assignment', 'Daftar Barang', 'Asal', 'Tujuan', 'Status', 'Update Terakhir', 'Aksi'].map((col) => (
               <th
                 key={col}
                 className="text-left px-4"
