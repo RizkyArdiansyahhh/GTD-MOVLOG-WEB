@@ -35,6 +35,19 @@ class Customer extends Model
     }
 
     /**
+     * Override toArray() untuk menambahkan companyName dan picName
+     * sebagai alias camelCase tanpa menggunakan accessor Attribute::make()
+     * yang berkonflik dengan HasUlids + Laravel 12 magic accessor routing.
+     */
+    public function toArray(): array
+    {
+        $array = parent::toArray();
+        $array['companyName'] = $this->attributes['company_name'] ?? null;
+        $array['picName']     = $this->attributes['pic_name'] ?? null;
+        return $array;
+    }
+
+    /**
      * Get all shipping sessions for this customer.
      */
     public function shippingSessions(): HasMany

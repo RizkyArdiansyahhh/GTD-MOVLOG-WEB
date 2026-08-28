@@ -6,16 +6,8 @@ namespace App\Enums;
 
 enum DocumentStatus: string
 {
+    case DRAFT = 'DRAFT';
     case PENDING = 'PENDING';
-    case APPROVED = 'APPROVED';
+    case VERIFIED = 'VERIFIED';
     case REJECTED = 'REJECTED';
-
-    public function label(): string
-    {
-        return match ($this) {
-            self::PENDING => 'Menunggu Verifikasi',
-            self::APPROVED => 'Disetujui',
-            self::REJECTED => 'Ditolak',
-        };
-    }
 }

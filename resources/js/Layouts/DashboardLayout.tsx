@@ -1,7 +1,6 @@
 import { type ReactNode, useState, type CSSProperties } from 'react';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
-import Toast from '@/Components/Toast';
 
 interface DashboardLayoutProps {
     children: ReactNode;
@@ -62,10 +61,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
             {/* ── Main content area ── */}
             <main
-                className="flex-1 relative overflow-hidden ml-0 lg:ml-[292px] px-4 lg:px-0 lg:pr-4 pb-8"
+                className="flex-1 relative overflow-hidden ml-0 lg:ml-[308px] px-4 lg:px-0 lg:pr-4 pb-8"
                 style={{
-                    paddingTop: 'calc(var(--navbar-h) + 16px)',
-                    minHeight: '100vh',
+                    marginTop: '80px',
+                    minHeight: 'calc(100vh - 80px)',
                 }}
             >
                 {children}

@@ -23,9 +23,9 @@ export default function BlurText({ text, className = '', delay = 0 }: BlurTextPr
                     animate={
                         isInView
                             ? {
-                                  filter: ['blur(10px)', 'blur(5px)', 'blur(0px)'],
-                                  opacity: [0, 0.5, 1],
-                              }
+                                filter: ['blur(10px)', 'blur(5px)', 'blur(0px)'],
+                                opacity: [0, 0.5, 1],
+                            }
                             : {}
                     }
                     transition={{
