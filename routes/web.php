@@ -14,6 +14,7 @@ use App\Http\Controllers\Web\LaporanController;
 use App\Http\Controllers\Web\MonitoringBarangController;
 use App\Http\Controllers\Web\SubmitBerkasController;
 use App\Http\Controllers\Web\UserController;
+use App\Http\Controllers\Web\VerifikasiBerkasController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -34,8 +35,6 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/', fn () => Inertia::render('Dashboard/Index'))
-        ->name('dashboard');
 
     // Dashboard (Admin / Staff / Customer Redirect)
     Route::get('/', function (\Illuminate\Http\Request $request) {
@@ -176,7 +175,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{assignmentNoRef}/status', 'status')->name('status');
         });
 
-    Route::post('/submit-berkas/step', [SubmitBerkasController::class, 'saveStep']);
 
 
     // Logout

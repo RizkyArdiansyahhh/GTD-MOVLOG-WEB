@@ -1,6 +1,7 @@
 import { type ReactNode, useState, type CSSProperties } from 'react';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
+import Toast from '@/Components/Toast';
 
 interface DashboardLayoutProps {
     children: ReactNode;

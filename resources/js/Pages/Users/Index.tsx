@@ -97,7 +97,7 @@ export default function Index({ users, filters }: UsersIndexProps) {
                                     <td className="px-5 py-4">
                                         <div className="flex items-center gap-3">
                                             <img
-                                                src={user.avatar_url}
+                                                src={user.avatar_url ?? undefined}
                                                 alt={user.name}
                                                 className="w-8 h-8 rounded-full"
                                             />

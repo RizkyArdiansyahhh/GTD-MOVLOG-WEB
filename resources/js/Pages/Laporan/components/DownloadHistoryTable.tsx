@@ -8,9 +8,11 @@ const FORMAT_BADGE: Record<ExportFormat, { bg: string; text: string; label: stri
     excel: { bg: '#DCFCE7', text: '#15803D', label: 'Excel' },
 };
 
-const STATUS_BADGE: Record<DownloadStatus, { bg: string; text: string; label: string }> = {
+const STATUS_BADGE: Record<string, { bg: string; text: string; label: string }> = {
     ready: { bg: '#DCFCE7', text: '#15803D', label: 'Siap Unduh' },
+    'Siap Unduh': { bg: '#DCFCE7', text: '#15803D', label: 'Siap Unduh' },
     expired: { bg: '#F3F4F6', text: '#6B7280', label: 'Kedaluwarsa' },
+    'Kedaluwarsa': { bg: '#F3F4F6', text: '#6B7280', label: 'Kedaluwarsa' },
     processing: { bg: '#FFF4D6', text: '#B7791F', label: 'Sedang Diproses' },
 };
 

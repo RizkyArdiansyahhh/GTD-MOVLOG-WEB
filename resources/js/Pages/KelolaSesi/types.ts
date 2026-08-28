@@ -16,6 +16,7 @@ export interface FieldWorker {
 export interface SessionStage {
     id: string;
     stage_type: StageType;
+    stage_name?: string;
     stage_order: number;
     status: StageStatus;
     pic_user: FieldWorker | null;
