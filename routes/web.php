@@ -11,7 +11,7 @@ use App\Http\Controllers\Web\GlobalSearchController;
 use App\Http\Controllers\Web\KelolaAkunController;
 use App\Http\Controllers\Web\SesiPekerjaController;
 use App\Http\Controllers\Web\LaporanController;
-use App\Http\Controllers\Web\MonitoringBarangController;
+use App\Http\Controllers\Web\MonitoringCheckpointController;
 use App\Http\Controllers\Web\SubmitBerkasController;
 use App\Http\Controllers\Web\UserController;
 use App\Http\Controllers\Web\VerifikasiBerkasController;
@@ -177,7 +177,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/{assignmentNoRef}/finalize', 'finalize')->name('finalize');
             Route::get('/{assignmentNoRef}/status', 'status')->name('status');
         });
+    
+    Route::prefix('monitoring-checkpoint')->group(function () {
+    Route::get('/', [MonitoringCheckpointController::class, 'index'])
+        ->name('monitoring-checkpoint.index');
 
+    Route::get('/{assignmentNo}', [MonitoringCheckpointController::class, 'show'])
+        ->name('monitoring-checkpoint.show');
+    });
 
 
     // Logout
