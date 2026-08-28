@@ -14,9 +14,9 @@ import {
 } from 'lucide-react';
 import type { PageProps } from '@/types';
 
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 // Menu definition
-// ─────────────────────────────────────────────
+// ---------------------------------------------
 interface MenuItem {
     label: string;
     href: string;
@@ -37,8 +37,8 @@ const menuItems: MenuItem[] = [
     { label: 'Laporan', href: '/laporan', icon: BarChart3 },
 ];
 
-/** Navbar height – must match the value in Navbar.tsx */
-const NAVBAR_HEIGHT = 64;
+/** Top offset below floating navbar: 16px (top gap) + 64px (navbar) = 80px */
+const NAVBAR_BOTTOM_OFFSET = 80;
 
 interface SidebarProps {
     isOpen?: boolean;
@@ -86,7 +86,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             className="flex flex-col h-full bg-white rounded-2xl border border-gray-100 shadow-sm"
             style={{ padding: '20px 16px' }}
         >
-            {/* ── Close button (mobile only) ── */}
+            {/* -- Close button (mobile only) -- */}
             <div className="flex items-center justify-between mb-2 lg:hidden">
                 <span className="text-sm font-bold text-gray-800">Menu</span>
                 <button
@@ -99,10 +99,10 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 </button>
             </div>
 
-            {/* ── Navigation ── */}
+            {/* -- Navigation -- */}
             <nav className="flex-1 flex flex-col gap-1 overflow-y-auto">
                 {menuItems.map((item) => {
-                    // ── Conditional rendering: skip restricted items if role doesn't match ──
+                    // -- Conditional rendering: skip restricted items if role doesn't match --
                     if (item.roles && item.roles.length > 0) {
                         const allowedRoles = item.roles.map((r) => r.toLowerCase());
                         const hasPermission = allowedRoles.some((role) => userRoles.includes(role));
@@ -138,10 +138,10 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 })}
             </nav>
 
-            {/* ── Divider ── */}
+            {/* -- Divider -- */}
             <div className="my-4 h-px bg-gray-100" />
 
-            {/* ── Logout ── */}
+            {/* -- Logout -- */}
             <Link
                 href="/logout"
                 method="post"
@@ -157,12 +157,12 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
     return (
         <>
-            {/* ── Desktop sidebar (lg+): fixed, always visible ── */}
+            {/* -- Desktop sidebar (lg+): fixed, always visible -- */}
             <aside
                 className="hidden lg:flex fixed left-0 bottom-0 z-40 flex-col"
                 style={{
                     width: '276px',
-                    top: `${NAVBAR_HEIGHT}px`,
+                    top: `${NAVBAR_BOTTOM_OFFSET}px`,
                     paddingTop: '16px',
                     paddingLeft: '16px',
                     paddingBottom: '16px',
@@ -172,7 +172,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 {sidebarContent}
             </aside>
 
-            {/* ── Mobile/Tablet sidebar (< lg): overlay mode ── */}
+            {/* -- Mobile/Tablet sidebar (< lg): overlay mode -- */}
             {isOpen && (
                 <div className="fixed inset-0 z-50 lg:hidden">
                     {/* Backdrop */}
@@ -182,7 +182,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                     />
                     {/* Sidebar panel */}
                     <aside
-                        className="fixed left-0 top-0 bottom-0 z-50 flex flex-col w-[280px] bg-white shadow-xl"
+                        className="fixed left-3 top-3 bottom-3 z-50 flex flex-col w-[280px] bg-white rounded-2xl shadow-xl"
                         style={{ padding: '16px' }}
                     >
                         {sidebarContent}
@@ -192,4 +192,3 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         </>
     );
 }
-
