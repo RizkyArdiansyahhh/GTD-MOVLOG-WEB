@@ -99,7 +99,7 @@ export default function Toast() {
             added.push({
                 id: ++nextId,
                 type: 'success',
-                title: TITLE.success,
+                title: /verif/i.test(flash.success) ? 'Verified' : TITLE.success,
                 message: flash.success,
             });
         }
@@ -107,7 +107,7 @@ export default function Toast() {
             added.push({
                 id: ++nextId,
                 type: 'error',
-                title: TITLE.error,
+                title: /reject|ditolak/i.test(flash.error) ? 'Rejected' : TITLE.error,
                 message: flash.error,
             });
         }

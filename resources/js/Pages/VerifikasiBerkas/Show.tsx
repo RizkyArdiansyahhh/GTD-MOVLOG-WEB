@@ -21,8 +21,6 @@ import DocumentMetadata from './components/DocumentMetadata';
 import DocumentActions from './components/DocumentActions';
 import DocumentStatusModal from './components/DocumentStatusModal';
 import MismatchWarnings from './components/MismatchWarnings';
-import ToastNotification, { type ToastMessage } from '../KelolaAkun/components/ToastNotification';
-
 const ITEMS_PER_PAGE = 5;
 
 interface ShowProps extends PageProps {
@@ -70,8 +68,6 @@ export default function VerifikasiBerkasShow({ contractNumber, documents = [] }:
     const [modalDoc, setModalDoc] = useState<VerificationDocument | null>(null);
     const [targetStatus, setTargetStatus] = useState<VerificationStatus | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [toast, setToast] = useState<ToastMessage | null>(null);
-
     // ── Mismatch warnings for selected document ──
     const mismatchWarnings = useMemo(() => {
         if (!selectedDocument) return [];
@@ -132,22 +128,9 @@ export default function VerifikasiBerkasShow({ contractNumber, documents = [] }:
                     setIsSubmitting(false);
                     setModalDoc(null);
                     setTargetStatus(null);
-                    setToast({
-                        id: String(Date.now()),
-                        type: isApproval ? 'success' : 'error',
-                        message: isApproval
-                            ? `Document ${doc.documentNumber} (${doc.documentType}) successfully verified.`
-                            : `Document ${doc.documentNumber} (${doc.documentType}) rejected.`,
-                    });
                 },
-                onError: (errors) => {
+                onError: () => {
                     setIsSubmitting(false);
-                    const msg = Object.values(errors).join(', ') || 'Failed to update document verification status.';
-                    setToast({
-                        id: String(Date.now()),
-                        type: 'error',
-                        message: msg,
-                    });
                 },
             }
         );
@@ -213,10 +196,7 @@ export default function VerifikasiBerkasShow({ contractNumber, documents = [] }:
         <DashboardLayout>
             <Head title={`${contractNumber} — Document Verification`} />
 
-            {/* Toast Notification */}
-            <ToastNotification toast={toast} onClose={() => setToast(null)} />
-
-            {/* Verification Status Confirmation Modal */}
+                        {/* Verification Status Confirmation Modal */}
             <DocumentStatusModal
                 isOpen={modalDoc !== null}
                 document={modalDoc}

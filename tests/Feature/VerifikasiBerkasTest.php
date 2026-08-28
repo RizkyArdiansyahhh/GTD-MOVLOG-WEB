@@ -185,6 +185,7 @@ class VerifikasiBerkasTest extends TestCase
             ]);
 
         $response->assertRedirect();
+        $response->assertSessionHas('success', 'Document bl_verify.pdf successfully verified.');
 
         $doc->refresh();
         $this->assertEquals(DocumentStatus::VERIFIED, $doc->status);
@@ -216,6 +217,7 @@ class VerifikasiBerkasTest extends TestCase
             ]);
 
         $response->assertRedirect();
+        $response->assertSessionHas('error', 'Document bl_reject.pdf rejected.');
 
         $doc->refresh();
         $this->assertEquals(DocumentStatus::REJECTED, $doc->status);

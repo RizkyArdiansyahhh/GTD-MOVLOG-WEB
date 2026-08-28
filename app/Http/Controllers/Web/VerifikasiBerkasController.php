@@ -170,7 +170,7 @@ class VerifikasiBerkasController extends Controller
             ]);
         }
 
-        return back()->with('success', "Document {$document->file_name} rejected.");
+        return back()->with('error', "Document {$document->file_name} rejected.");
     }
 
     /**
