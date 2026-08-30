@@ -28,16 +28,19 @@ class SubmitBerkasController extends Controller
     }
 
     /**
-     * Simpan customer baru dari CustomerSelectModal.
+     * Simpan customer baru dari AddCustomerModal.
      */
     public function storeCustomer(Request $request)
     {
         $validated = $request->validate([
             'company_name' => 'required|string|max:255',
             'address'      => 'nullable|string',
-            'phone'        => 'nullable|string|max:50',
+            'phone'        => 'nullable|string|min:10|max:15',
             'email'        => 'nullable|email|max:255',
             'pic_name'     => 'nullable|string|max:255',
+        ], [
+            'phone.min' => 'Nomor HP minimal 10 karakter.',
+            'phone.max' => 'Nomor HP maksimal 15 karakter.',
         ]);
 
         $customer = Customer::create($validated);
@@ -100,8 +103,7 @@ class SubmitBerkasController extends Controller
     {
         $this->documentSubmissionService->submitFinal($assignmentNoRef);
         return redirect()
-            ->route('submit-berkas.index')
-            ->with('success', "Berkas untuk penugasan {$assignmentNoRef} berhasil disubmit dan menunggu verifikasi.");
+            ->route('submit-berkas.index');
     }
 
     /**

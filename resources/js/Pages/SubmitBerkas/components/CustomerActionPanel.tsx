@@ -164,7 +164,7 @@ export function CustomerActionPanel({
                 }}
             >
                 <Plus size={14} />
-                + Tambah Customer Baru
+                Tambah Customer Baru
             </button>
 
             {/* Summary Customer yang Terpilih */}

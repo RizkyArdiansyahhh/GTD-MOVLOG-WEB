@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Head, usePage } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import axios from 'axios';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { WizardProvider } from './context/WizardContext';
@@ -9,7 +9,6 @@ import { Stepper } from './components/Stepper';
 import { DocumentAssignmentTable } from './components/DocumentAssignmentTable';
 import { CustomerActionPanel } from './components/CustomerActionPanel';
 import { RevisionRemarksBanner } from './components/RevisionRemarksBanner';
-import CustomerSelectModal from './components/CustomerSelectModal';
 import { BillOfLadingStep } from './components/steps/BillOfLadingStep';
 import { CommercialInvoiceStep } from './components/steps/CommercialInvoiceStep';
 import { PackingListStep } from './components/steps/PackingListStep';
@@ -17,6 +16,7 @@ import { CertificateOfOriginStep } from './components/steps/CertificateOfOriginS
 import { InsuranceStep } from './components/steps/InsuranceStep';
 import { PreviewPibStep } from './components/steps/PreviewPibStep';
 import type { Customer, AssignmentSummary } from './types/SubmitBerkas';
+import { AddCustomerModal } from './components/AddCustomerModal';
 
 interface SubmitBerkasPageProps {
   customers: Customer[];
@@ -48,9 +48,6 @@ function SubmitBerkasHubContent({
   const [isCreateCustomerOpen, setIsCreateCustomerOpen] = useState(false);
   const [isStartingAssignment, setIsStartingAssignment] = useState(false);
   const [isLoadingAssignment, setIsLoadingAssignment] = useState(false);
-
-  // Flash message dari backend
-  const flash = usePage().props.flash as { success?: string; error?: string } | undefined;
 
   // Mendapatkan remarks aktif untuk step saat ini (jika ada)
   const currentStepKey = ['billOfLading', 'commercialInvoice', 'packingList', 'certificateOfOrigin', 'insurance'][currentStepIndex] as keyof typeof wizardData;
@@ -109,7 +106,6 @@ function SubmitBerkasHubContent({
     <div
       style={{
         padding: 24,
-        background: '#F8FAFC',
         minHeight: '100%',
         display: 'flex',
         flexDirection: 'column',
@@ -117,20 +113,6 @@ function SubmitBerkasHubContent({
         boxSizing: 'border-box',
       }}
     >
-      {/* Alert Flash Success jika baru kembali dari finalisasi */}
-      {flash?.success && (
-        <div style={{
-          padding: '12px 18px',
-          background: '#DCFCE7',
-          color: '#166534',
-          border: '1px solid #BBF7D0',
-          borderRadius: 10,
-          fontSize: 13,
-          fontWeight: 600
-        }}>
-          {flash.success}
-        </div>
-      )}
 
       {/* ── KONDISI 1: FORM WIZARD (Step 1 s/d 6) ── */}
       {isWizardActive && selectedCustomer ? (
@@ -190,7 +172,7 @@ function SubmitBerkasHubContent({
       )}
 
       {/* Modal Tambah Customer Baru */}
-      <CustomerSelectModal
+      <AddCustomerModal
         isOpen={isCreateCustomerOpen}
         onClose={() => setIsCreateCustomerOpen(false)}
         onCustomerCreated={handleCustomerCreated}

@@ -16,7 +16,7 @@ export function CargoDetailList<T extends { id: string }>({
   onChange,
   createEmptyItem,
   renderItem,
-  addLabel = '+ Tambah Cargo',
+  addLabel = 'Tambah Cargo',
 }: CargoDetailListProps<T>) {
   const addItem = () => onChange([...items, createEmptyItem()]);
 
