@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { FileText, Upload, X } from 'lucide-react';
+import { FileText, Upload, X, Eye } from 'lucide-react';
 import type { PdfFile } from '../types/SubmitBerkas';
 
 interface PdfUploadCardProps {
@@ -7,6 +7,7 @@ interface PdfUploadCardProps {
   onFileSelect: (file: PdfFile) => void;
   onRemove: () => void;
   error?: string;
+  readOnly?: boolean;
 }
 
 function formatBytes(bytes: number) {
@@ -14,10 +15,11 @@ function formatBytes(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function PdfUploadCard({ file, onFileSelect, onRemove, error }: PdfUploadCardProps) {
+export function PdfUploadCard({ file, onFileSelect, onRemove, error, readOnly = false }: PdfUploadCardProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFiles = (fileList: FileList | null) => {
+    if (readOnly) return;
     const selected = fileList?.[0];
     if (!selected) return;
     if (selected.type !== 'application/pdf') return;
@@ -31,52 +33,71 @@ export function PdfUploadCard({ file, onFileSelect, onRemove, error }: PdfUpload
   return (
     <FormSectionShell>
       {!file ? (
-        <div
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={(e) => {
-            e.preventDefault();
-            handleFiles(e.dataTransfer.files);
-          }}
-          style={{
-            border: '1.5px dashed #E2E8F0',
-            borderRadius: 10,
-            padding: '32px 16px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 10,
-            background: '#FAFBFC',
-          }}
-        >
-          <Upload size={26} color="#B7791F" />
-          <p style={{ fontSize: 13, fontWeight: 600, color: '#06283A', margin: 0 }}>Upload PDF</p>
-          <p style={{ fontSize: 12, color: '#94A3B8', margin: 0 }}>Drag & drop atau pilih file</p>
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
+        readOnly ? (
+          <div
             style={{
-              marginTop: 6,
-              padding: '8px 18px',
-              borderRadius: 8,
               border: '1px solid #E2E8F0',
-              background: '#fff',
-              color: '#06283A',
-              fontSize: 12,
-              fontWeight: 600,
-              cursor: 'pointer',
+              borderRadius: 10,
+              padding: '24px 16px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 8,
+              background: '#F8FAFB',
+              color: '#94A3B8',
             }}
           >
-            Pilih File
-          </button>
-          <p style={{ fontSize: 11, color: '#CBD5E0', margin: 0 }}>Format: PDF</p>
-          <input
-            ref={inputRef}
-            type="file"
-            accept="application/pdf"
-            onChange={(e) => handleFiles(e.target.files)}
-            style={{ display: 'none' }}
-          />
-        </div>
+            <FileText size={24} color="#94A3B8" />
+            <p style={{ fontSize: 13, margin: 0 }}>Tidak ada dokumen PDF terlampir.</p>
+          </div>
+        ) : (
+          <div
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => {
+              e.preventDefault();
+              handleFiles(e.dataTransfer.files);
+            }}
+            style={{
+              border: '1.5px dashed #E2E8F0',
+              borderRadius: 10,
+              padding: '32px 16px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 10,
+              background: '#FAFBFC',
+            }}
+          >
+            <Upload size={26} color="#B7791F" />
+            <p style={{ fontSize: 13, fontWeight: 600, color: '#06283A', margin: 0 }}>Upload PDF</p>
+            <p style={{ fontSize: 12, color: '#94A3B8', margin: 0 }}>Drag & drop atau pilih file</p>
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              style={{
+                marginTop: 6,
+                padding: '8px 18px',
+                borderRadius: 8,
+                border: '1px solid #E2E8F0',
+                background: '#fff',
+                color: '#06283A',
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              Pilih File
+            </button>
+            <p style={{ fontSize: 11, color: '#CBD5E0', margin: 0 }}>Format: PDF</p>
+            <input
+              ref={inputRef}
+              type="file"
+              accept="application/pdf"
+              onChange={(e) => handleFiles(e.target.files)}
+              style={{ display: 'none' }}
+            />
+          </div>
+        )
       ) : (
         <div
           style={{
@@ -108,26 +129,52 @@ export function PdfUploadCard({ file, onFileSelect, onRemove, error }: PdfUpload
               <p style={{ fontSize: 11, color: '#94A3B8', margin: 0 }}>{file.sizeLabel}</p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={onRemove}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 4,
-              padding: '6px 12px',
-              borderRadius: 7,
-              border: '1px solid #FCA5A5',
-              background: '#fff',
-              color: '#DC2626',
-              fontSize: 12,
-              fontWeight: 500,
-              cursor: 'pointer',
-            }}
-          >
-            <X size={13} />
-            Hapus
-          </button>
+          {file.url && (
+            <a
+              href={file.url}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+                padding: '6px 12px',
+                borderRadius: 7,
+                border: '1px solid #E2E8F0',
+                background: '#fff',
+                color: '#06283A',
+                fontSize: 12,
+                fontWeight: 500,
+                textDecoration: 'none',
+                marginRight: readOnly ? 0 : 8,
+              }}
+            >
+              <Eye size={13} />
+              Buka PDF
+            </a>
+          )}
+          {!readOnly && (
+            <button
+              type="button"
+              onClick={onRemove}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+                padding: '6px 12px',
+                borderRadius: 7,
+                border: '1px solid #FCA5A5',
+                background: '#fff',
+                color: '#DC2626',
+                fontSize: 12,
+                fontWeight: 500,
+                cursor: 'pointer',
+              }}
+            >
+              <X size={13} />
+              Hapus
+            </button>
+          )}
         </div>
       )}
       {error && <p style={{ fontSize: 11, color: '#DC2626', marginTop: 8 }}>{error}</p>}

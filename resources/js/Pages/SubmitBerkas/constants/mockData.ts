@@ -9,7 +9,7 @@ import type {
 
 export const MOCK_BOL_PDF: PdfFile = {
     name: 'Bill_of_Lading_Sample.pdf',
-    sizeLabel: '1.4 MB',
+    sizeLabel: '1.2 MB',
 };
 
 export const MOCK_BOL_DATA: BillOfLadingData = {
@@ -262,6 +262,10 @@ export const MOCK_INSURANCE_PDF: PdfFile = {
 };
 
 export const MOCK_INSURANCE_DATA: InsuranceData = {
+    documentDetail: {
+        number: 'INS-2024-0077',
+        date: '2024-11-07',
+    },
     documentReference: {
         commercialInvoiceNumber: 'CI-2024-0077',
         billOfLadingNumber: 'BL-2024-0091',

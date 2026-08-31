@@ -58,12 +58,13 @@ interface FieldProps {
   error?: string;
   /** Restrict input to numbers only (digits + one decimal point). */
   numeric?: boolean;
-  /** Display as read-only (used for auto-calculated total fields). */
+  /** Display as read-only (used for auto-calculated total fields or verified view mode). */
   readOnly?: boolean;
 }
 
 export function Field({ label, value, onChange, placeholder, type = 'text', error, numeric = false, readOnly = false }: FieldProps) {
   const handleChange = (raw: string) => {
+    if (readOnly) return;
     if (!numeric) {
       onChange(raw);
       return;
@@ -87,6 +88,7 @@ export function Field({ label, value, onChange, placeholder, type = 'text', erro
         inputMode={numeric ? 'decimal' : undefined}
         value={value}
         readOnly={readOnly}
+        disabled={readOnly}
         onChange={(e) => handleChange(e.target.value)}
         placeholder={placeholder}
         style={{
@@ -96,7 +98,7 @@ export function Field({ label, value, onChange, placeholder, type = 'text', erro
           borderRadius: 8,
           padding: '0 12px',
           fontSize: 13,
-          color: readOnly ? '#6B7280' : '#06283A',
+          color: readOnly ? '#4B5563' : '#06283A',
           outline: 'none',
           boxSizing: 'border-box',
           background: readOnly ? '#F8FAFB' : '#fff',
@@ -132,6 +134,7 @@ export function FieldWithUnit({ label, value, unit, unitOptions, onUnitChange, r
           type="text"
           value={value}
           readOnly={readOnly}
+          disabled={readOnly}
           style={{
             flex: 1,
             height: 40,
@@ -140,7 +143,7 @@ export function FieldWithUnit({ label, value, unit, unitOptions, onUnitChange, r
             borderRadius: '8px 0 0 8px',
             padding: '0 12px',
             fontSize: 13,
-            color: readOnly ? '#6B7280' : '#06283A',
+            color: readOnly ? '#4B5563' : '#06283A',
             outline: 'none',
             boxSizing: 'border-box',
             background: readOnly ? '#F8FAFB' : '#fff',
@@ -149,6 +152,7 @@ export function FieldWithUnit({ label, value, unit, unitOptions, onUnitChange, r
         />
         <select
           value={unit}
+          disabled={readOnly}
           onChange={(e) => onUnitChange(e.target.value)}
           style={{
             width: 90,
@@ -157,9 +161,9 @@ export function FieldWithUnit({ label, value, unit, unitOptions, onUnitChange, r
             borderRadius: '0 8px 8px 0',
             padding: '0 8px',
             fontSize: 13,
-            color: '#06283A',
-            background: '#fff',
-            cursor: 'pointer',
+            color: readOnly ? '#6B7280' : '#06283A',
+            background: readOnly ? '#F8FAFB' : '#fff',
+            cursor: readOnly ? 'default' : 'pointer',
           }}
         >
           {unitOptions.map((opt) => (

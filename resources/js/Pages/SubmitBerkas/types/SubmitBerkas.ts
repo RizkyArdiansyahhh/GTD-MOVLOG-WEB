@@ -187,6 +187,10 @@ export interface InsuranceCargoItem {
 }
 
 export interface InsuranceData {
+  documentDetail: {
+    number: string;
+    date: string;
+  };
   documentReference: {
     commercialInvoiceNumber: string;
     billOfLadingNumber: string;
@@ -259,4 +263,3 @@ export interface AssignmentSummary {
   created_at: string;
   updated_at?: string;
 }
-

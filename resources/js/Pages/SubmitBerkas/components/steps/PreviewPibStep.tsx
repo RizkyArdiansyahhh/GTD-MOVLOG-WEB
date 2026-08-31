@@ -662,27 +662,50 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
                     Kembali
                 </button>
 
-                <button
-                    type="button"
-                    onClick={handleSubmitClick}
-                    disabled={!allComplete || isSubmitting}
-                    style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        padding: '11px 24px',
-                        borderRadius: 10,
-                        border: 'none',
-                        background: allComplete ? 'linear-gradient(135deg, #06283A, #0A3D5C)' : '#CBD5E1',
-                        color: '#fff',
-                        fontSize: 14,
-                        fontWeight: 700,
-                        cursor: allComplete && !isSubmitting ? 'pointer' : 'not-allowed',
-                    }}
-                >
-                    <CheckCircle2 size={17} />
-                    {isSubmitting ? 'Mengirim...' : 'Submit Berkas'}
-                </button>
+                {isReadOnly ? (
+                    <button
+                        type="button"
+                        onClick={onFinished}
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 8,
+                            padding: '11px 24px',
+                            borderRadius: 10,
+                            border: 'none',
+                            background: '#15803D',
+                            color: '#fff',
+                            fontSize: 14,
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                        }}
+                    >
+                        <CheckCircle2 size={17} />
+                        Selesai Meninjau
+                    </button>
+                ) : (
+                    <button
+                        type="button"
+                        onClick={handleSubmitClick}
+                        disabled={!allComplete || isSubmitting}
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 8,
+                            padding: '11px 24px',
+                            borderRadius: 10,
+                            border: 'none',
+                            background: allComplete ? 'linear-gradient(135deg, #06283A, #0A3D5C)' : '#CBD5E1',
+                            color: '#fff',
+                            fontSize: 14,
+                            fontWeight: 700,
+                            cursor: allComplete && !isSubmitting ? 'pointer' : 'not-allowed',
+                        }}
+                    >
+                        <CheckCircle2 size={17} />
+                        {isSubmitting ? 'Mengirim...' : 'Submit Berkas'}
+                    </button>
+                )}
             </div>
 
             <ConfirmSubmitModal

@@ -6,31 +6,30 @@ interface StepNavigationProps {
   onSaveContinue: () => void;
   isSaving?: boolean;
   saveLabel?: string;
-  backLabel?: string;
-  hideBack?: boolean;
+  showBack?: boolean;
+  readOnly?: boolean;
 }
 
 export function StepNavigation({
   onBack,
   onSaveContinue,
   isSaving = false,
-  saveLabel = 'Simpan & Lanjut',
-  backLabel = 'Kembali',
-  hideBack = false,
+  saveLabel,
+  showBack = true,
+  readOnly = false,
 }: StepNavigationProps) {
+  const displayLabel = saveLabel ?? (readOnly ? 'Lanjut' : 'Simpan & Lanjutkan');
+
   return (
     <div
       style={{
         display: 'flex',
-        justifyContent: 'space-between',
+        justifyContent: showBack ? 'space-between' : 'flex-end',
         alignItems: 'center',
-        background: '#fff',
-        border: '1px solid #E5E7EB',
-        borderRadius: 12,
-        padding: '16px 20px',
+        paddingTop: 8,
       }}
     >
-      {!hideBack ? (
+      {showBack && (
         <button
           type="button"
           onClick={onBack}
@@ -45,16 +44,13 @@ export function StepNavigation({
             background: '#fff',
             color: '#374151',
             fontSize: 13,
-            fontWeight: 500,
+            fontWeight: 600,
             cursor: isSaving ? 'not-allowed' : 'pointer',
-            opacity: isSaving ? 0.6 : 1,
           }}
         >
           <ArrowLeft size={15} />
-          {backLabel}
+          Kembali
         </button>
-      ) : (
-        <span />
       )}
 
       <button
@@ -76,7 +72,7 @@ export function StepNavigation({
           opacity: isSaving ? 0.75 : 1,
         }}
       >
-        {isSaving ? 'Menyimpan...' : saveLabel}
+        {isSaving ? 'Menyimpan...' : displayLabel}
         {!isSaving && <ArrowRight size={15} />}
       </button>
     </div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { router } from '@inertiajs/react';
 import axios from 'axios';
-import { FileText, Users, Bell, Ship, Boxes, Scale } from 'lucide-react';
+import { FileText, Users, Bell, Ship, Scale } from 'lucide-react';
 import { FormSection, FieldGroup, Field, FieldWithUnit } from '../FormSection';
 import { MOCK_BOL_DATA, MOCK_BOL_PDF } from '../../constants/mockData';
 import { PdfUploadCard } from '../PdfUploadCard';
@@ -52,8 +52,7 @@ function createEmptyData(): BillOfLadingData {
 }
 
 export function BillOfLadingStep() {
-  // Ambil state dan helper termasuk assignmentNoRef & selectedCustomer langsung dari useWizard()
-  const { wizardData, saveStepData, goNext, assignmentNoRef, selectedCustomer } = useWizard();
+  const { wizardData, saveStepData, goNext, assignmentNoRef, selectedCustomer, isReadOnly } = useWizard();
 
   const [data, setData] = useState<BillOfLadingData>(
     wizardData.billOfLading?.data ?? createEmptyData(),
@@ -62,8 +61,10 @@ export function BillOfLadingStep() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
 
-  const update = <K extends keyof BillOfLadingData>(key: K, value: BillOfLadingData[K]) =>
+  const update = <K extends keyof BillOfLadingData>(key: K, value: BillOfLadingData[K]) => {
+    if (isReadOnly) return;
     setData((prev) => ({ ...prev, [key]: value }));
+  };
 
   // Total Quantity dihitung otomatis dari jumlah semua Cargo Item.
   useEffect(() => {
@@ -88,10 +89,13 @@ export function BillOfLadingStep() {
     return Object.keys(next).length === 0;
   };
 
-
   const handleSaveContinue = async () => {
+    if (isReadOnly) {
+      goNext();
+      return;
+    }
+
     if (!validate()) return;
-    // Validasi context sebelum request dikirim
     if (!assignmentNoRef || !selectedCustomer?.id) {
       setErrors((prev) => ({
         ...prev,
@@ -114,8 +118,6 @@ export function BillOfLadingStep() {
       goNext();
     } catch (error: any) {
       console.error('Gagal menyimpan step Bill of Lading:', error);
-
-      // Ekstrak pesan detail error dari object errors Laravel
       const validationErrors = error.response?.data?.errors;
       let errorMessage = error.response?.data?.message || 'Gagal menyimpan data ke server.';
       if (validationErrors && typeof validationErrors === 'object') {
@@ -139,41 +141,45 @@ export function BillOfLadingStep() {
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={() => {
-          setData(MOCK_BOL_DATA);
-          setPdf(MOCK_BOL_PDF);
-        }}
-        style={{
-          alignSelf: 'flex-start',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 6,
-          padding: '8px 14px',
-          borderRadius: 8,
-          border: '1px dashed #B7791F',
-          background: '#FFF8EC',
-          color: '#B7791F',
-          fontSize: 12,
-          fontWeight: 600,
-          cursor: 'pointer',
-        }}
-      >
-        Isi Data Contoh
-      </button>
+      {!isReadOnly && (
+        <button
+          type="button"
+          onClick={() => {
+            setData(MOCK_BOL_DATA);
+            setPdf(MOCK_BOL_PDF);
+          }}
+          style={{
+            alignSelf: 'flex-start',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '8px 14px',
+            borderRadius: 8,
+            border: '1px dashed #B7791F',
+            background: '#FFF8EC',
+            color: '#B7791F',
+            fontSize: 12,
+            fontWeight: 600,
+            cursor: 'pointer',
+          }}
+        >
+          Isi Data Contoh
+        </button>
+      )}
 
       <FormSection title="Document Detail" icon={<FileText size={17} />}>
         <FieldGroup>
           <Field
             label="Number"
             value={data.documentDetail.number}
+            readOnly={isReadOnly}
             onChange={(v) => update('documentDetail', { ...data.documentDetail, number: v })}
             error={errors.documentNumber}
           />
           <Field
             label="Date"
             type="date"
+            readOnly={isReadOnly}
             value={data.documentDetail.date}
             onChange={(v) => update('documentDetail', { ...data.documentDetail, date: v })}
           />
@@ -185,12 +191,14 @@ export function BillOfLadingStep() {
           <Field
             label="Name"
             value={data.shipper.name}
+            readOnly={isReadOnly}
             onChange={(v) => update('shipper', { ...data.shipper, name: v })}
             error={errors.shipperName}
           />
           <Field
             label="Tax ID"
             value={data.shipper.taxId}
+            readOnly={isReadOnly}
             onChange={(v) => update('shipper', { ...data.shipper, taxId: v })}
           />
         </FieldGroup>
@@ -198,6 +206,7 @@ export function BillOfLadingStep() {
           <Field
             label="Address"
             value={data.shipper.address}
+            readOnly={isReadOnly}
             onChange={(v) => update('shipper', { ...data.shipper, address: v })}
           />
         </FieldGroup>
@@ -208,12 +217,14 @@ export function BillOfLadingStep() {
           <Field
             label="Name"
             value={data.consignee.name}
+            readOnly={isReadOnly}
             onChange={(v) => update('consignee', { ...data.consignee, name: v })}
             error={errors.consigneeName}
           />
           <Field
             label="Tax ID"
             value={data.consignee.taxId}
+            readOnly={isReadOnly}
             onChange={(v) => update('consignee', { ...data.consignee, taxId: v })}
           />
         </FieldGroup>
@@ -221,6 +232,7 @@ export function BillOfLadingStep() {
           <Field
             label="Address"
             value={data.consignee.address}
+            readOnly={isReadOnly}
             onChange={(v) => update('consignee', { ...data.consignee, address: v })}
           />
         </FieldGroup>
@@ -231,11 +243,13 @@ export function BillOfLadingStep() {
           <Field
             label="Name"
             value={data.notifyParty.name}
+            readOnly={isReadOnly}
             onChange={(v) => update('notifyParty', { ...data.notifyParty, name: v })}
           />
           <Field
             label="Tax ID"
             value={data.notifyParty.taxId}
+            readOnly={isReadOnly}
             onChange={(v) => update('notifyParty', { ...data.notifyParty, taxId: v })}
           />
         </FieldGroup>
@@ -243,6 +257,7 @@ export function BillOfLadingStep() {
           <Field
             label="Address"
             value={data.notifyParty.address}
+            readOnly={isReadOnly}
             onChange={(v) => update('notifyParty', { ...data.notifyParty, address: v })}
           />
         </FieldGroup>
@@ -253,11 +268,13 @@ export function BillOfLadingStep() {
           <Field
             label="Port of Loading"
             value={data.transportDetail.portOfLoading}
+            readOnly={isReadOnly}
             onChange={(v) => update('transportDetail', { ...data.transportDetail, portOfLoading: v })}
           />
           <Field
             label="Port of Discharge"
             value={data.transportDetail.portOfDischarge}
+            readOnly={isReadOnly}
             onChange={(v) => update('transportDetail', { ...data.transportDetail, portOfDischarge: v })}
           />
         </FieldGroup>
@@ -265,11 +282,13 @@ export function BillOfLadingStep() {
           <Field
             label="Shipp Name"
             value={data.transportDetail.shippName}
+            readOnly={isReadOnly}
             onChange={(v) => update('transportDetail', { ...data.transportDetail, shippName: v })}
           />
           <Field
             label="Voyage"
             value={data.transportDetail.voyage}
+            readOnly={isReadOnly}
             onChange={(v) => update('transportDetail', { ...data.transportDetail, voyage: v })}
           />
         </FieldGroup>
@@ -280,17 +299,20 @@ export function BillOfLadingStep() {
         items={data.cargoDetail}
         onChange={(items) => update('cargoDetail', items)}
         createEmptyItem={createEmptyCargoItem}
+        readOnly={isReadOnly}
         renderItem={(item, _index, updateItem) => (
           <>
             <FieldGroup>
               <Field
                 label="Description of Goods"
                 value={item.descriptionOfGoods}
+                readOnly={isReadOnly}
                 onChange={(v) => updateItem({ descriptionOfGoods: v })}
               />
               <Field
                 label="HS Code POL"
                 value={item.hsCodePol}
+                readOnly={isReadOnly}
                 onChange={(v) => updateItem({ hsCodePol: v })}
               />
             </FieldGroup>
@@ -298,18 +320,21 @@ export function BillOfLadingStep() {
               <Field
                 label="Gross Weight"
                 value={item.grossWeight}
+                readOnly={isReadOnly}
                 onChange={(v) => updateItem({ grossWeight: v })}
                 numeric
               />
               <Field
                 label="Packages"
                 value={item.packages}
+                readOnly={isReadOnly}
                 onChange={(v) => updateItem({ packages: v })}
                 numeric
               />
               <Field
                 label="Volume"
                 value={item.volume}
+                readOnly={isReadOnly}
                 onChange={(v) => updateItem({ volume: v })}
                 numeric
               />
@@ -325,6 +350,7 @@ export function BillOfLadingStep() {
             value={data.quantity.totalGrossWeight}
             unit={data.quantity.totalGrossWeightUnit}
             unitOptions={WEIGHT_UNITS}
+            readOnly={true}
             onUnitChange={(unit) => update('quantity', { ...data.quantity, totalGrossWeightUnit: unit })}
           />
           <FieldWithUnit
@@ -332,6 +358,7 @@ export function BillOfLadingStep() {
             value={data.quantity.totalPackages}
             unit={data.quantity.totalPackagesUnit}
             unitOptions={PACKAGE_UNITS}
+            readOnly={true}
             onUnitChange={(unit) => update('quantity', { ...data.quantity, totalPackagesUnit: unit })}
           />
           <FieldWithUnit
@@ -339,6 +366,7 @@ export function BillOfLadingStep() {
             value={data.quantity.totalVolume}
             unit={data.quantity.totalVolumeUnit}
             unitOptions={VOLUME_UNITS}
+            readOnly={true}
             onUnitChange={(unit) => update('quantity', { ...data.quantity, totalVolumeUnit: unit })}
           />
         </FieldGroup>
@@ -349,13 +377,14 @@ export function BillOfLadingStep() {
         onFileSelect={setPdf}
         onRemove={() => setPdf(null)}
         error={errors.pdf}
+        readOnly={isReadOnly}
       />
 
       <StepNavigation
-        backLabel="Kembali"
         onBack={() => router.visit('/submit-berkas')}
         onSaveContinue={handleSaveContinue}
         isSaving={isSaving}
+        readOnly={isReadOnly}
       />
     </div>
   );

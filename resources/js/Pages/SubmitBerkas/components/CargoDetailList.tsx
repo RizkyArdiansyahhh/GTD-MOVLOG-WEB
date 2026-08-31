@@ -8,6 +8,7 @@ interface CargoDetailListProps<T extends { id: string }> {
   createEmptyItem: () => T;
   renderItem: (item: T, index: number, update: (patch: Partial<T>) => void) => React.ReactNode;
   addLabel?: string;
+  readOnly?: boolean;
 }
 
 export function CargoDetailList<T extends { id: string }>({
@@ -17,13 +18,22 @@ export function CargoDetailList<T extends { id: string }>({
   createEmptyItem,
   renderItem,
   addLabel = 'Tambah Cargo',
+  readOnly = false,
 }: CargoDetailListProps<T>) {
-  const addItem = () => onChange([...items, createEmptyItem()]);
+  const addItem = () => {
+    if (readOnly) return;
+    onChange([...items, createEmptyItem()]);
+  };
 
-  const removeItem = (id: string) => onChange(items.filter((item) => item.id !== id));
+  const removeItem = (id: string) => {
+    if (readOnly) return;
+    onChange(items.filter((item) => item.id !== id));
+  };
 
-  const updateItem = (id: string, patch: Partial<T>) =>
+  const updateItem = (id: string, patch: Partial<T>) => {
+    if (readOnly) return;
     onChange(items.map((item) => (item.id === id ? { ...item, ...patch } : item)));
+  };
 
   return (
     <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #E5E7EB', padding: 20 }}>
@@ -44,7 +54,7 @@ export function CargoDetailList<T extends { id: string }>({
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <span style={{ fontSize: 12, fontWeight: 600, color: '#6B7280' }}>Cargo Item {index + 1}</span>
-              {items.length > 1 && (
+              {!readOnly && items.length > 1 && (
                 <button
                   type="button"
                   onClick={() => removeItem(item.id)}
@@ -71,27 +81,29 @@ export function CargoDetailList<T extends { id: string }>({
         ))}
       </div>
 
-      <button
-        type="button"
-        onClick={addItem}
-        style={{
-          marginTop: 14,
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 6,
-          padding: '9px 16px',
-          borderRadius: 8,
-          border: '1px dashed #B7791F',
-          background: '#FFF8EC',
-          color: '#B7791F',
-          fontSize: 12,
-          fontWeight: 600,
-          cursor: 'pointer',
-        }}
-      >
-        <Plus size={14} />
-        {addLabel}
-      </button>
+      {!readOnly && (
+        <button
+          type="button"
+          onClick={addItem}
+          style={{
+            marginTop: 14,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '9px 16px',
+            borderRadius: 8,
+            border: '1px dashed #B7791F',
+            background: '#FFF8EC',
+            color: '#B7791F',
+            fontSize: 12,
+            fontWeight: 600,
+            cursor: 'pointer',
+          }}
+        >
+          <Plus size={14} />
+          {addLabel}
+        </button>
+      )}
     </div>
   );
 }

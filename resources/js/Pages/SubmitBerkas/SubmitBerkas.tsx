@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Head } from '@inertiajs/react';
 import axios from 'axios';
+import { CheckCircle2, Lock } from 'lucide-react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { WizardProvider } from './context/WizardContext';
 import { useWizard } from './hooks/useWizard';
@@ -38,6 +39,7 @@ function SubmitBerkasHubContent({
     currentStepIndex,
     wizardData,
     selectedCustomer,
+    isReadOnly,
     setSelectedCustomer,
     resetWizard,
     hydrateFromExisting,
@@ -72,7 +74,7 @@ function SubmitBerkasHubContent({
     resetWizard();
   };
 
-  // Handler saat baris tabel diklik untuk membuka/merevisi dokumen
+  // Handler saat baris tabel diklik untuk membuka/merevisi/melihat dokumen
   const handleOpenAssignment = async (assignment: AssignmentSummary) => {
     setIsLoadingAssignment(true);
     try {
@@ -88,7 +90,7 @@ function SubmitBerkasHubContent({
         email: '',
       };
 
-      hydrateFromExisting(docs, targetCustomer, assignment.assignment_no_ref);
+      hydrateFromExisting(docs, targetCustomer, assignment.assignment_no_ref, assignment.status);
       setIsWizardActive(true);
     } catch (error) {
       console.error('Gagal memuat dokumen penugasan:', error);
@@ -121,10 +123,36 @@ function SubmitBerkasHubContent({
             customerName={selectedCustomer.companyName}
             onCancelWizard={handleCancelWizard}
           />
+
+          {isReadOnly && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                padding: '12px 18px',
+                borderRadius: 10,
+                background: '#F0FDF4',
+                border: '1px solid #BBF7D0',
+                color: '#15803D',
+              }}
+            >
+              <CheckCircle2 size={18} color="#16A34A" />
+              <div>
+                <p style={{ margin: 0, fontSize: 13.5, fontWeight: 700 }}>
+                  Dokumen Telah Terverifikasi (Read-Only)
+                </p>
+                <p style={{ margin: '2px 0 0', fontSize: 12, color: '#166534' }}>
+                  Seluruh data penugasan ini sudah fix dan tidak dapat diedit kembali. Anda dapat meninjau setiap dokumen melalui navigasi step.
+                </p>
+              </div>
+            </div>
+          )}
+
           <Stepper />
 
           {/* Banner Catatan Revisi jika ada */}
-          {currentStepRemarks && (
+          {!isReadOnly && currentStepRemarks && (
             <RevisionRemarksBanner
               remarks={currentStepRemarks}
               stepName={['Bill of Lading', 'Commercial Invoice', 'Packing List', 'Certificate of Origin (COO)', 'Insurance'][currentStepIndex]}

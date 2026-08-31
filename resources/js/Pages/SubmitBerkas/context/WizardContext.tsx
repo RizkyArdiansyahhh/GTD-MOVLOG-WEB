@@ -26,6 +26,7 @@ interface WizardContextValue {
   stepStatuses: StepStatus[];
   assignmentNoRef: string | null;
   selectedCustomer: Customer | null;
+  isReadOnly: boolean;
   setSelectedCustomer: (customer: Customer | null) => Promise<void>;
   saveStepData: <T, >(key: FormStepKey, data: T, pdf: PdfFile | null) => void;
   goNext: () => void;
@@ -33,8 +34,8 @@ interface WizardContextValue {
   goToStep: (index: number) => void;
   isStepUnlocked: (index: number) => boolean;
   resetWizard: () => void;
-  /** Hydrate seluruh step wizard dari data database penugasan yang sudah ada (untuk mode revisi/lanjutkan draft). */
-  hydrateFromExisting: (existingDocs: any[], customer: Customer, assignmentRef: string) => void;
+  /** Hydrate seluruh step wizard dari data database penugasan yang sudah ada (untuk mode revisi/lanjutkan draft/read-only). */
+  hydrateFromExisting: (existingDocs: any[], customer: Customer, assignmentRef: string, status?: string) => void;
 }
 
 export const WizardContext = createContext<WizardContextValue | null>(null);
@@ -52,12 +53,14 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
   const [wizardData, setWizardData] = useState<WizardData>(EMPTY_WIZARD_DATA);
   const [selectedCustomer, setSelectedCustomerState] = useState<Customer | null>(null);
   const [assignmentNoRef, setAssignmentNoRef] = useState<string | null>(null);
+  const [isReadOnly, setIsReadOnly] = useState<boolean>(false);
 
   /**
    * Mengatur customer aktif dan meminta `assignment_no_ref` baru ke backend.
    */
   const setSelectedCustomer = useCallback(async (customer: Customer | null) => {
     setSelectedCustomerState(customer);
+    setIsReadOnly(false);
 
     if (!customer) {
       setAssignmentNoRef(null);
@@ -85,14 +88,16 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
     setWizardData(EMPTY_WIZARD_DATA);
     setSelectedCustomerState(null);
     setAssignmentNoRef(null);
+    setIsReadOnly(false);
   }, []);
 
   /**
    * Hydrate data dokumen dari database ke dalam WizardContext.
    */
-  const hydrateFromExisting = useCallback((existingDocs: any[], customer: Customer, assignmentRef: string) => {
+  const hydrateFromExisting = useCallback((existingDocs: any[], customer: Customer, assignmentRef: string, status?: string) => {
     setSelectedCustomerState(customer);
     setAssignmentNoRef(assignmentRef);
+    setIsReadOnly(status === 'VERIFIED');
 
     const newWizardData: WizardData = {
       billOfLading: null,
@@ -125,6 +130,7 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
 
   // Highest index reachable via the stepper (grows as steps are completed).
   const highestUnlockedIndex = useMemo(() => {
+    if (isReadOnly) return TOTAL_STEPS - 1;
     let unlocked = 0;
     for (const key of FORM_STEP_KEYS) {
       if (wizardData[key]?.completed) {
@@ -134,20 +140,20 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
       }
     }
     return Math.min(unlocked, TOTAL_STEPS - 1);
-  }, [wizardData]);
+  }, [wizardData, isReadOnly]);
 
   const stepStatuses = useMemo<StepStatus[]>(() => {
     return STEP_DEFINITIONS.map((step, index) => {
       if (index === currentStepIndex) return 'active';
       const key = FORM_STEP_KEYS[index];
-      if (key && wizardData[key]?.completed) return 'completed';
+      if (isReadOnly || (key && wizardData[key]?.completed)) return 'completed';
       return 'upcoming';
     });
-  }, [currentStepIndex, wizardData]);
+  }, [currentStepIndex, wizardData, isReadOnly]);
 
   const isStepUnlocked = useCallback(
-    (index: number) => index <= highestUnlockedIndex,
-    [highestUnlockedIndex],
+    (index: number) => isReadOnly || index <= highestUnlockedIndex,
+    [highestUnlockedIndex, isReadOnly],
   );
 
   const saveStepData = useCallback(<T,>(key: FormStepKey, data: T, pdf: PdfFile | null) => {
@@ -181,6 +187,7 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
     stepStatuses,
     assignmentNoRef,
     selectedCustomer,
+    isReadOnly,
     setSelectedCustomer,
     saveStepData,
     goNext,
