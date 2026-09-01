@@ -105,13 +105,18 @@ export function BillOfLadingStep() {
     }
     setIsSaving(true);
     try {
-      await axios.post('/submit-berkas/step', {
-        assignment_no_ref: assignmentNoRef,
-        customer_id: selectedCustomer?.id,
-        document_type_id: '1',
-        document_data: data,
-        file_name: pdf?.name ?? 'Bill_of_Lading.pdf',
-        file_path: pdf?.url ?? null,
+      const formData = new FormData();
+      formData.append('assignment_no_ref', assignmentNoRef);
+      formData.append('customer_id', String(selectedCustomer?.id));
+      formData.append('document_type_id', '1');
+      formData.append('document_data', JSON.stringify(data));
+      const fName = pdf?.name ?? 'Bill_of_Lading.pdf';
+      if (fName) formData.append('file_name', fName);
+      const fPath = pdf?.url ?? null;
+      if (fPath) formData.append('file_path', fPath);
+      if (pdf?.file) formData.append('pdf', pdf.file);
+      await axios.post('/submit-berkas/step', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
 
       saveStepData('billOfLading', data, pdf);

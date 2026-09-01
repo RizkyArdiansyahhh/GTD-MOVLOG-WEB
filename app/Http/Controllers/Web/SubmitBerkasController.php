@@ -72,7 +72,7 @@ class SubmitBerkasController extends Controller
         // Simpan file fisik jika diunggah langsung
         if ($request->hasFile('pdf')) {
             $file = $request->file('pdf');
-            $path = $file->store('documents/' . $data['assignment_no_ref'], 'public');
+            $path = $file->store('pdf_dokumen/' . $data['assignment_no_ref'], 'public');
             
             $data['file_name'] = $file->getClientOriginalName();
             $data['file_path'] = $path;

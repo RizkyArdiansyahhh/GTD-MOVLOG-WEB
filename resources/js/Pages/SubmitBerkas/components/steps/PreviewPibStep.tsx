@@ -227,7 +227,7 @@ interface PreviewPibStepProps {
 }
 
 export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
-    const { wizardData, goBack, goToStep, assignmentNoRef } = useWizard();
+    const { wizardData, goBack, goToStep, assignmentNoRef, isReadOnly } = useWizard();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [showConfirm, setShowConfirm] = useState(false);

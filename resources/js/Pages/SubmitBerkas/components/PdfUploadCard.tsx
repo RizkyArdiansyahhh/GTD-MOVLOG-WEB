@@ -27,6 +27,7 @@ export function PdfUploadCard({ file, onFileSelect, onRemove, error, readOnly = 
       name: selected.name,
       sizeLabel: formatBytes(selected.size),
       url: URL.createObjectURL(selected),
+      file: selected,
     });
   };
 
@@ -150,7 +151,7 @@ export function PdfUploadCard({ file, onFileSelect, onRemove, error, readOnly = 
               }}
             >
               <Eye size={13} />
-              Buka PDF
+              Lihat PDF
             </a>
           )}
           {!readOnly && (
