@@ -138,7 +138,7 @@ export default function DetailShipment({
                         {/* Direct Contextual Support Action */}
                         <div className="flex items-center gap-2">
                             <a
-                                href={`https://wa.me/6281234567890?text=Halo%20GTD%2C%20saya%20ingin%20koordinasi%20pengiriman%20%23${shipment.assignment_no}`}
+                                href={`https://wa.me/6281234567890?text=Hello%20GTD%2C%20I%20would%20like%20to%20coordinate%20shipment%20%23${shipment.assignment_no}`}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-[#0F172A] hover:bg-slate-800 text-white text-xs font-semibold transition-colors cursor-pointer shadow-sm"

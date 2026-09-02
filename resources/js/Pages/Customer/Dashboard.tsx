@@ -41,13 +41,13 @@ export default function Dashboard({
     useEffect(() => {
         const hour = new Date().getHours();
         if (hour >= 4 && hour < 11) {
-            setGreeting('Selamat Pagi');
+            setGreeting('Good Morning');
         } else if (hour >= 11 && hour < 15) {
-            setGreeting('Selamat Siang');
+            setGreeting('Good Afternoon');
         } else if (hour >= 15 && hour < 18) {
-            setGreeting('Selamat Sore');
+            setGreeting('Good Evening');
         } else {
-            setGreeting('Selamat Malam');
+            setGreeting('Good Evening');
         }
     }, []);
 
@@ -375,7 +375,7 @@ export default function Dashboard({
                         <div className="mt-5 space-y-2.5">
                             {/* Action 1: WhatsApp Account Manager */}
                             <a
-                                href="https://wa.me/6281234567890?text=Halo%20GTD%2C%20saya%20ingin%20koordinasi%20pengiriman%20kargo"
+                                href="https://wa.me/6281234567890?text=Hello%20GTD%2C%20I%20would%20like%20to%20coordinate%20cargo%20shipment"
                                 target="_blank"
                                 rel="noreferrer"
                                 className="w-full flex items-center justify-between p-3 rounded-lg bg-slate-800/90 hover:bg-slate-700/90 border border-slate-700 transition-colors group cursor-pointer"
