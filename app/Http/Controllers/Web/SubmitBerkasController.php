@@ -103,7 +103,8 @@ class SubmitBerkasController extends Controller
     {
         $this->documentSubmissionService->submitFinal($assignmentNoRef);
         return redirect()
-            ->route('submit-berkas.index');
+            ->route('submit-berkas.index')
+            ->with('success', "Seluruh berkas assignment {$assignmentNoRef} berhasil disimpan.");
     }
 
     /**
