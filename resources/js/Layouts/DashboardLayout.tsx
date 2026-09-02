@@ -1,66 +1,63 @@
-import { type ReactNode, useState, type CSSProperties } from 'react';
+import { type ReactNode, useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import Toast from '@/Components/Toast';
 
 interface DashboardLayoutProps {
     children: ReactNode;
-    /** Optional – kept for backward compat with pages that pass title */
+    /** Optional title kept for backward compatibility */
     title?: string;
 }
 
-/**
- * DashboardLayout
- *
- * Composed layout for internal users (Admin/Staff):
- *  +----------------------------------------------+
- *  ¦ [Navbar – floating top rounded card]         ¦
- *  +----------------------------------------------¦
- *  ¦          ¦                                   ¦
- *  ¦ Sidebar  ¦  <children />                     ¦
- *  ¦ (card)   ¦                                   ¦
- *  ¦          ¦                                   ¦
- *  +----------------------------------------------+
- */
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(false);
+
+    // Persist collapse state in localStorage
+    useEffect(() => {
+        const savedState = localStorage.getItem('gtd_sidebar_collapsed');
+        if (savedState !== null) {
+            setIsCollapsed(savedState === 'true');
+        }
+    }, []);
+
+    const toggleCollapse = () => {
+        setIsCollapsed((prev) => {
+            const next = !prev;
+            localStorage.setItem('gtd_sidebar_collapsed', String(next));
+            return next;
+        });
+    };
 
     return (
-        <div
-            className="min-h-screen"
-            style={
-                {
-                    backgroundColor: '#F5F7FC',
-                    fontFamily: "'Poppins', sans-serif",
-                    '--navbar-h': '64px',
-                    '--content-gap': '0px',
-                } as CSSProperties
-            }
-        >
-            {/* -- Floating Navbar (does not connect to screen edges) -- */}
-            <Navbar
-                onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
-            />
-
-            {/* -- Toast notifications -- */}
-            <Toast />
-
-            {/* -- Fixed Sidebar (below floating navbar) -- */}
+        <div className="min-h-screen bg-[#F5F7FC] flex text-gray-800 font-sans antialiased">
+            {/* -- Left Fixed Desktop Sidebar & Mobile Drawer -- */}
             <Sidebar
                 isOpen={sidebarOpen}
                 onClose={() => setSidebarOpen(false)}
+                isCollapsed={isCollapsed}
+                onToggleCollapse={toggleCollapse}
             />
 
-            {/* -- Main content area -- */}
-            <main
-                className="flex-1 relative overflow-hidden ml-0 lg:ml-[308px] px-3 lg:px-0 lg:pr-4 pb-8"
-                style={{
-                    marginTop: '96px',
-                    minHeight: 'calc(100vh - 96px)',
-                }}
+            {/* -- Toast Notifications -- */}
+            <Toast />
+
+            {/* -- Right Main Wrapper (Adjusts margin based on sidebar collapse) -- */}
+            <div
+                className={`flex-1 flex flex-col min-w-0 transition-all duration-200 ${
+                    isCollapsed ? 'ml-0 lg:ml-20' : 'ml-0 lg:ml-64'
+                }`}
             >
-                {children}
-            </main>
+                {/* Sticky Header Navbar */}
+                <Navbar
+                    onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
+                />
+
+                {/* Main Page Viewport Container */}
+                <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-x-hidden min-h-[calc(100vh-64px)] max-w-[1600px] w-full mx-auto">
+                    {children}
+                </main>
+            </div>
         </div>
     );
 }

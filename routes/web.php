@@ -15,6 +15,7 @@ use App\Http\Controllers\Web\MonitoringCheckpointController;
 use App\Http\Controllers\Web\ProfileController;
 use App\Http\Controllers\Web\SesiPekerjaController;
 use App\Http\Controllers\Web\SubmitBerkasController;
+use App\Http\Controllers\Web\SupportController;
 use App\Http\Controllers\Web\UserController;
 use App\Http\Controllers\Web\VerifikasiBerkasController;
 use Illuminate\Support\Facades\Route;
@@ -35,6 +36,12 @@ Route::middleware('guest')->group(function () {
     Route::post('register', [RegisteredUserController::class, 'store'])
         ->name('register.store');
 });
+
+// Support & System Guide Routes (Public & Authenticated)
+Route::get('/pusat-bantuan', [SupportController::class, 'helpCenter'])
+    ->name('pusat-bantuan');
+Route::get('/panduan', [SupportController::class, 'systemGuide'])
+    ->name('panduan');
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
@@ -89,6 +96,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('notifications.read');
         Route::post('/notifications/read-all', [CustomerNotificationController::class, 'markAllAsRead'])
             ->name('notifications.read-all');
+
+        // Customer Support & System Guide
+        Route::get('/pusat-bantuan', [SupportController::class, 'helpCenter'])
+            ->name('pusat-bantuan');
+        Route::get('/panduan', [SupportController::class, 'systemGuide'])
+            ->name('panduan');
     });
 
     // Global Search Endpoints
@@ -186,8 +199,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('monitoring-checkpoint.show');
     });
 
-
     // Logout
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
-        ->name('logkut');
+        ->name('logout');
 });

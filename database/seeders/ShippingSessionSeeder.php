@@ -14,10 +14,11 @@ class ShippingSessionSeeder extends Seeder
 {
     public function run(): void
     {
-        $superAdmin = User::where('email', 'superadmin@lms.local')->first();
-        $custA = Customer::where('email', 'customer@lms.local')->first();
-        $custMining = Customer::where('email', 'logistics@unitedmining.co.id')->first();
-        $custCoal = Customer::where('email', 'supply@kalimantancoal.com')->first();
+        $defaultCust = Customer::first();
+        $superAdmin = User::where('email', 'superadmin@lms.local')->first() ?? User::first();
+        $custA = Customer::where('email', 'customer@lms.local')->first() ?? $defaultCust;
+        $custMining = Customer::where('email', 'logistics@unitedmining.co.id')->first() ?? $defaultCust;
+        $custCoal = Customer::where('email', 'supply@kalimantancoal.com')->first() ?? $defaultCust;
 
         $cpKapal = Checkpoint::where('name', 'Kapal')->first();
         $cpTongkang = Checkpoint::where('name', 'Tongkang')->first();
