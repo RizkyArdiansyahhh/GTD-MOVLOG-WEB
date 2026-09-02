@@ -41,7 +41,7 @@ class CustomerDashboardController extends Controller
         }
 
         if (!$customer) {
-            abort(403, 'Akun Anda belum terhubung ke perusahaan customer manapun. Hubungi Admin GTD untuk menyelesaikan konfigurasi akun.');
+            abort(403, 'Your account is not linked to any customer company. Please contact GTD Admin to complete account setup.');
         }
 
         return $customer;

@@ -13,7 +13,7 @@ const syncBadgeStyle: Record<ReportItem['syncStatus'], { bg: string; text: strin
 
 export const ReportTable: React.FC<ReportTableProps> = ({ reports }) => {
     if (reports.length === 0) {
-        return <p className="text-sm text-slate-400 text-center py-8">Tidak ada laporan.</p>;
+        return <p className="text-sm text-slate-400 text-center py-8">No reports available.</p>;
     }
 
     return (

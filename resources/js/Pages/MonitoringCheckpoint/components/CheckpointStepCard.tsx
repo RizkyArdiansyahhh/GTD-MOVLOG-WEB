@@ -68,7 +68,7 @@ export default function CheckpointStepCard({ step, isLast }: CheckpointStepCardP
                     </div>
                     {isPending && (
                         <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">
-                            Belum Tercapai
+                            Pending
                         </span>
                     )}
                 </div>
@@ -83,7 +83,7 @@ export default function CheckpointStepCard({ step, isLast }: CheckpointStepCardP
                             <Clock className="h-4 w-4 text-slate-400" />
                             <span>
                                 {step.actualStart
-                                    ? new Date(step.actualStart).toLocaleString("id-ID", {
+                                    ? new Date(step.actualStart).toLocaleString("en-US", {
                                         dateStyle: "medium",
                                         timeStyle: "short",
                                     })
@@ -92,7 +92,7 @@ export default function CheckpointStepCard({ step, isLast }: CheckpointStepCardP
                                     <>
                                         {" "}
                                         &rarr;{" "}
-                                        {new Date(step.actualFinish).toLocaleString("id-ID", {
+                                        {new Date(step.actualFinish).toLocaleString("en-US", {
                                             dateStyle: "medium",
                                             timeStyle: "short",
                                         })}
@@ -111,7 +111,7 @@ export default function CheckpointStepCard({ step, isLast }: CheckpointStepCardP
                             style={{ color: "#B7791F" }}
                         >
                             <FileText className="h-3.5 w-3.5" />
-                            Lihat detail progress
+                            View progress details
                             <ChevronDown
                                 className={`h-3.5 w-3.5 transition-transform ${expanded ? "rotate-180" : ""}`}
                             />

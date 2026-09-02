@@ -76,7 +76,7 @@ export default function UnitListInput({ units, onChange, disabled = false }: Uni
                             onClick={() => removeUnit(idx)}
                             disabled={disabled || units.length <= 1}
                             className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed shrink-0 mt-0.5"
-                            title="Hapus unit"
+                            title="Remove unit"
                         >
                             <Trash2 size={16} />
                         </button>
@@ -91,7 +91,7 @@ export default function UnitListInput({ units, onChange, disabled = false }: Uni
                 className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed border-slate-200 text-sm font-medium text-slate-500 hover:border-[#F5B800] hover:text-[#06283A] hover:bg-amber-50/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 <Plus size={16} />
-                <span>Tambah Unit</span>
+                <span>Add Unit</span>
             </button>
         </div>
     );

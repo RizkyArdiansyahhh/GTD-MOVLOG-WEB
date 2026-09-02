@@ -11,8 +11,8 @@ export default function SesiTable({ sessions }: SesiTableProps) {
     if (sessions.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-                <p className="text-slate-500 text-sm font-medium">Tidak ada data sesi ditemukan.</p>
-                <p className="text-slate-400 text-xs mt-1">Coba sesuaikan kata kunci pencarian Anda.</p>
+                <p className="text-slate-500 text-sm font-medium">No session data found.</p>
+                <p className="text-slate-400 text-xs mt-1">Try adjusting your search keywords.</p>
             </div>
         );
     }
@@ -109,7 +109,7 @@ export default function SesiTable({ sessions }: SesiTableProps) {
                                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#E2E8F0] bg-white text-xs font-semibold text-[#06283A] hover:bg-amber-50 hover:border-amber-200 transition-all"
                                 >
                                     <Eye size={14} />
-                                    Detail
+                                    Details
                                 </Link>
                             </td>
                         </tr>

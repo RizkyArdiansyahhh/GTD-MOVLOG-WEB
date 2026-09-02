@@ -112,14 +112,14 @@ export default function EditProfile({ profile }: EditProfileProps) {
         // 1. Format validation
         const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
         if (!validTypes.includes(file.type)) {
-            setFileValidationError('Format berkas tidak didukung. Silakan gunakan format JPG, PNG, atau WEBP.');
+            setFileValidationError('Unsupported file format. Please use JPG, PNG, or WEBP.');
             if (fileInputRef.current) fileInputRef.current.value = '';
             return;
         }
 
         // 2. Size validation (max 2MB)
         if (file.size > 2 * 1024 * 1024) {
-            setFileValidationError('Ukuran foto terlalu besar (maksimal 2MB). Silakan pilih berkas yang lebih kecil.');
+            setFileValidationError('Photo size is too large (maximum 2MB). Please select a smaller file.');
             if (fileInputRef.current) fileInputRef.current.value = '';
             return;
         }
@@ -189,8 +189,8 @@ export default function EditProfile({ profile }: EditProfileProps) {
     const isMatching = passwordData.password_confirmation.length > 0 && pwd === passwordData.password_confirmation;
 
     return (
-        <CustomerLayout title="Edit Profil">
-            <Head title="Edit Profil - Customer Portal GTD MoveLog" />
+        <CustomerLayout title="Edit Profile">
+            <Head title="Edit Profile - Customer Portal GTD MoveLog" />
 
             {/* ── Image Cropper Modal ── */}
             <AvatarCropModal
@@ -218,13 +218,13 @@ export default function EditProfile({ profile }: EditProfileProps) {
                             <span>/</span>
                             <span className="text-slate-700">Pengaturan Akun</span>
                             <span>/</span>
-                            <span className="text-[#06283A] font-bold">Edit Profil</span>
+                            <span className="text-[#06283A] font-bold">Edit Profile</span>
                         </div>
                         <h1 className="text-xl sm:text-2xl font-bold text-[#06283A] tracking-tight">
-                            Kelola Profil & Keamanan Akun
+                            Manage Profile & Account Security
                         </h1>
                         <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                            Perbarui identitas pribadi, foto profil, dan kata sandi Anda.
+                            Update your personal identity, profile photo, and account password.
                         </p>
                     </div>
                 </div>
@@ -249,7 +249,7 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                         type="button"
                                         onClick={() => fileInputRef.current?.click()}
                                         className="absolute -bottom-1 -right-1 p-2.5 rounded-full bg-[#06283A] text-white hover:bg-yellow-400 hover:text-slate-900 transition-all shadow-md cursor-pointer group-hover:scale-105"
-                                        title="Ubah & Potong Foto Profil"
+                                        title="Change & Crop Profile Photo"
                                     >
                                         <Camera size={15} strokeWidth={2} />
                                     </button>
@@ -286,7 +286,7 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                         className="px-3.5 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-1.5"
                                     >
                                         <Camera size={14} className="text-slate-500" />
-                                        <span>Pilih Foto</span>
+                                        <span>Choose Photo</span>
                                     </button>
 
                                     {(avatarPreview || profile.avatar) && !isDeletingAvatar && (
@@ -296,7 +296,7 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                             className="px-3.5 py-1.5 rounded-lg border border-red-200 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors cursor-pointer flex items-center gap-1.5"
                                         >
                                             <Trash2 size={14} />
-                                            <span>Hapus Foto</span>
+                                            <span>Remove Photo</span>
                                         </button>
                                     )}
                                 </div>
@@ -360,7 +360,7 @@ export default function EditProfile({ profile }: EditProfileProps) {
                             <div className="mt-4 p-3 rounded-lg bg-slate-50 border border-slate-200/80 text-[11px] text-slate-600 leading-relaxed flex items-start gap-2">
                                 <Info size={15} className="text-slate-400 shrink-0 mt-0.5" strokeWidth={2} />
                                 <span>
-                                    Field perusahaan dikunci untuk keamanan. Untuk pembaruan identitas legal atau keterkaitan entitas, silakan hubungi{' '}
+                                    Company field is locked for security. To update legal identity or company affiliation, please contact{' '}
                                     <strong className="text-slate-800 font-semibold">Admin GTD</strong>.
                                 </span>
                             </div>
@@ -375,25 +375,25 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                 <div className="flex items-center gap-2">
                                     <User size={18} className="text-slate-700" strokeWidth={2} />
                                     <h3 className="text-sm sm:text-base font-bold text-[#06283A]">
-                                        Informasi Profil Pribadi
+                                        Personal Profile Information
                                     </h3>
                                 </div>
                                 {profileSaved && (
                                     <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 animate-in fade-in">
                                         <Check size={14} strokeWidth={2.5} />
-                                        <span>Tersimpan</span>
+                                        <span>Saved</span>
                                     </span>
                                 )}
                             </div>
 
                             <form onSubmit={handleProfileSubmit} className="space-y-4">
-                                {/* Nama Lengkap */}
+                                {/* Full Name */}
                                 <div>
                                     <label
                                         htmlFor={nameInputId}
                                         className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wide"
                                     >
-                                        Nama Lengkap <span className="text-red-500">*</span>
+                                        Full Name <span className="text-red-500">*</span>
                                     </label>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
@@ -406,7 +406,7 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                             onChange={(e) => setProfileData('name', e.target.value)}
                                             required
                                             className="w-full pl-9 pr-3.5 py-2.5 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all font-medium"
-                                            placeholder="Masukkan nama lengkap Anda"
+                                            placeholder="Enter your full name"
                                         />
                                     </div>
                                     {profileErrors.name && (
@@ -453,7 +453,7 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                             htmlFor={emailInputId}
                                             className="block text-xs font-bold text-slate-700 uppercase tracking-wide"
                                         >
-                                            Alamat Email Akun
+                                            Account Email Address
                                         </label>
                                         <span className="text-[10px] font-semibold text-slate-400 flex items-center gap-1">
                                             <Lock size={11} />
@@ -473,7 +473,7 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                         />
                                     </div>
                                     <p className="text-[11px] text-slate-400 mt-1">
-                                        Alamat email akun telah diverifikasi. Perubahan email dinonaktifkan untuk fase ini.
+                                        Account email address has been verified. Email modification is disabled for this phase.
                                     </p>
                                 </div>
 
@@ -488,12 +488,12 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                         {profileProcessing ? (
                                             <>
                                                 <Loader2 size={15} className="animate-spin" />
-                                                <span>Menyimpan...</span>
+                                                <span>Saving...</span>
                                             </>
                                         ) : (
                                             <>
                                                 <CheckCircle2 size={15} strokeWidth={2.2} />
-                                                <span>Simpan Perubahan Profil</span>
+                                                <span>Save Profile Changes</span>
                                             </>
                                         )}
                                     </button>
@@ -507,25 +507,25 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                 <div className="flex items-center gap-2">
                                     <KeyRound size={18} className="text-slate-700" strokeWidth={2} />
                                     <h3 className="text-sm sm:text-base font-bold text-[#06283A]">
-                                        Perbarui Kata Sandi
+                                        Update Password
                                     </h3>
                                 </div>
                                 {passwordSaved && (
                                     <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 animate-in fade-in">
                                         <Check size={14} strokeWidth={2.5} />
-                                        <span>Password Diperbarui</span>
+                                        <span>Password Updated</span>
                                     </span>
                                 )}
                             </div>
 
                             <form onSubmit={handlePasswordSubmit} className="space-y-4">
-                                {/* Password Saat Ini */}
+                                {/* Current Password */}
                                 <div>
                                     <label
                                         htmlFor={currentPassId}
                                         className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wide"
                                     >
-                                        Password Saat Ini <span className="text-red-500">*</span>
+                                        Current Password <span className="text-red-500">*</span>
                                     </label>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
@@ -538,7 +538,7 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                             onChange={(e) => setPasswordData('current_password', e.target.value)}
                                             required
                                             className="w-full pl-9 pr-10 py-2.5 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all font-medium"
-                                            placeholder="Ketik password Anda saat ini"
+                                            placeholder="Enter your current password"
                                         />
                                         <button
                                             type="button"
@@ -556,13 +556,13 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                     )}
                                 </div>
 
-                                {/* Password Baru */}
+                                {/* New Password */}
                                 <div>
                                     <label
                                         htmlFor={newPassId}
                                         className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wide"
                                     >
-                                        Password Baru <span className="text-red-500">*</span>
+                                        New Password <span className="text-red-500">*</span>
                                     </label>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
@@ -597,36 +597,36 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                 {pwd.length > 0 && (
                                     <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1.5">
                                         <p className="text-[11px] font-bold text-slate-700">
-                                            Ketentuan Password Baru:
+                                            Ketentuan New Password:
                                         </p>
                                         <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px]">
                                             <div className={`flex items-center gap-1.5 ${hasMinLen ? 'text-emerald-600 font-semibold' : 'text-slate-400'}`}>
                                                 <Check size={12} strokeWidth={2.5} />
-                                                <span>Min. 8 Karakter</span>
+                                                <span>Min. 8 Characters</span>
                                             </div>
                                             <div className={`flex items-center gap-1.5 ${hasUpper && hasLower ? 'text-emerald-600 font-semibold' : 'text-slate-400'}`}>
                                                 <Check size={12} strokeWidth={2.5} />
-                                                <span>Huruf Besar & Kecil</span>
+                                                <span>Uppercase & Lowercase</span>
                                             </div>
                                             <div className={`flex items-center gap-1.5 ${hasNumber ? 'text-emerald-600 font-semibold' : 'text-slate-400'}`}>
                                                 <Check size={12} strokeWidth={2.5} />
-                                                <span>Mengandung Angka</span>
+                                                <span>Contains Number</span>
                                             </div>
                                             <div className={`flex items-center gap-1.5 ${hasSymbol ? 'text-emerald-600 font-semibold' : 'text-slate-400'}`}>
                                                 <Check size={12} strokeWidth={2.5} />
-                                                <span>Mengandung Simbol</span>
+                                                <span>Contains Symbol</span>
                                             </div>
                                         </div>
                                     </div>
                                 )}
 
-                                {/* Konfirmasi Password Baru */}
+                                {/* Konfirmasi New Password */}
                                 <div>
                                     <label
                                         htmlFor={confirmPassId}
                                         className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wide"
                                     >
-                                        Konfirmasi Password Baru <span className="text-red-500">*</span>
+                                        Konfirmasi New Password <span className="text-red-500">*</span>
                                     </label>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
@@ -639,7 +639,7 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                             onChange={(e) => setPasswordData('password_confirmation', e.target.value)}
                                             required
                                             className="w-full pl-9 pr-10 py-2.5 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all font-medium"
-                                            placeholder="Ulangi password baru Anda"
+                                            placeholder="Repeat your new password"
                                         />
                                         <button
                                             type="button"
@@ -660,12 +660,12 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                             {isMatching ? (
                                                 <>
                                                     <Check size={12} strokeWidth={2.5} />
-                                                    <span>Konfirmasi password cocok</span>
+                                                    <span>Passwords match</span>
                                                 </>
                                             ) : (
                                                 <>
                                                     <AlertCircle size={12} />
-                                                    <span>Konfirmasi password belum cocok</span>
+                                                    <span>Passwords do not match</span>
                                                 </>
                                             )}
                                         </p>
@@ -682,12 +682,12 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                         {passwordProcessing ? (
                                             <>
                                                 <Loader2 size={15} className="animate-spin" />
-                                                <span>Memperbarui...</span>
+                                                <span>Updating...</span>
                                             </>
                                         ) : (
                                             <>
                                                 <Lock size={15} strokeWidth={2.2} />
-                                                <span>Perbarui Password</span>
+                                                <span>Update Password</span>
                                             </>
                                         )}
                                     </button>

@@ -47,7 +47,7 @@ export const DateRangeCard: React.FC<DateRangeCardProps> = ({
                     </svg>
                 </span>
                 <span style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, fontSize: 15, color: '#06283A' }}>
-                    Rentang Waktu
+                    Date Range
                 </span>
             </div>
 
@@ -81,7 +81,7 @@ export const DateRangeCard: React.FC<DateRangeCardProps> = ({
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                 <div style={{ flex: 1, minWidth: 160 }}>
                     <label style={{ display: 'block', fontSize: 12, color: '#6B7280', marginBottom: 6, fontWeight: 500 }}>
-                        Dari Tanggal
+                        From Date
                     </label>
                     <input
                         type="date"
@@ -103,7 +103,7 @@ export const DateRangeCard: React.FC<DateRangeCardProps> = ({
                 </div>
                 <div style={{ flex: 1, minWidth: 160 }}>
                     <label style={{ display: 'block', fontSize: 12, color: '#6B7280', marginBottom: 6, fontWeight: 500 }}>
-                        Sampai Tanggal
+                        To Date
                     </label>
                     <input
                         type="date"
@@ -161,13 +161,13 @@ const FORMAT_OPTIONS: FormatOption[] = [
     {
         key: 'pdf',
         label: 'PDF Document',
-        description: 'Sesuai untuk arsip digital dan pencetakan.',
+        description: 'Suitable for digital archiving and printing.',
         icon: PDF_ICON,
     },
     {
         key: 'excel',
         label: 'Excel / CSV',
-        description: 'Sesuai untuk pengolahan data mentah.',
+        description: 'Suitable for raw data processing.',
         icon: EXCEL_ICON,
     },
 ];
@@ -205,7 +205,7 @@ export const FileFormatCard: React.FC<FileFormatCardProps> = ({ selectedFormat, 
                     </svg>
                 </span>
                 <span style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, fontSize: 15, color: '#06283A' }}>
-                    Format Berkas
+                    File Format
                 </span>
             </div>
 

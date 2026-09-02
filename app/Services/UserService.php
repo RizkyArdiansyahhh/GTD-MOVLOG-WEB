@@ -117,7 +117,7 @@ class UserService extends BaseService
         $user = $this->userRepository->find($id);
 
         if (!$user) {
-            throw new \Illuminate\Database\Eloquent\ModelNotFoundException('Pengguna tidak ditemukan.');
+            throw new \Illuminate\Database\Eloquent\ModelNotFoundException('User not found.');
         }
 
         // Business rule 1: Prevent deletion of currently logged-in user

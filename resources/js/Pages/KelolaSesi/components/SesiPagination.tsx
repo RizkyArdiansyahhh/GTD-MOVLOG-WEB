@@ -18,7 +18,7 @@ export default function SesiPagination({
     if (totalPages <= 1) {
         return (
             <div className="flex justify-between items-center pt-4 text-xs text-slate-500">
-                <span>Menampilkan {totalItems} dari {totalItems} sesi</span>
+                <span>Showing {totalItems} of {totalItems} sessions</span>
             </div>
         );
     }
@@ -32,8 +32,8 @@ export default function SesiPagination({
         <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-4 border-t border-slate-100">
             {/* Left label */}
             <span className="text-xs text-slate-500 font-medium">
-                Menampilkan <span className="font-semibold text-slate-800">{startItem}-{endItem}</span> dari{' '}
-                <span className="font-semibold text-slate-800">{totalItems}</span> sesi
+                Showing <span className="font-semibold text-slate-800">{startItem}-{endItem}</span> of{' '}
+                <span className="font-semibold text-slate-800">{totalItems}</span> sessions
             </span>
 
             {/* Right pagination controls */}
@@ -44,7 +44,7 @@ export default function SesiPagination({
                     onClick={() => onPageChange(currentPage - 1)}
                     disabled={currentPage === 1}
                     className="flex items-center justify-center w-8 h-8 rounded border border-[#E2E8F0] bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                    aria-label="Halaman sebelumnya"
+                    aria-label="Previous page"
                 >
                     <ChevronLeft size={16} />
                 </button>
@@ -75,7 +75,7 @@ export default function SesiPagination({
                     onClick={() => onPageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
                     className="flex items-center justify-center w-8 h-8 rounded border border-[#E2E8F0] bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                    aria-label="Halaman selanjutnya"
+                    aria-label="Next page"
                 >
                     <ChevronRight size={16} />
                 </button>

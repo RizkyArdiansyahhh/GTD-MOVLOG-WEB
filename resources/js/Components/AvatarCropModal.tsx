@@ -67,17 +67,17 @@ export default function AvatarCropModal({
                 <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
                     <div>
                         <h3 className="text-sm sm:text-base font-bold text-[#06283A]">
-                            Sesuaikan Foto Profil
+                            Adjust Profile Photo
                         </h3>
                         <p className="text-xs text-slate-500 mt-0.5">
-                            Geser dan perbesar foto agar pas di dalam lingkaran avatar.
+                            Drag and zoom photo to fit inside the avatar circle.
                         </p>
                     </div>
                     <button
                         type="button"
                         onClick={onClose}
                         className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-                        aria-label="Tutup"
+                        aria-label="Close"
                     >
                         <X size={18} />
                     </button>
@@ -103,7 +103,7 @@ export default function AvatarCropModal({
                     <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
                         <span className="flex items-center gap-1.5">
                             <ZoomIn size={14} className="text-slate-500" />
-                            <span>Zoom & Skala</span>
+                            <span>Zoom & Scale</span>
                         </span>
                         <div className="flex items-center gap-2">
                             <span className="text-[11px] text-slate-400 font-mono">
@@ -113,7 +113,7 @@ export default function AvatarCropModal({
                                 type="button"
                                 onClick={handleReset}
                                 className="text-[11px] text-slate-500 hover:text-slate-800 flex items-center gap-1 hover:underline cursor-pointer"
-                                title="Reset posisi & zoom"
+                                title="Reset position & zoom"
                             >
                                 <RotateCcw size={11} />
                                 <span>Reset</span>
@@ -174,12 +174,12 @@ export default function AvatarCropModal({
                         {isProcessing ? (
                             <>
                                 <Loader2 size={14} className="animate-spin" />
-                                <span>Memproses...</span>
+                                <span>Processing...</span>
                             </>
                         ) : (
                             <>
                                 <Check size={14} strokeWidth={2.5} />
-                                <span>Terapkan Foto</span>
+                                <span>Apply Photo</span>
                             </>
                         )}
                     </button>

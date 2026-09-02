@@ -45,12 +45,12 @@ class UpdateProfileRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'Nama lengkap wajib diisi.',
-            'name.max'      => 'Nama lengkap tidak boleh lebih dari 255 karakter.',
-            'phone.max'     => 'Nomor telepon tidak boleh lebih dari 20 karakter.',
-            'avatar.image'  => 'Berkas foto profil harus berupa gambar.',
-            'avatar.mimes'  => 'Format foto profil harus JPG, PNG, atau WEBP.',
-            'avatar.max'    => 'Ukuran foto profil tidak boleh melebihi 2MB.',
+            'name.required' => 'Full name is required.',
+            'name.max'      => 'Full name may not exceed 255 characters.',
+            'phone.max'     => 'Phone number may not exceed 20 characters.',
+            'avatar.image'  => 'Profile photo must be an image file.',
+            'avatar.mimes'  => 'Profile photo must be in JPG, PNG, or WEBP format.',
+            'avatar.max'    => 'Profile photo size may not exceed 2MB.',
         ];
     }
 }

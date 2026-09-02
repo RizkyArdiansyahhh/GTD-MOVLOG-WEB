@@ -43,10 +43,10 @@ class UpdateCustomerPasswordRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'current_password.required'         => 'Password saat ini wajib diisi.',
-            'current_password.current_password' => 'Password saat ini yang Anda masukkan tidak sesuai.',
-            'password.required'                 => 'Password baru wajib diisi.',
-            'password.confirmed'                => 'Konfirmasi password baru tidak sesuai.',
+            'current_password.required'         => 'Current password is required.',
+            'current_password.current_password' => 'The provided current password does not match.',
+            'password.required'                 => 'New password is required.',
+            'password.confirmed'                => 'New password confirmation does not match.',
         ];
     }
 }

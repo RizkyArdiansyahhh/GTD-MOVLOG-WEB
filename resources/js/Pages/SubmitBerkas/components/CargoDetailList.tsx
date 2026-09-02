@@ -17,7 +17,7 @@ export function CargoDetailList<T extends { id: string }>({
   onChange,
   createEmptyItem,
   renderItem,
-  addLabel = 'Tambah Cargo',
+  addLabel = 'Add Cargo',
   readOnly = false,
 }: CargoDetailListProps<T>) {
   const addItem = () => {
@@ -71,7 +71,7 @@ export function CargoDetailList<T extends { id: string }>({
                   }}
                 >
                   <Trash2 size={13} />
-                  Hapus Item
+                  Delete Item
                 </button>
               )}
             </div>

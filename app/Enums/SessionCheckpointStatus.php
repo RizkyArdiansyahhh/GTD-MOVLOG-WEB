@@ -14,10 +14,10 @@ enum SessionCheckpointStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::PENDING => 'Menunggu',
-            self::IN_PROGRESS => 'Sedang Berjalan',
-            self::COMPLETED => 'Selesai',
-            self::SKIPPED => 'Dilewati',
+            self::PENDING => 'Pending',
+            self::IN_PROGRESS => 'In Progress',
+            self::COMPLETED => 'Completed',
+            self::SKIPPED => 'Skipped',
         };
     }
 

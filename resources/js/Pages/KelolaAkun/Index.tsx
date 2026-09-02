@@ -17,11 +17,11 @@ import { seederUsers, seederStats, roleOptions as defaultRoleOptions } from './d
 // Props interface
 // ─────────────────────────────────────────────
 interface StatsData {
-    totalPengguna: number;
-    totalPenggunaBulanIni: number;
+    totalUsers: number;
+    totalUsersThisMonth: number;
     adminInternal: number;
     customer: number;
-    akunNonaktif: number;
+    inactiveAccounts: number;
 }
 
 interface PaginatedUsers {
@@ -132,14 +132,14 @@ export default function Index() {
         const total = baseUsers.length;
         const customerCount = baseUsers.filter((u) => u.role === 'Customer').length;
         const adminCount = total - customerCount;
-        const inactiveCount = baseUsers.filter((u) => u.status === 'Tidak Aktif').length;
+        const inactiveCount = baseUsers.filter((u) => u.status === 'Inactive').length;
 
         return {
-            totalPengguna: total,
-            totalPenggunaBulanIni: total,
+            totalUsers: total,
+            totalUsersThisMonth: total,
             adminInternal: adminCount,
             customer: customerCount,
-            akunNonaktif: inactiveCount,
+            inactiveAccounts: inactiveCount,
         };
     }, [stats, baseUsers]);
 
@@ -203,8 +203,8 @@ export default function Index() {
     const handleConfirmStatusChange = () => {
         if (!modalUser) return;
 
-        const nextStatus = modalUser.status === 'Aktif' ? 'Tidak Aktif' : 'Aktif';
-        const actionLabel = nextStatus === 'Aktif' ? 'diaktifkan' : 'dinonaktifkan';
+        const nextStatus = modalUser.status === 'Active' ? 'Inactive' : 'Active';
+        const actionLabel = nextStatus === 'Active' ? 'activated' : 'deactivated';
 
         setIsSubmittingStatus(true);
         setUpdatingUserId(modalUser.id);
@@ -231,14 +231,14 @@ export default function Index() {
                         setToast({
                             id: String(Date.now()),
                             type: 'success',
-                            message: `Status akun ${modalUser.name} berhasil ${actionLabel}.`,
+                            message: `Account status for ${modalUser.name} has been ${actionLabel}.`,
                         });
                     },
                     onError: (errors) => {
                         setIsSubmittingStatus(false);
                         setUpdatingUserId(null);
                         setModalUser(null);
-                        const errMessage = errors?.status || `Gagal mengubah status akun ${modalUser.name}.`;
+                        const errMessage = errors?.status || `Failed to update account status for ${modalUser.name}.`;
                         setToast({
                             id: String(Date.now()),
                             type: 'error',
@@ -261,7 +261,7 @@ export default function Index() {
                 setToast({
                     id: String(Date.now()),
                     type: 'success',
-                    message: `Status akun ${modalUser.name} berhasil ${actionLabel}.`,
+                    message: `Account status for ${modalUser.name} has been ${actionLabel}.`,
                 });
             }, 300);
         }
@@ -292,7 +292,7 @@ export default function Index() {
                     setToast({
                         id: String(Date.now()),
                         type: 'success',
-                        message: '✅ Pengguna berhasil dihapus.',
+                        message: '✅ User deleted successfully.',
                     });
                 },
                 onError: (errors) => {
@@ -302,7 +302,7 @@ export default function Index() {
                     setToast({
                         id: String(Date.now()),
                         type: 'error',
-                        message: `❌ Gagal menghapus pengguna.${errMessage ? ` ${errMessage}` : ''}`,
+                        message: `❌ Failed to delete user.${errMessage ? ` ${errMessage}` : ''}`,
                     });
                 },
                 onFinish: () => {
@@ -317,7 +317,7 @@ export default function Index() {
                 setToast({
                     id: String(Date.now()),
                     type: 'success',
-                    message: '✅ Pengguna berhasil dihapus.',
+                    message: '✅ User deleted successfully.',
                 });
             }, 300);
         }
@@ -330,7 +330,7 @@ export default function Index() {
 
     return (
         <DashboardLayout>
-            <Head title="Kelola Akun — Global Trans Djaya" />
+            <Head title="Account Management — Global Trans Djaya" />
 
             {/* Floating Toast Notification */}
             <ToastNotification toast={toast} onClose={() => setToast(null)} />
@@ -361,9 +361,9 @@ export default function Index() {
                     >
                         <AlertCircle size={28} className="text-red-500" strokeWidth={1.8} />
                     </div>
-                    <h2 className="text-lg font-bold text-gray-900 mb-1">Akses Ditolak</h2>
+                    <h2 className="text-lg font-bold text-gray-900 mb-1">Access Denied</h2>
                     <p className="text-sm text-gray-500 max-w-md mx-auto">
-                        Halaman <strong>Kelola Akun</strong> hanya dapat diakses oleh pengguna dengan role <strong>super-admin</strong>.
+                        The <strong>Account Management</strong> page is only accessible to users with the <strong>super-admin</strong> role.
                     </p>
                 </div>
             ) : (
@@ -375,10 +375,10 @@ export default function Index() {
                                 className="text-2xl font-bold"
                                 style={{ color: '#06283A' }}
                             >
-                                Kelola Akun
+                                Account Management
                             </h1>
                             <p className="text-sm text-gray-500 mt-1">
-                                Kelola seluruh akun pengguna beserta role, status, dan aktivitas terakhir.
+                                Manage all user accounts including roles, status, and recent activity.
                             </p>
                         </div>
                         <Link
@@ -391,37 +391,37 @@ export default function Index() {
                             }}
                         >
                             <Plus size={18} strokeWidth={2.2} />
-                            Tambah Pengguna Baru
+                            Add New User
                         </Link>
                     </div>
 
                     {/* ── Stats Cards ── */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                         <UserStatsCard
-                            label="Total Pengguna"
-                            value={displayStats.totalPengguna.toLocaleString('id-ID')}
-                            subtitle={`+${displayStats.totalPenggunaBulanIni} pengguna bulan ini`}
+                            label="Total Users"
+                            value={displayStats.totalUsers.toLocaleString('en-US')}
+                            subtitle={`+${displayStats.totalUsersThisMonth} users this month`}
                             icon={Users}
                             accent="#6366f1"
                         />
                         <UserStatsCard
                             label="Admin Internal"
-                            value={displayStats.adminInternal.toLocaleString('id-ID')}
-                            subtitle="Aktif"
+                            value={displayStats.adminInternal.toLocaleString('en-US')}
+                            subtitle="Active"
                             icon={ShieldCheck}
                             accent="#3b82f6"
                         />
                         <UserStatsCard
                             label="Customer"
-                            value={displayStats.customer.toLocaleString('id-ID')}
-                            subtitle="Terdaftar"
+                            value={displayStats.customer.toLocaleString('en-US')}
+                            subtitle="Registered"
                             icon={UserCheck}
                             accent="#10b981"
                         />
                         <UserStatsCard
-                            label="Akun Nonaktif"
-                            value={displayStats.akunNonaktif.toLocaleString('id-ID')}
-                            subtitle="Perlu ditinjau"
+                            label="Inactive Accounts"
+                            value={displayStats.inactiveAccounts.toLocaleString('en-US')}
+                            subtitle="Needs review"
                             icon={UserX}
                             accent="#ef4444"
                         />

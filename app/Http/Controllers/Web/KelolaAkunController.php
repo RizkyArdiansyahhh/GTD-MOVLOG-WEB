@@ -65,7 +65,7 @@ class KelolaAkunController extends Controller
         }
 
         // Filter by role (support both Spatie role name and display label)
-        if ($role && $role !== 'Semua Role') {
+        if ($role && $role !== 'All Roles') {
             $spatieRoleName = $this->unmapRoleLabel($role);
             $query->whereHas('roles', function ($q) use ($spatieRoleName, $role) {
                 $q->whereIn('name', array_unique([$spatieRoleName, strtolower($role)]));
@@ -73,7 +73,7 @@ class KelolaAkunController extends Controller
         }
 
         // Filter by status
-        if ($status && $status !== 'Semua Status') {
+        if ($status && $status !== 'All Statuses') {
             $statusValue = match (strtolower($status)) {
                 'aktif', 'active'             => 'active',
                 'tidak aktif', 'inactive'     => 'inactive',
@@ -95,7 +95,7 @@ class KelolaAkunController extends Controller
                 'id'        => (string) $user->id,
                 'name'      => $user->name,
                 'email'     => $user->email,
-                'status'    => $user->status === UserStatus::Active ? 'Aktif' : 'Tidak Aktif',
+                'status'    => $user->status === UserStatus::Active ? 'Active' : 'Inactive',
                 'role'      => $this->mapRoleLabel($firstRole),
                 'avatarUrl' => $user->avatar_url
                     ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=F5B800&color=fff&bold=true&size=128',
@@ -124,11 +124,11 @@ class KelolaAkunController extends Controller
         return Inertia::render('KelolaAkun/Index', [
             'users' => $transformedUsers,
             'stats' => [
-                'totalPengguna'         => $totalUsers,
-                'totalPenggunaBulanIni' => User::where('created_at', '>=', now()->startOfMonth())->count(),
+                'totalUsers'            => $totalUsers,
+                'totalUsersThisMonth'   => User::where('created_at', '>=', now()->startOfMonth())->count(),
                 'adminInternal'         => $adminInternal,
                 'customer'              => $customerCount,
-                'akunNonaktif'          => $inactiveUsers,
+                'inactiveAccounts'      => $inactiveUsers,
             ],
             'availableRoles' => $availableRoles,
             'filters' => $request->only(['search', 'role', 'status', 'per_page']),
@@ -146,18 +146,18 @@ class KelolaAkunController extends Controller
             $statusInput = strtolower($request->input('status', ''));
             if (in_array($statusInput, ['tidak aktif', 'inactive'])) {
                 return redirect()->back()->withErrors([
-                    'status' => 'Anda tidak dapat menonaktifkan akun Anda sendiri.',
+                    'status' => 'You cannot deactivate your own account.',
                 ]);
             }
         }
 
         $validated = $request->validate([
-            'status' => ['required', 'string', 'in:Aktif,Tidak Aktif,active,inactive'],
+            'status' => ['required', 'string', 'in:Active,Inactive,active,inactive'],
         ]);
 
         $newStatusValue = match (strtolower($validated['status'])) {
-            'aktif', 'active'             => UserStatus::Active->value,
-            'tidak aktif', 'inactive'     => UserStatus::Inactive->value,
+            'active'             => UserStatus::Active->value,
+            'inactive'           => UserStatus::Inactive->value,
             default                       => UserStatus::Inactive->value,
         };
 
@@ -165,9 +165,9 @@ class KelolaAkunController extends Controller
             'status' => $newStatusValue,
         ]);
 
-        $actionLabel = $newStatusValue === UserStatus::Active->value ? 'diaktifkan' : 'dinonaktifkan';
+        $actionLabel = $newStatusValue === UserStatus::Active->value ? 'activated' : 'deactivated';
 
-        return redirect()->to('/kelola-akun')->with('success', "Status akun {$user->name} berhasil {$actionLabel}.");
+        return redirect()->to('/kelola-akun')->with('success', "Account {$user->name} has been {$actionLabel}.");
     }
 
     /**
@@ -195,7 +195,7 @@ class KelolaAkunController extends Controller
         $this->userService->create(UserDTO::from($request->validated()));
 
         return redirect()->route('kelola-akun')
-            ->with('success', 'Akun baru berhasil ditambahkan.');
+            ->with('success', 'New account created successfully.');
     }
 
     /**
@@ -203,7 +203,7 @@ class KelolaAkunController extends Controller
      */
     private function mapRoleLabel(?string $role): string
     {
-        if (!$role) return 'Tidak Ada Role';
+        if (!$role) return 'No Role';
         return self::ROLE_MAP[strtolower($role)] ?? ucfirst($role);
     }
 

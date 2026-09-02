@@ -138,7 +138,7 @@ function ConfirmSubmitModal({ open, onConfirm, onCancel, isSubmitting, warnings 
                     borderBottom: '1px solid #F1F5F9',
                 }}>
                     <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#06283A' }}>
-                        Konfirmasi Submit Berkas
+                        Confirm Document Submission
                     </h3>
                     <button
                         type="button"
@@ -152,8 +152,8 @@ function ConfirmSubmitModal({ open, onConfirm, onCancel, isSubmitting, warnings 
 
                 <div style={{ padding: '18px 22px' }}>
                     <p style={{ margin: 0, fontSize: 14, color: '#374151', lineHeight: 1.6 }}>
-                        Apakah Anda yakin ingin mengirimkan seluruh berkas penugasan ini untuk diverifikasi?
-                        Status dokumen akan berubah dari <strong>Draft</strong> menjadi <strong>Pending Verifikasi</strong>.
+                        Are you sure you want to submit all documents in this assignment for verification?
+                        Document status will change from <strong>Draft</strong> to <strong>Pending Verification</strong>.
                     </p>
 
                     {warnings.length > 0 && (
@@ -320,7 +320,7 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
                 }
             },
             onError: (errors: Record<string, any>) => {
-                let message = 'Gagal mengirim berkas. Silakan coba lagi.';
+                let message = 'Failed to submit documents. Please try again.';
                 if (typeof errors === 'string') {
                     message = errors;
                 } else if (errors && typeof errors === 'object') {
@@ -390,7 +390,7 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
                                         marginLeft: 2,
                                     }}
                                 >
-                                    (Ubah Step)
+                                    (Edit Step)
                                 </button>
                             </div>
                         ))}
@@ -416,7 +416,7 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
                             Ada step yang belum lengkap
                         </p>
                         <p style={{ margin: '4px 0 10px', fontSize: 13, color: '#7F1D1D' }}>
-                            Lengkapi step berikut sebelum submit berkas:
+                            Complete the following steps before submitting documents:
                         </p>
                         <ul style={{ margin: 0, padding: '0 0 0 18px', fontSize: 13, color: '#7F1D1D' }}>
                             {incompleteSteps.map((s) => (
@@ -681,7 +681,7 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
                         }}
                     >
                         <CheckCircle2 size={17} />
-                        Selesai Meninjau
+                        Done Reviewing
                     </button>
                 ) : (
                     <button
@@ -703,7 +703,7 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
                         }}
                     >
                         <CheckCircle2 size={17} />
-                        {isSubmitting ? 'Mengirim...' : 'Submit Berkas'}
+                        {isSubmitting ? 'Submitting...' : 'Submit Documents'}
                     </button>
                 )}
             </div>

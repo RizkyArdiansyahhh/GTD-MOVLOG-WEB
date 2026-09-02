@@ -67,7 +67,7 @@ export function DetailBarangDrawer({ item, onClose }: DetailBarangDrawerProps) {
                                     color: '#06283A',
                                 }}
                             >
-                                Detail Barang & Pengiriman
+                                Cargo & Shipment Details
                             </div>
 
                             <div
@@ -190,7 +190,7 @@ export function DetailBarangDrawer({ item, onClose }: DetailBarangDrawerProps) {
                                     TOTAL ITEM KARGO
                                 </div>
                                 <div style={{ fontSize: 12, fontWeight: 600, color: '#1E293B', marginTop: 1 }}>
-                                    {cargoList.length > 0 ? `${cargoList.length} Barang` : (item.itemCount ? `${item.itemCount} Barang` : '1 Barang')}
+                                    {cargoList.length > 0 ? `${cargoList.length} Cargo Items` : (item.itemCount ? `${item.itemCount} Cargo Items` : '1 Cargo Item')}
                                 </div>
                             </div>
 
@@ -216,7 +216,7 @@ export function DetailBarangDrawer({ item, onClose }: DetailBarangDrawerProps) {
                                     marginBottom: 8,
                                 }}
                             >
-                                <span>RINCIAN SEMUA BARANG ({cargoList.length})</span>
+                                <span>ALL CARGO DETAILS ({cargoList.length})</span>
                                 <span className="flex items-center gap-1 text-slate-500 font-normal text-[10px]">
                                     <Boxes size={12} /> {cargoList.length} Item terdaftar
                                 </span>
@@ -224,7 +224,7 @@ export function DetailBarangDrawer({ item, onClose }: DetailBarangDrawerProps) {
 
                             {cargoList.length === 0 ? (
                                 <div className="p-3 bg-slate-50 border border-slate-100 rounded-lg text-xs text-slate-400">
-                                    Belum ada data barang spesifik.
+                                    No specific cargo details available.
                                 </div>
                             ) : (
                                 <div className="flex flex-col gap-2.5">
@@ -239,7 +239,7 @@ export function DetailBarangDrawer({ item, onClose }: DetailBarangDrawerProps) {
                                                         Item #{idx + 1}
                                                     </div>
                                                     <div className="font-semibold text-xs text-slate-800">
-                                                        {cargo.descriptionOfGoods || `Barang #${idx + 1}`}
+                                                        {cargo.descriptionOfGoods || `Cargo Item #${idx + 1}`}
                                                     </div>
                                                 </div>
                                                 {cargo.type && cargo.type !== '-' && (
@@ -302,12 +302,12 @@ export function DetailBarangDrawer({ item, onClose }: DetailBarangDrawerProps) {
                                     marginBottom: 8,
                                 }}
                             >
-                                BERKAS DOKUMEN DISERAHKAN ({item.documents.length})
+                                SUBMITTED DOCUMENTS ({item.documents.length})
                             </div>
 
                             {item.documents.length === 0 ? (
                                 <div className="p-3 bg-slate-50 border border-slate-100 rounded-lg text-xs text-slate-400">
-                                    Belum ada berkas PDF yang terunggah.
+                                    No PDF files uploaded yet.
                                 </div>
                             ) : (
                                 <div className="flex flex-col gap-2">
@@ -333,15 +333,15 @@ export function DetailBarangDrawer({ item, onClose }: DetailBarangDrawerProps) {
                                                     className="text-[10px] px-2 py-0.5 rounded font-medium"
                                                     style={{
                                                         backgroundColor:
-                                                            doc.status === 'Disetujui'
+                                                            doc.status === 'Approved'
                                                                 ? '#DCFCE7'
-                                                                : doc.status === 'Ditolak'
+                                                                : doc.status === 'Rejected'
                                                                     ? '#FEE2E2'
                                                                     : '#FEF3C7',
                                                         color:
-                                                            doc.status === 'Disetujui'
+                                                            doc.status === 'Approved'
                                                                 ? '#166534'
-                                                                : doc.status === 'Ditolak'
+                                                                : doc.status === 'Rejected'
                                                                     ? '#991B1B'
                                                                     : '#92400E',
                                                     }}

@@ -77,7 +77,7 @@ class SessionCheckpointService extends BaseService
     ): void {
         if ($sessionCheckpoint->status === SessionCheckpointStatus::COMPLETED) {
             throw new BusinessException(
-                'Tahap checkpoint yang sudah selesai tidak bisa diubah PIC-nya.'
+                'Completed checkpoint stages cannot have their PIC changed.'
             );
         }
 
@@ -95,13 +95,13 @@ class SessionCheckpointService extends BaseService
     {
         if ($sessionCheckpoint->status !== SessionCheckpointStatus::IN_PROGRESS) {
             throw new BusinessException(
-                'Hanya checkpoint dengan status aktif yang bisa diselesaikan.'
+                'Only active checkpoints can be completed.'
             );
         }
 
         if (empty($sessionCheckpoint->pic_user_id)) {
             throw new BusinessException(
-                'Checkpoint harus memiliki PIC sebelum diselesaikan.'
+                'Checkpoint must have a PIC assigned before completion.'
             );
         }
 
@@ -118,7 +118,7 @@ class SessionCheckpointService extends BaseService
 
         if ($incompletePrior) {
             throw new BusinessException(
-                'Tidak bisa menyelesaikan checkpoint ini — checkpoint sebelumnya belum selesai.'
+                'Cannot complete this checkpoint — the previous checkpoint has not been completed.'
             );
         }
 

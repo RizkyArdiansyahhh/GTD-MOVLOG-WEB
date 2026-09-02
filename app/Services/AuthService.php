@@ -38,7 +38,7 @@ class AuthService extends BaseService
 
         if (! $user->isActive()) {
             throw ValidationException::withMessages([
-                'email' => ['Akun Anda saat ini dinonaktifkan. Silakan hubungi Administrator untuk informasi lebih lanjut.'],
+                'email' => ['Your account is currently deactivated. Please contact an Administrator for further information.'],
             ]);
         }
 

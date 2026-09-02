@@ -17,7 +17,7 @@ export default function WorkerMultiSelect({
     value = [],
     onChange,
     disabled = false,
-    placeholder = 'Pilih worker...',
+    placeholder = 'Select workers...',
 }: WorkerMultiSelectProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -87,7 +87,7 @@ export default function WorkerMultiSelect({
                     <div className="flex items-center gap-1.5 flex-wrap min-w-0 pr-2">
                         <Users size={14} className="text-slate-400 shrink-0" />
                         <span className="text-[#06283A] font-medium">
-                            {selectedWorkers.length} worker dipilih
+                            {selectedWorkers.length} workers selected
                         </span>
                     </div>
                 ) : (
@@ -134,7 +134,7 @@ export default function WorkerMultiSelect({
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Cari worker..."
+                            placeholder="Search workers..."
                             className="w-full py-1.5 pr-2 bg-transparent text-xs text-[#06283A] placeholder:text-slate-400 focus:outline-none"
                         />
                     </div>
@@ -142,7 +142,7 @@ export default function WorkerMultiSelect({
                     <div className="max-h-48 overflow-y-auto divide-y divide-slate-50">
                         {filteredWorkers.length === 0 ? (
                             <div className="p-4 text-center text-xs text-slate-400">
-                                Tidak ada worker yang sesuai
+                                No workers found
                             </div>
                         ) : (
                             filteredWorkers.map((worker) => {

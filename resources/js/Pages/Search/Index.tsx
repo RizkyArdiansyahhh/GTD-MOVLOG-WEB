@@ -108,7 +108,7 @@ export default function SearchIndex({ searchData, filters }: SearchPageProps) {
     };
 
     const categoriesList = [
-        { key: 'all', label: 'Semua Kategori', count: searchData.total_count, icon: Layers },
+        { key: 'all', label: 'All Categories', count: searchData.total_count, icon: Layers },
         ...Object.entries(searchData.category_counts || {}).map(([k, v]) => ({
             key: k,
             label: v.label,
@@ -119,7 +119,7 @@ export default function SearchIndex({ searchData, filters }: SearchPageProps) {
 
     return (
         <DashboardLayout>
-            <Head title={searchData.query ? `Hasil Pencarian "${searchData.query}"` : 'Pencarian Global — GTD MoveLog'} />
+            <Head title={searchData.query ? `Search Results for "${searchData.query}"` : 'Global Search — GTD MoveLog'} />
 
             {/* ── Top Header ── */}
             <div className="mb-6">
@@ -130,25 +130,25 @@ export default function SearchIndex({ searchData, filters }: SearchPageProps) {
                         className="inline-flex items-center gap-1 text-xs font-semibold text-gray-500 hover:text-gray-900 transition-colors"
                     >
                         <ArrowLeft size={14} />
-                        <span>Kembali</span>
+                        <span>Back</span>
                     </button>
                     <span className="text-gray-300">/</span>
-                    <span className="text-xs text-gray-400">Pencarian Global</span>
+                    <span className="text-xs text-gray-400">Global Search</span>
                 </div>
 
                 <h1 className="text-2xl font-bold text-gray-900">
                     {searchData.query ? (
                         <span>
-                            Hasil Pencarian untuk <span className="text-yellow-600 font-extrabold">&ldquo;{searchData.query}&rdquo;</span>
+                            Search Results for <span className="text-yellow-600 font-extrabold">&ldquo;{searchData.query}&rdquo;</span>
                         </span>
                     ) : (
-                        <span>Pusat Pencarian Global</span>
+                        <span>Global Search Center</span>
                     )}
                 </h1>
                 <p className="text-sm text-gray-500 mt-1">
                     {searchData.query
-                        ? `Ditemukan ${searchData.total_count} hasil di seluruh modul sistem yang dapat Anda akses.`
-                        : 'Ketik kata kunci untuk mencari barang, tracking, sesi kerja, dokumen, atau akun.'}
+                        ? `Found ${searchData.total_count} results across all accessible system modules.`
+                        : 'Type keywords to search cargo, tracking, worker sessions, documents, or accounts.'}
                 </p>
             </div>
 
@@ -161,7 +161,7 @@ export default function SearchIndex({ searchData, filters }: SearchPageProps) {
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Cari tracking ID, nama unit, ID sesi, nomor dokumen, nama pihak, checkpoint..."
+                            placeholder="Search tracking ID, unit name, session ID, document number, party name, checkpoint..."
                             className="w-full bg-transparent text-sm text-gray-900 placeholder-gray-400 outline-none"
                         />
                         {searchQuery && (
@@ -186,7 +186,7 @@ export default function SearchIndex({ searchData, filters }: SearchPageProps) {
                 <div className="flex items-center gap-2 mt-4 pt-3 border-t border-gray-100 overflow-x-auto pb-1">
                     <div className="flex items-center gap-1 text-xs font-semibold text-gray-400 uppercase tracking-wider mr-2 shrink-0">
                         <Filter size={13} />
-                        <span>Kategori:</span>
+                        <span>Category:</span>
                     </div>
 
                     {categoriesList.map((cat) => {
@@ -283,7 +283,7 @@ export default function SearchIndex({ searchData, filters }: SearchPageProps) {
                         <Search size={28} />
                     </div>
                     <h3 className="text-lg font-bold text-gray-900 mb-1">
-                        {searchData.query ? 'Tidak Ada Data Ditemukan' : 'Mulai Pencarian Global'}
+                        {searchData.query ? 'No Data Found' : 'Start Global Search'}
                     </h3>
                     <p className="text-sm text-gray-500 max-w-md mx-auto mb-6">
                         {searchData.query
@@ -292,7 +292,7 @@ export default function SearchIndex({ searchData, filters }: SearchPageProps) {
                     </p>
 
                     <div className="inline-flex flex-wrap items-center justify-center gap-2 max-w-lg mx-auto text-xs text-gray-500">
-                        <span className="font-semibold text-gray-700">Contoh pencarian:</span>
+                        <span className="font-semibold text-gray-700">Search examples:</span>
                         {['Excavator CAT 320', 'TRK-2024-001', 'SES-2048', 'INV-2026-014', 'Pelabuhan'].map((term) => (
                             <button
                                 key={term}

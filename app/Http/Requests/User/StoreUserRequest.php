@@ -58,8 +58,8 @@ class StoreUserRequest extends FormRequest
     {
         return [
             'email.unique' => 'This email address is already registered.',
-            'customer_id.required_if' => 'Perusahaan customer wajib dipilih untuk pengguna dengan role customer.',
-            'customer_id.exists' => 'Perusahaan customer yang dipilih tidak valid.',
+            'customer_id.required_if' => 'Customer company is required for users with the customer role.',
+            'customer_id.exists' => 'The selected customer company is invalid.',
         ];
     }
 }

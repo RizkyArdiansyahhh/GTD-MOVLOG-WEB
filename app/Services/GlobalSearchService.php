@@ -43,11 +43,11 @@ class GlobalSearchService
         }
 
         $categories = [
-            'barang'     => ['label' => 'Barang / Tracking', 'items' => []],
-            'sesi'       => ['label' => 'Sesi Pekerja', 'items' => []],
-            'dokumen'    => ['label' => 'Dokumen', 'items' => []],
+            'barang'     => ['label' => 'Cargo / Tracking', 'items' => []],
+            'sesi'       => ['label' => 'Worker Sessions', 'items' => []],
+            'dokumen'    => ['label' => 'Documents', 'items' => []],
             'checkpoint' => ['label' => 'Checkpoint', 'items' => []],
-            'users'      => ['label' => 'Pengguna', 'items' => []],
+            'users'      => ['label' => 'Users', 'items' => []],
         ];
 
         $totalCount = 0;
@@ -86,11 +86,11 @@ class GlobalSearchService
     {
         $keyword = trim($query);
         $allCategories = [
-            'barang'     => 'Barang / Tracking',
-            'sesi'       => 'Sesi Pekerja',
-            'dokumen'    => 'Dokumen',
+            'barang'     => 'Cargo / Tracking',
+            'sesi'       => 'Worker Sessions',
+            'dokumen'    => 'Documents',
             'checkpoint' => 'Checkpoint',
-            'users'      => 'Pengguna',
+            'users'      => 'Users',
         ];
 
         if ($keyword === '') {
@@ -226,10 +226,10 @@ class GlobalSearchService
 
         return $items->map(function (ShippingSession $session) {
             $statusLabel = match ($session->status) {
-                ShippingSessionStatus::IN_TRANSIT => 'Dalam Perjalanan',
-                ShippingSessionStatus::DELIVERED  => 'Terkirim',
-                ShippingSessionStatus::PENDING    => 'Menunggu',
-                ShippingSessionStatus::CANCELLED  => 'Dibatalkan',
+                ShippingSessionStatus::IN_TRANSIT => 'In Transit',
+                ShippingSessionStatus::DELIVERED  => 'Delivered',
+                ShippingSessionStatus::PENDING    => 'Pending',
+                ShippingSessionStatus::CANCELLED  => 'Cancelled',
                 default                           => ucfirst((string) ($session->status->value ?? $session->status)),
             };
 
@@ -243,7 +243,7 @@ class GlobalSearchService
             return [
                 'id'             => (string) $session->id,
                 'category'       => 'barang',
-                'category_label' => 'Barang / Tracking',
+                'category_label' => 'Cargo / Tracking',
                 'title'          => $session->cargo_name,
                 'subtitle'       => "{$session->assignment_no} Â· {$routeText} Â· {$customerName}",
                 'status'         => $statusLabel,
@@ -313,16 +313,16 @@ class GlobalSearchService
                 ?? 'Tahap Logistik';
 
             $statusLabel = match ($session->status) {
-                ShippingSessionStatus::IN_TRANSIT => 'Aktif',
-                ShippingSessionStatus::DELIVERED  => 'Selesai',
-                ShippingSessionStatus::PENDING    => 'Menunggu',
+                ShippingSessionStatus::IN_TRANSIT => 'Active',
+                ShippingSessionStatus::DELIVERED  => 'Completed',
+                ShippingSessionStatus::PENDING    => 'Pending',
                 default                           => 'Aktif',
             };
 
             return [
                 'id'             => (string) $session->id,
                 'category'       => 'sesi',
-                'category_label' => 'Sesi Pekerja',
+                'category_label' => 'Worker Sessions',
                 'title'          => "{$session->assignment_no} â€” {$session->cargo_name}",
                 'subtitle'       => "Petugas: {$picNames} Â· Checkpoint: {$currentCheckpoint}",
                 'status'         => $statusLabel,
@@ -381,7 +381,7 @@ class GlobalSearchService
         return $items->map(function (Document $doc) use ($user) {
             $docData = (array) ($doc->document_data ?? []);
             $docNumber = $docData['document_number'] ?? null;
-            $typeName = $doc->documentType?->name ?? 'Dokumen Logistik';
+            $typeName = $doc->documentType?->name ?? 'Logistics Document';
             $sessionNo = $doc->shippingSession?->assignment_no ?? '';
             $cargoName = $doc->shippingSession?->cargo_name ?? '';
             $customerName = $doc->shippingSession?->customer?->company_name ?? '';
@@ -395,9 +395,9 @@ class GlobalSearchService
 
             $statusVal = $doc->status instanceof DocumentStatus ? $doc->status->value : (string) $doc->status;
             $statusLabel = match (strtoupper($statusVal)) {
-                'APPROVED' => 'Disetujui',
-                'REJECTED' => 'Ditolak',
-                'PENDING'  => 'Menunggu',
+                'APPROVED' => 'Approved',
+                'REJECTED' => 'Rejected',
+                'PENDING'  => 'Pending',
                 default    => ucfirst(strtolower($statusVal)),
             };
 
@@ -406,7 +406,7 @@ class GlobalSearchService
             return [
                 'id'             => (string) $doc->id,
                 'category'       => 'dokumen',
-                'category_label' => 'Dokumen',
+                'category_label' => 'Documents',
                 'title'          => $primaryTitle,
                 'subtitle'       => $subtitle,
                 'status'         => $statusLabel,
@@ -518,12 +518,12 @@ class GlobalSearchService
                 default        => ucfirst($firstRole ?? 'User'),
             };
 
-            $statusLabel = $u->status === UserStatus::Active ? 'Aktif' : 'Tidak Aktif';
+            $statusLabel = $u->status === UserStatus::Active ? 'Active' : 'Inactive';
 
             return [
                 'id'             => (string) $u->id,
                 'category'       => 'users',
-                'category_label' => 'Pengguna',
+                'category_label' => 'Users',
                 'title'          => $u->name,
                 'subtitle'       => "{$roleLabel} Â· {$u->email}" . ($u->phone ? " Â· {$u->phone}" : ''),
                 'status'         => $statusLabel,

@@ -36,7 +36,7 @@ export default function Dashboard({
 }: DashboardProps) {
     useRealtimeUpdates(customer?.id);
 
-    const [greeting, setGreeting] = useState('Selamat Datang');
+    const [greeting, setGreeting] = useState('Welcome');
 
     useEffect(() => {
         const hour = new Date().getHours();
@@ -66,7 +66,7 @@ export default function Dashboard({
             return (
                 <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600">
                     <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
-                    <span>Dalam Perjalanan</span>
+                    <span>In Transit</span>
                 </span>
             );
         }
@@ -74,7 +74,7 @@ export default function Dashboard({
             return (
                 <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
-                    <span>Terkirim</span>
+                    <span>Delivered</span>
                 </span>
             );
         }
@@ -82,20 +82,20 @@ export default function Dashboard({
             return (
                 <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600">
                     <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
-                    <span>Dibatalkan</span>
+                    <span>Cancelled</span>
                 </span>
             );
         }
         return (
             <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500">
                 <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                <span>Persiapan Muat</span>
+                <span>Loading Preparation</span>
             </span>
         );
     };
 
     return (
-        <CustomerLayout title="Dashboard Pelanggan">
+        <CustomerLayout title="Customer Dashboard">
             <Head title="Dashboard — GTD Customer Portal" />
 
             <div className="space-y-6">
@@ -108,7 +108,7 @@ export default function Dashboard({
                         </span>
                     </h1>
                     <p className="text-xs sm:text-sm text-slate-500 mt-1 font-normal">
-                        Berikut adalah ringkasan logistik dan pengiriman aktif Anda hari ini.
+                        Here is your logistics summary and active shipments today.
                     </p>
                 </div>
 
@@ -124,7 +124,7 @@ export default function Dashboard({
                                     Tracking Posisi Armada
                                 </h3>
                                 <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
-                                    Pantau koordinat transit, status pos perjalanan, dan estimasi waktu sampai terkini secara langsung.
+                                    Monitor transit coordinates, journey checkpoint status, and real-time arrival estimates.
                                 </p>
                             </div>
                             <div className="pt-3.5 mt-2 border-t border-slate-100">
@@ -138,7 +138,7 @@ export default function Dashboard({
                             </div>
                         </div>
 
-                        {/* Card 2: Status Operasional Normal / Attention Card (Clean outline icon) */}
+                        {/* Card 2: Normal Operational Status / Attention Card (Clean outline icon) */}
                         {exceptionShipments.length > 0 ? (
                             <div className="bg-amber-50 rounded-xl border border-amber-200 p-5 shadow-sm">
                                 <div className="flex items-center gap-2 text-amber-900 font-bold text-xs mb-1.5">
@@ -146,7 +146,7 @@ export default function Dashboard({
                                     <span>Perlu Perhatian</span>
                                 </div>
                                 <p className="text-xs text-amber-800 leading-relaxed">
-                                    Terdapat {exceptionShipments.length} pengiriman yang dibatalkan atau membutuhkan koordinasi:
+                                    There are {exceptionShipments.length} shipments cancelled or requiring coordination:
                                 </p>
                                 <p className="text-xs font-bold text-amber-950 mt-1">
                                     {exceptionShipments.map((s) => `#${s.assignment_no}`).join(', ')}
@@ -157,10 +157,10 @@ export default function Dashboard({
                                 <div>
                                     <ShieldCheck size={24} className="text-emerald-600 mb-3" strokeWidth={1.8} />
                                     <h3 className="font-bold text-sm text-[#06283A]">
-                                        Status Operasional Normal
+                                        Normal Operational Status
                                     </h3>
                                     <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
-                                        Semua armada pengiriman aktif beroperasi sesuai jadwal dan rute yang telah ditentukan.
+                                        All active shipment fleets are operating according to schedule and designated routes.
                                     </p>
                                 </div>
                                 <div className="pt-3 mt-2 border-t border-slate-100 flex items-center gap-2 text-[11px] font-medium text-emerald-700">
@@ -179,7 +179,7 @@ export default function Dashboard({
                                 {/* Metric 1: Pengiriman Aktif */}
                                 <div className="p-4 sm:p-5">
                                     <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-                                        Pengiriman Aktif
+                                        Active Shipments
                                     </span>
                                     <div className="mt-2 flex items-baseline gap-2">
                                         <span className="text-2xl sm:text-3xl font-bold text-[#06283A] tracking-tight tabular-nums">
@@ -198,7 +198,7 @@ export default function Dashboard({
                                         <span className="text-2xl sm:text-3xl font-bold text-[#06283A] tracking-tight tabular-nums">
                                             {Number(stats?.completed_last_7d ?? 0).toLocaleString('id-ID')}
                                         </span>
-                                        <span className="text-xs text-slate-400 font-medium">selesai</span>
+                                        <span className="text-xs text-slate-400 font-medium">completed</span>
                                     </div>
                                 </div>
 
@@ -221,7 +221,7 @@ export default function Dashboard({
                         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex-1 flex flex-col">
                             <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
                                 <h2 className="font-bold text-sm sm:text-base text-[#06283A]">
-                                    Pengiriman Terbaru
+                                    Recent Shipments
                                 </h2>
                                 <Link
                                     href="/customer/monitoring-barang"
@@ -236,7 +236,7 @@ export default function Dashboard({
                                 <table className="w-full text-left border-collapse">
                                     <thead>
                                         <tr className="bg-slate-50/80 border-b border-slate-200 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
-                                            <th className="py-3 px-4">ID Pengiriman</th>
+                                            <th className="py-3 px-4">Shipment ID</th>
                                             <th className="py-3 px-4">Tujuan / Rute</th>
                                             <th className="py-3 px-4">Status</th>
                                             <th className="py-3 px-4">ETA</th>
@@ -247,8 +247,8 @@ export default function Dashboard({
                                         {recentShipments.length === 0 ? (
                                             <tr>
                                                 <td colSpan={5} className="py-10 text-center text-slate-400">
-                                                    <p className="font-semibold text-slate-600">Belum ada pengiriman aktif saat ini.</p>
-                                                    <p className="text-[11px] text-slate-400 mt-0.5">Semua data sesi kargo akan otomatis tampil di sini.</p>
+                                                    <p className="font-semibold text-slate-600">No active shipments at this time.</p>
+                                                    <p className="text-[11px] text-slate-400 mt-0.5">All cargo session data will automatically appear here.</p>
                                                 </td>
                                             </tr>
                                         ) : (
@@ -318,7 +318,7 @@ export default function Dashboard({
                                 href="/customer/monitoring-barang"
                                 className="text-xs font-semibold text-slate-500 hover:text-slate-900 uppercase tracking-wider transition-colors inline-flex items-center gap-1"
                             >
-                                <span>Riwayat Lengkap</span>
+                                <span>Full History</span>
                                 <ExternalLink size={12} />
                             </Link>
                         </div>
@@ -334,7 +334,7 @@ export default function Dashboard({
                                                 Armada #{s.assignment_no} — {s.current_checkpoint || 'Pos Operasional'}
                                             </p>
                                             <p className="text-slate-600 text-[11px] leading-relaxed">
-                                                Muatan {s.cargo_name} dalam proses transit rute {s.origin} menuju {s.destination}. Estimasi tiba {s.eta}.
+                                                Cargo {s.cargo_name} in transit from {s.origin} to {s.destination}. Estimated arrival {s.eta}.
                                             </p>
                                             <p className="text-[10px] text-slate-400 font-medium uppercase">
                                                 Status: {s.status === 'IN_PROGRESS' || s.status === 'IN_TRANSIT' ? 'Dalam Perjalanan' : s.status}

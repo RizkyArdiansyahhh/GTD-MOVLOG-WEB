@@ -72,16 +72,16 @@ export default function KelolaSesiCreate({ fieldWorkers: propFieldWorkers }: Kel
                     <Link
                         href="/sesi-pekerja"
                         className="flex items-center justify-center w-9 h-9 rounded-xl bg-white border border-[#E2E8F0] text-slate-600 hover:bg-slate-50 transition-colors"
-                        title="Kembali"
+                        title="Back"
                     >
                         <ArrowLeft size={18} />
                     </Link>
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight text-[#06283A]">
-                            Buat Sesi Pekerja Baru
+                            Create New Worker Session
                         </h1>
                         <p className="text-xs text-slate-500">
-                            Isi data identitas sesi dan assignment tahap pertama (Kapal).
+                            Fill in session details and first stage assignment (Vessel).
                         </p>
                     </div>
                 </div>
@@ -98,21 +98,21 @@ export default function KelolaSesiCreate({ fieldWorkers: propFieldWorkers }: Kel
                                 <Truck size={20} />
                             </div>
                             <div>
-                                <h2 className="text-base font-semibold text-[#06283A]">Data Sesi Alat Berat</h2>
-                                <p className="text-xs text-slate-400">Informasi utama identitas sesi</p>
+                                <h2 className="text-base font-semibold text-[#06283A]">Heavy Equipment Session Data</h2>
+                                <p className="text-xs text-slate-400">Main session identity information</p>
                             </div>
                         </div>
 
                         {/* ID Sesi */}
                         <div>
                             <label className="block text-xs font-semibold uppercase text-slate-600 mb-1.5">
-                                ID Sesi <span className="text-red-500">*</span>
+                                Session ID <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="text"
                                 value={idSesi}
                                 onChange={(e) => setIdSesi(e.target.value)}
-                                placeholder="Contoh: SES-2048"
+                                placeholder="Example: SES-2048"
                                 required
                                 className="w-full px-3.5 py-2.5 bg-white border border-[#E2E8F0] rounded-xl text-sm font-mono font-semibold text-[#06283A] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#F5B800] transition-all"
                             />
@@ -128,19 +128,19 @@ export default function KelolaSesiCreate({ fieldWorkers: propFieldWorkers }: Kel
                         {/* Catatan */}
                         <div>
                             <label className="block text-xs font-semibold uppercase text-slate-600 mb-1.5">
-                                Catatan Tambahan
+                                Additional Notes
                             </label>
                             <textarea
                                 rows={3}
                                 value={notes}
                                 onChange={(e) => setNotes(e.target.value)}
-                                placeholder="Tuliskan catatan khusus terkait lokasi atau kondisi sesi unit..."
+                                placeholder="Write any specific notes about the location or unit session conditions..."
                                 className="w-full px-3.5 py-2.5 bg-white border border-[#E2E8F0] rounded-xl text-sm text-[#06283A] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#F5B800] transition-all"
                             />
                         </div>
                     </div>
 
-                    {/* ── Section 2: Assignment Tahap Kapal ── */}
+                    {/* ── Section 2: Vessel Stage Assignment ── */}
                     <div className="bg-white border border-[#E2E8F0] shadow-sm rounded-2xl p-6 sm:p-8 space-y-6">
                         <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
                             <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200/60 flex items-center justify-center text-blue-500">
@@ -148,10 +148,10 @@ export default function KelolaSesiCreate({ fieldWorkers: propFieldWorkers }: Kel
                             </div>
                             <div>
                                 <h2 className="text-base font-semibold text-[#06283A]">
-                                    Assignment Tahap Kapal
+                                    Vessel Stage Assignment
                                 </h2>
                                 <p className="text-xs text-slate-400">
-                                    Wajib diisi — tahap pertama dimulai otomatis saat sesi dibuat
+                                    Required — first stage starts automatically when session is created
                                 </p>
                             </div>
                         </div>
@@ -159,7 +159,7 @@ export default function KelolaSesiCreate({ fieldWorkers: propFieldWorkers }: Kel
                         {/* PIC */}
                         <div>
                             <label className="block text-xs font-semibold uppercase text-slate-600 mb-1.5">
-                                Petugas PIC Kapal <span className="text-red-500">*</span>
+                                Vessel PIC Officer <span className="text-red-500">*</span>
                             </label>
                             <FieldWorkerSelect
                                 fieldWorkers={availableFieldWorkers}
@@ -173,20 +173,20 @@ export default function KelolaSesiCreate({ fieldWorkers: propFieldWorkers }: Kel
                         {/* Workers */}
                         <div>
                             <label className="block text-xs font-semibold uppercase text-slate-600 mb-1.5">
-                                Worker Kapal <span className="text-red-500">*</span>
+                                Vessel Workers <span className="text-red-500">*</span>
                             </label>
                             <WorkerMultiSelect
                                 fieldWorkers={availableFieldWorkers}
                                 value={kapalWorkerIds}
                                 onChange={setKapalWorkerIds}
                                 disabled={isSubmitting}
-                                placeholder="Pilih worker untuk tahap Kapal..."
+                                placeholder="Select workers for Vessel stage..."
                             />
                         </div>
 
                         {!isKapalAssigned && (
                             <div className="flex items-center gap-1.5 text-xs text-amber-600 font-medium bg-amber-50 border border-amber-200/60 p-2.5 rounded-xl">
-                                <span>PIC dan minimal 1 worker harus diisi untuk tahap Kapal.</span>
+                                <span>PIC and at least 1 worker must be assigned for the Vessel stage.</span>
                             </div>
                         )}
                     </div>
@@ -197,7 +197,7 @@ export default function KelolaSesiCreate({ fieldWorkers: propFieldWorkers }: Kel
                             href="/sesi-pekerja"
                             className="px-5 py-2.5 rounded-xl border border-[#E2E8F0] bg-white text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
                         >
-                            Batal
+                            Cancel
                         </Link>
                         <button
                             type="submit"
@@ -209,7 +209,7 @@ export default function KelolaSesiCreate({ fieldWorkers: propFieldWorkers }: Kel
                             }}
                         >
                             <Save size={18} />
-                            <span>{isSubmitting ? 'Menyimpan...' : 'Simpan Sesi'}</span>
+                            <span>{isSubmitting ? 'Saving...' : 'Save Session'}</span>
                         </button>
                     </div>
                 </form>

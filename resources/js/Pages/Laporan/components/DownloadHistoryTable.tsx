@@ -9,11 +9,11 @@ const FORMAT_BADGE: Record<ExportFormat, { bg: string; text: string; label: stri
 };
 
 const STATUS_BADGE: Record<string, { bg: string; text: string; label: string }> = {
-    ready: { bg: '#DCFCE7', text: '#15803D', label: 'Siap Unduh' },
-    'Siap Unduh': { bg: '#DCFCE7', text: '#15803D', label: 'Siap Unduh' },
-    expired: { bg: '#F3F4F6', text: '#6B7280', label: 'Kedaluwarsa' },
-    'Kedaluwarsa': { bg: '#F3F4F6', text: '#6B7280', label: 'Kedaluwarsa' },
-    processing: { bg: '#FFF4D6', text: '#B7791F', label: 'Sedang Diproses' },
+    ready: { bg: '#DCFCE7', text: '#15803D', label: 'Ready' },
+    'Siap Unduh': { bg: '#DCFCE7', text: '#15803D', label: 'Ready' },
+    expired: { bg: '#F3F4F6', text: '#6B7280', label: 'Expired' },
+    'Kedaluwarsa': { bg: '#F3F4F6', text: '#6B7280', label: 'Expired' },
+    processing: { bg: '#FFF4D6', text: '#B7791F', label: 'Processing' },
 };
 
 interface RowProps {
@@ -91,7 +91,7 @@ const HistoryRow: React.FC<RowProps> = ({ item }) => {
                         <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 4v11" />
                         </svg>
-                        Unduh
+                        Download
                     </a>
                 ) : (
                     <span style={{ fontSize: 12, color: '#CBD5E0' }}>—</span>
@@ -130,7 +130,7 @@ export const DownloadHistoryTable: React.FC = () => {
                         </svg>
                     </span>
                     <span style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, fontSize: 15, color: '#06283A' }}>
-                        Riwayat Unduhan Laporan
+                        Report Download History
                     </span>
                 </div>
                 <button style={{
@@ -143,7 +143,7 @@ export const DownloadHistoryTable: React.FC = () => {
                     fontWeight: 600,
                     cursor: 'pointer',
                 }}>
-                    Lihat Semua
+                    View All
                 </button>
             </div>
 
@@ -156,7 +156,7 @@ export const DownloadHistoryTable: React.FC = () => {
                             height: 40,
                             borderBottom: '1px solid #E5E7EB',
                         }}>
-                            {['Nama Laporan', 'Format', 'Tanggal Dibuat', 'Ukuran Berkas', 'Status', 'Aksi'].map((col, i) => (
+                            {['Report Name', 'Format', 'Created Date', 'File Size', 'Status', 'Actions'].map((col, i) => (
                                 <th
                                     key={col}
                                     style={{

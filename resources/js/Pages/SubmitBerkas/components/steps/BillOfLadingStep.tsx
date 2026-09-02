@@ -81,10 +81,10 @@ export function BillOfLadingStep() {
 
   const validate = (): boolean => {
     const next: Record<string, string> = {};
-    if (!data.documentDetail.number.trim()) next.documentNumber = 'Nomor dokumen wajib diisi.';
-    if (!data.shipper.name.trim()) next.shipperName = 'Nama shipper wajib diisi.';
-    if (!data.consignee.name.trim()) next.consigneeName = 'Nama consignee wajib diisi.';
-    if (!pdf) next.pdf = 'Dokumen PDF wajib diupload.';
+    if (!data.documentDetail.number.trim()) next.documentNumber = 'Document number is required.';
+    if (!data.shipper.name.trim()) next.shipperName = 'Shipper name is required.';
+    if (!data.consignee.name.trim()) next.consigneeName = 'Consignee name is required.';
+    if (!pdf) next.pdf = 'PDF document is required.';
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -99,7 +99,7 @@ export function BillOfLadingStep() {
     if (!assignmentNoRef || !selectedCustomer?.id) {
       setErrors((prev) => ({
         ...prev,
-        general: 'Data customer atau nomor assignment belum tersedia. Silakan pilih customer terlebih dahulu.',
+        general: 'Customer data or assignment number is not available. Please select a customer first.',
       }));
       return;
     }

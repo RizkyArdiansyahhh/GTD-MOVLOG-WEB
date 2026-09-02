@@ -36,7 +36,7 @@ class ProfileController extends Controller
         ])->values()->all();
 
         $statusValue = $user->status instanceof UserStatus ? $user->status->value : (string) ($user->status ?? 'active');
-        $statusLabel = $user->status === UserStatus::Active ? 'Aktif' : ucfirst($statusValue);
+        $statusLabel = $user->status === UserStatus::Active ? 'Active' : ucfirst($statusValue);
 
         return Inertia::render('Profile/Edit', [
             'profile' => [
@@ -82,7 +82,7 @@ class ProfileController extends Controller
 
         $user->save();
 
-        return back()->with('success', 'Profil internal Anda berhasil diperbarui.');
+        return back()->with('success', 'Your profile has been updated successfully.');
     }
 
     /**
@@ -96,6 +96,6 @@ class ProfileController extends Controller
         $user->password = Hash::make($validated['password']);
         $user->save();
 
-        return back()->with('success', 'Password akun Anda berhasil diperbarui.');
+        return back()->with('success', 'Your account password has been updated successfully.');
     }
 }

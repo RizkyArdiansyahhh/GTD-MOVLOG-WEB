@@ -128,11 +128,11 @@ export function PackingListStep() {
     const validate = (): boolean => {
         const next: Record<string, string> = {};
 
-        if (!data.documentDetail.number.trim()) next.documentNumber = 'Nomor dokumen wajib diisi.';
-        if (!data.shipper.name.trim()) next.shipperName = 'Nama shipper wajib diisi.';
-        if (!data.consignee.name.trim()) next.consigneeName = 'Nama consignee wajib diisi.';
-        if (!pdf) next.pdf = 'Dokumen PDF wajib diupload.';
-        if (!selectedCustomer?.id) next.general = 'Customer wajib dipilih terlebih dahulu.';
+        if (!data.documentDetail.number.trim()) next.documentNumber = 'Document number is required.';
+        if (!data.shipper.name.trim()) next.shipperName = 'Shipper name is required.';
+        if (!data.consignee.name.trim()) next.consigneeName = 'Consignee name is required.';
+        if (!pdf) next.pdf = 'PDF document is required.';
+        if (!selectedCustomer?.id) next.general = 'Customer must be selected first.';
         if (!assignmentNoRef) next.general = 'Assignment Reference tidak ditemukan.';
 
         setErrors(next);
@@ -179,7 +179,7 @@ export function PackingListStep() {
                     (data.documentDetail.oceanFreight && data.documentDetail.oceanFreight !== ciData.documentDetail?.oceanFreight) ||
                     (data.documentDetail.insurance && data.documentDetail.insurance !== ciData.documentDetail?.insurance)
                 ) {
-                    warnings.documentDetailChanged = 'Detail Dokumen berbeda dari Commercial Invoice.';
+                    warnings.documentDetailChanged = 'Document details differ from Commercial Invoice.';
                     changed.push('Document Detail');
                 }
 
@@ -194,7 +194,7 @@ export function PackingListStep() {
                         (plItem.brand && plItem.brand !== ciItem.brand)
                     ) {
                         warnings[`cargoChanged_${index}`] =
-                            `Item ke-${index + 1}: Detail barang berbeda dari Commercial Invoice.`;
+                            `Item #${index + 1}: Cargo details differ from Commercial Invoice.`;
                         changed.push(`Cargo Detail — Item ke-${index + 1}`);
                     }
                 });
@@ -224,7 +224,7 @@ export function PackingListStep() {
             console.error('Gagal menyimpan step Packing List:', error);
             setErrors((prev) => ({
                 ...prev,
-                general: error.response?.data?.message || 'Gagal menyimpan data ke server. Silakan coba lagi.',
+                general: error.response?.data?.message || 'Failed to save data to server. Please try again.',
             }));
         } finally {
             setIsSaving(false);
@@ -339,7 +339,7 @@ export function PackingListStep() {
                                     onChange={(e) => updateDocDetail({ oceanFreightCurrency: e.target.value })}
                                     style={currencySelectStyle}
                                 >
-                                    <option value="">Pilih Currency</option>
+                                    <option value="">Select Currency</option>
                                     {CURRENCIES.map((c) => (
                                         <option key={c} value={c}>{c}</option>
                                     ))}
@@ -356,7 +356,7 @@ export function PackingListStep() {
                                     label="Ocean Freight"
                                     value={data.documentDetail.oceanFreight ?? ''}
                                     onChange={(v) => updateDocDetail({ oceanFreight: v })}
-                                    placeholder={ciData?.documentDetail?.oceanFreight || (data.documentDetail.oceanFreightCurrency ? '0.00' : 'Pilih currency dulu')}
+                                    placeholder={ciData?.documentDetail?.oceanFreight || (data.documentDetail.oceanFreightCurrency ? '0.00' : 'Select currency first')}
                                     numeric
                                 />
                             </div>
@@ -368,7 +368,7 @@ export function PackingListStep() {
                                     onChange={(e) => updateDocDetail({ insuranceCurrency: e.target.value })}
                                     style={currencySelectStyle}
                                 >
-                                    <option value="">Pilih Currency</option>
+                                    <option value="">Select Currency</option>
                                     {CURRENCIES.map((c) => (
                                         <option key={c} value={c}>{c}</option>
                                     ))}
@@ -385,7 +385,7 @@ export function PackingListStep() {
                                     label="Insurance"
                                     value={data.documentDetail.insurance ?? ''}
                                     onChange={(v) => updateDocDetail({ insurance: v })}
-                                    placeholder={ciData?.documentDetail?.insurance || (data.documentDetail.insuranceCurrency ? '0.00' : 'Pilih currency dulu')}
+                                    placeholder={ciData?.documentDetail?.insurance || (data.documentDetail.insuranceCurrency ? '0.00' : 'Select currency first')}
                                     numeric
                                 />
                             </div>
@@ -534,7 +534,7 @@ export function PackingListStep() {
                                             onChange={(e) => updateItem({ goodsUnitMeasurement: e.target.value })}
                                             style={currencySelectStyle}
                                         >
-                                            <option value="">Pilih Satuan</option>
+                                            <option value="">Select Unit</option>
                                             {GOODS_UNITS.map((u) => (
                                                 <option key={u} value={u}>{u}</option>
                                             ))}
@@ -554,7 +554,7 @@ export function PackingListStep() {
                                             onChange={(e) => updateItem({ packageUnitMeasurement: e.target.value })}
                                             style={currencySelectStyle}
                                         >
-                                            <option value="">Pilih Satuan</option>
+                                            <option value="">Select Unit</option>
                                             {PACKAGE_UNITS.map((u) => (
                                                 <option key={u} value={u}>{u}</option>
                                             ))}

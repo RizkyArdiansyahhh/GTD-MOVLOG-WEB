@@ -188,7 +188,7 @@ class SesiPekerjaController extends Controller
 
         return redirect()
             ->route('sesi-pekerja')
-            ->with('success', 'Sesi pekerja berhasil dibuat.');
+            ->with('success', 'Worker session created successfully.');
     }
 
     /**
@@ -258,7 +258,7 @@ class SesiPekerjaController extends Controller
             ]);
         }
 
-        abort(404, 'Sesi pekerja tidak ditemukan.');
+        abort(404, 'Worker session not found.');
     }
 
     /**
@@ -277,7 +277,7 @@ class SesiPekerjaController extends Controller
             ->first();
 
         if (!$shippingSession) {
-            return redirect()->back()->with('success', 'Assignment berhasil disimpan.');
+            return redirect()->back()->with('success', 'Assignment saved successfully.');
         }
 
         $sessionCheckpoint = SessionCheckpoint::where('shipping_session_id', $shippingSession->id)
@@ -285,7 +285,7 @@ class SesiPekerjaController extends Controller
             ->first();
 
         if (!$sessionCheckpoint) {
-            return redirect()->back()->with('success', 'Assignment berhasil disimpan.');
+            return redirect()->back()->with('success', 'Assignment saved successfully.');
         }
 
         $validated = $request->validate([
@@ -310,7 +310,7 @@ class SesiPekerjaController extends Controller
 
         return redirect()
             ->route('sesi-pekerja.show', $shippingSession->id)
-            ->with('success', 'Assignment ' . $stageName . ' berhasil disimpan.');
+            ->with('success', 'Assignment for ' . $stageName . ' stage saved successfully.');
     }
 
     /**
@@ -329,7 +329,7 @@ class SesiPekerjaController extends Controller
             ->first();
 
         if (!$shippingSession) {
-            return redirect()->back()->with('success', 'Tahap berhasil diselesaikan.');
+            return redirect()->back()->with('success', 'Stage completed successfully.');
         }
 
         $sessionCheckpoint = SessionCheckpoint::where('shipping_session_id', $shippingSession->id)
@@ -337,7 +337,7 @@ class SesiPekerjaController extends Controller
             ->first();
 
         if (!$sessionCheckpoint) {
-            return redirect()->back()->with('success', 'Tahap berhasil diselesaikan.');
+            return redirect()->back()->with('success', 'Stage completed successfully.');
         }
 
         try {
@@ -350,7 +350,7 @@ class SesiPekerjaController extends Controller
 
         return redirect()
             ->route('sesi-pekerja.show', $shippingSession->id)
-            ->with('success', 'Tahap ' . $stageName . ' berhasil diselesaikan.');
+            ->with('success', 'Stage ' . $stageName . ' completed successfully.');
     }
 
     /**
@@ -434,7 +434,7 @@ class SesiPekerjaController extends Controller
         );
 
         if (!$hasAccess) {
-            abort(403, 'Anda tidak memiliki akses ke halaman Kelola Sesi Pekerja.');
+            abort(403, 'You do not have access to Worker Sessions.');
         }
     }
 
@@ -517,9 +517,9 @@ class SesiPekerjaController extends Controller
                     ['id' => 'u2', 'unit_name' => 'Dump Truck HD465', 'quantity' => 1, 'notes' => null],
                 ],
                 'stages'       => [
-                    ['id' => 's1', 'stage_type' => 'kapal', 'stage_name' => 'Kapal', 'stage_order' => 1, 'status' => 'selesai', 'pic_user' => ['id' => 'p1', 'name' => 'Budi S.'], 'workers' => [['id' => 'w1', 'name' => 'Anto F.']], 'notes' => null, 'started_at' => '2026-08-01T01:00:00Z', 'completed_at' => '2026-08-01T05:00:00Z'],
-                    ['id' => 's2', 'stage_type' => 'tongkang', 'stage_name' => 'Tongkang', 'stage_order' => 2, 'status' => 'selesai', 'pic_user' => ['id' => 'p2', 'name' => 'Hendra W.'], 'workers' => [['id' => 'w2', 'name' => 'Rudi H.']], 'notes' => null, 'started_at' => '2026-08-01T05:00:00Z', 'completed_at' => '2026-08-01T08:00:00Z'],
-                    ['id' => 's3', 'stage_type' => 'pelabuhan', 'stage_name' => 'Pelabuhan', 'stage_order' => 3, 'status' => 'aktif', 'pic_user' => ['id' => 'p3', 'name' => 'Ahmad K.'], 'workers' => [['id' => 'w3', 'name' => 'Denny P.']], 'notes' => null, 'started_at' => '2026-08-01T08:00:00Z', 'completed_at' => null],
+                    ['id' => 's1', 'stage_type' => 'kapal', 'stage_name' => 'Vessel', 'stage_order' => 1, 'status' => 'selesai', 'pic_user' => ['id' => 'p1', 'name' => 'Budi S.'], 'workers' => [['id' => 'w1', 'name' => 'Anto F.']], 'notes' => null, 'started_at' => '2026-08-01T01:00:00Z', 'completed_at' => '2026-08-01T05:00:00Z'],
+                    ['id' => 's2', 'stage_type' => 'tongkang', 'stage_name' => 'Barge', 'stage_order' => 2, 'status' => 'selesai', 'pic_user' => ['id' => 'p2', 'name' => 'Hendra W.'], 'workers' => [['id' => 'w2', 'name' => 'Rudi H.']], 'notes' => null, 'started_at' => '2026-08-01T05:00:00Z', 'completed_at' => '2026-08-01T08:00:00Z'],
+                    ['id' => 's3', 'stage_type' => 'pelabuhan', 'stage_name' => 'Port', 'stage_order' => 3, 'status' => 'aktif', 'pic_user' => ['id' => 'p3', 'name' => 'Ahmad K.'], 'workers' => [['id' => 'w3', 'name' => 'Denny P.']], 'notes' => null, 'started_at' => '2026-08-01T08:00:00Z', 'completed_at' => null],
                     ['id' => 's4', 'stage_type' => 'site', 'stage_name' => 'Site', 'stage_order' => 4, 'status' => 'pending', 'pic_user' => null, 'workers' => [], 'notes' => null, 'started_at' => null, 'completed_at' => null],
                 ],
             ],
@@ -533,9 +533,9 @@ class SesiPekerjaController extends Controller
                 'notes'        => null,
                 'units'        => [['id' => 'u3', 'unit_name' => 'Mobile Crane 50T', 'quantity' => 1, 'notes' => null]],
                 'stages'       => [
-                    ['id' => 's5', 'stage_type' => 'kapal', 'stage_name' => 'Kapal', 'stage_order' => 1, 'status' => 'aktif', 'pic_user' => ['id' => 'p4', 'name' => 'Anto F.'], 'workers' => [['id' => 'w4', 'name' => 'Siti M.']], 'notes' => null, 'started_at' => '2026-08-01T02:00:00Z', 'completed_at' => null],
-                    ['id' => 's6', 'stage_type' => 'tongkang', 'stage_name' => 'Tongkang', 'stage_order' => 2, 'status' => 'pending', 'pic_user' => null, 'workers' => [], 'notes' => null, 'started_at' => null, 'completed_at' => null],
-                    ['id' => 's7', 'stage_type' => 'pelabuhan', 'stage_name' => 'Pelabuhan', 'stage_order' => 3, 'status' => 'pending', 'pic_user' => null, 'workers' => [], 'notes' => null, 'started_at' => null, 'completed_at' => null],
+                    ['id' => 's5', 'stage_type' => 'kapal', 'stage_name' => 'Vessel', 'stage_order' => 1, 'status' => 'aktif', 'pic_user' => ['id' => 'p4', 'name' => 'Anto F.'], 'workers' => [['id' => 'w4', 'name' => 'Siti M.']], 'notes' => null, 'started_at' => '2026-08-01T02:00:00Z', 'completed_at' => null],
+                    ['id' => 's6', 'stage_type' => 'tongkang', 'stage_name' => 'Barge', 'stage_order' => 2, 'status' => 'pending', 'pic_user' => null, 'workers' => [], 'notes' => null, 'started_at' => null, 'completed_at' => null],
+                    ['id' => 's7', 'stage_type' => 'pelabuhan', 'stage_name' => 'Port', 'stage_order' => 3, 'status' => 'pending', 'pic_user' => null, 'workers' => [], 'notes' => null, 'started_at' => null, 'completed_at' => null],
                     ['id' => 's8', 'stage_type' => 'site', 'stage_name' => 'Site', 'stage_order' => 4, 'status' => 'pending', 'pic_user' => null, 'workers' => [], 'notes' => null, 'started_at' => null, 'completed_at' => null],
                 ],
             ],
@@ -549,9 +549,9 @@ class SesiPekerjaController extends Controller
                 'notes'        => null,
                 'units'        => [['id' => 'u4', 'unit_name' => 'Dump Truck HD465', 'quantity' => 3, 'notes' => null]],
                 'stages'       => [
-                    ['id' => 's9', 'stage_type' => 'kapal', 'stage_name' => 'Kapal', 'stage_order' => 1, 'status' => 'selesai', 'pic_user' => ['id' => 'p5', 'name' => 'Irfan S.'], 'workers' => [['id' => 'w5', 'name' => 'Fajar R.']], 'notes' => null, 'started_at' => '2026-07-31T07:00:00Z', 'completed_at' => '2026-07-31T09:00:00Z'],
-                    ['id' => 's10', 'stage_type' => 'tongkang', 'stage_name' => 'Tongkang', 'stage_order' => 2, 'status' => 'selesai', 'pic_user' => ['id' => 'p6', 'name' => 'Rian T.'], 'workers' => [['id' => 'w6', 'name' => 'Budi S.']], 'notes' => null, 'started_at' => '2026-07-31T09:00:00Z', 'completed_at' => '2026-07-31T11:00:00Z'],
-                    ['id' => 's11', 'stage_type' => 'pelabuhan', 'stage_name' => 'Pelabuhan', 'stage_order' => 3, 'status' => 'selesai', 'pic_user' => ['id' => 'p7', 'name' => 'Ahmad K.'], 'workers' => [['id' => 'w7', 'name' => 'Anto F.']], 'notes' => null, 'started_at' => '2026-07-31T11:00:00Z', 'completed_at' => '2026-07-31T13:00:00Z'],
+                    ['id' => 's9', 'stage_type' => 'kapal', 'stage_name' => 'Vessel', 'stage_order' => 1, 'status' => 'selesai', 'pic_user' => ['id' => 'p5', 'name' => 'Irfan S.'], 'workers' => [['id' => 'w5', 'name' => 'Fajar R.']], 'notes' => null, 'started_at' => '2026-07-31T07:00:00Z', 'completed_at' => '2026-07-31T09:00:00Z'],
+                    ['id' => 's10', 'stage_type' => 'tongkang', 'stage_name' => 'Barge', 'stage_order' => 2, 'status' => 'selesai', 'pic_user' => ['id' => 'p6', 'name' => 'Rian T.'], 'workers' => [['id' => 'w6', 'name' => 'Budi S.']], 'notes' => null, 'started_at' => '2026-07-31T09:00:00Z', 'completed_at' => '2026-07-31T11:00:00Z'],
+                    ['id' => 's11', 'stage_type' => 'pelabuhan', 'stage_name' => 'Port', 'stage_order' => 3, 'status' => 'selesai', 'pic_user' => ['id' => 'p7', 'name' => 'Ahmad K.'], 'workers' => [['id' => 'w7', 'name' => 'Anto F.']], 'notes' => null, 'started_at' => '2026-07-31T11:00:00Z', 'completed_at' => '2026-07-31T13:00:00Z'],
                     ['id' => 's12', 'stage_type' => 'site', 'stage_name' => 'Site', 'stage_order' => 4, 'status' => 'aktif', 'pic_user' => ['id' => 'p8', 'name' => 'Hendra W.'], 'workers' => [['id' => 'w8', 'name' => 'Rudi H.'], ['id' => 'w9', 'name' => 'Denny P.']], 'notes' => null, 'started_at' => '2026-07-31T13:00:00Z', 'completed_at' => null],
                 ],
             ],

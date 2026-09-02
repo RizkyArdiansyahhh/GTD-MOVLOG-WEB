@@ -13,9 +13,9 @@ enum ShippingSessionStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::PENDING => 'Menunggu',
-            self::IN_TRANSIT => 'Dalam Perjalanan',
-            self::DELIVERED => 'Selesai',
+            self::PENDING => 'Pending',
+            self::IN_TRANSIT => 'In Transit',
+            self::DELIVERED => 'Delivered',
         };
     }
 

@@ -18,7 +18,7 @@ export function StepNavigation({
   showBack = true,
   readOnly = false,
 }: StepNavigationProps) {
-  const displayLabel = saveLabel ?? (readOnly ? 'Lanjut' : 'Simpan & Lanjutkan');
+  const displayLabel = saveLabel ?? (readOnly ? 'Next' : 'Save & Continue');
 
   return (
     <div

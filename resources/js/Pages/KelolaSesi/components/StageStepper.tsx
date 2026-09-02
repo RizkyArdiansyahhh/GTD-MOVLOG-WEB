@@ -154,7 +154,7 @@ function StageItem({ stage, sessionId, fieldWorkers, isLast, prevStageName }: St
                 {/* Header: Stage Name + Status text */}
                 <div className="flex items-start justify-between gap-3" style={{ minHeight: '22px' }}>
                     <h3 className="text-sm font-semibold text-[#06283A] leading-5">
-                        Tahap {stage.stage_order}: {label}
+                        Stage {stage.stage_order}: {label}
                     </h3>
 
                     {/* Status as plain text — no pill */}
@@ -169,7 +169,7 @@ function StageItem({ stage, sessionId, fieldWorkers, isLast, prevStageName }: St
                             fontWeight: isAktif ? 500 : 400,
                         }}
                     >
-                        {isSelesai ? 'Selesai' : isAktif ? 'Sedang Berjalan' : 'Menunggu'}
+                        {isSelesai ? 'Completed' : isAktif ? 'In Progress' : 'Pending'}
                     </span>
                 </div>
 
@@ -195,7 +195,7 @@ function StageItem({ stage, sessionId, fieldWorkers, isLast, prevStageName }: St
                             <div className="flex items-center gap-1.5 text-slate-400">
                                 <Clock size={12} />
                                 <span>
-                                    Selesai:{' '}
+                                    Completed:{' '}
                                     {new Date(stage.completed_at).toLocaleString('id-ID', {
                                         day: 'numeric',
                                         month: 'short',
@@ -215,7 +215,7 @@ function StageItem({ stage, sessionId, fieldWorkers, isLast, prevStageName }: St
                         {/* Inline warning text — replaces alert box */}
                         {needsAssignment && (
                             <p className="text-xs" style={{ color: '#D97706' }}>
-                                Tentukan petugas PIC untuk tahap ini agar pekerjaan dapat diselesaikan.
+                                Assign a PIC officer for this stage so the work can be completed.
                             </p>
                         )}
 
@@ -249,31 +249,31 @@ function StageItem({ stage, sessionId, fieldWorkers, isLast, prevStageName }: St
                         >
                             <div className="text-xs font-semibold text-[#06283A]">
                                 {stage.pic_user
-                                    ? 'Ubah Petugas (PIC & Worker)'
-                                    : 'Tugaskan Petugas (PIC & Worker)'}
+                                    ? 'Update Officers (PIC & Workers)'
+                                    : 'Assign Officers (PIC & Workers)'}
                             </div>
 
                             <div className="space-y-1">
                                 <label className="block text-[11px] font-semibold text-slate-600 uppercase">
-                                    Petugas PIC <span className="text-red-500">*</span>
+                                    PIC Officer <span className="text-red-500">*</span>
                                 </label>
                                 <FieldWorkerSelect
                                     fieldWorkers={fieldWorkers}
                                     value={picUserId}
                                     onChange={setPicUserId}
-                                    placeholder="-- Pilih Petugas PIC --"
+                                    placeholder="-- Select PIC Officer --"
                                 />
                             </div>
 
                             <div className="space-y-1">
                                 <label className="block text-[11px] font-semibold text-slate-600 uppercase">
-                                    Anggota Worker (Opsional)
+                                    Worker Members (Optional)
                                 </label>
                                 <WorkerMultiSelect
                                     fieldWorkers={fieldWorkers}
                                     value={workerIds}
                                     onChange={setWorkerIds}
-                                    placeholder="-- Pilih Pekerja Lapangan Tambahan --"
+                                    placeholder="-- Select Additional Field Workers --"
                                 />
                             </div>
 
@@ -283,7 +283,7 @@ function StageItem({ stage, sessionId, fieldWorkers, isLast, prevStageName }: St
                         <div className="space-y-2">
                             {!canComplete && (
                                 <p className="text-xs text-right" style={{ color: '#D97706' }}>
-                                    Lengkapi assignment PIC terlebih dahulu untuk menyelesaikan tahap ini.
+                                    Complete PIC assignment first to finalize this stage.
                                 </p>
                             )}
                             <div className="flex justify-end gap-2">
@@ -304,7 +304,7 @@ function StageItem({ stage, sessionId, fieldWorkers, isLast, prevStageName }: St
                                         transition: 'opacity 0.15s',
                                     }}
                                 >
-                                    {isSubmitting ? 'Menyimpan...' : 'Simpan Penugasan'}
+                                    {isSubmitting ? 'Saving...' : 'Save Assignment'}
                                 </button>
                                 <button
                                     type="button"
@@ -323,7 +323,7 @@ function StageItem({ stage, sessionId, fieldWorkers, isLast, prevStageName }: St
                                         transition: 'opacity 0.15s',
                                     }}
                                 >
-                                    {isSubmitting ? 'Memproses...' : 'Selesaikan Tahap'}
+                                    {isSubmitting ? 'Processing...' : 'Complete Stage'}
                                 </button>
                             </div>
                         </div>
@@ -335,15 +335,15 @@ function StageItem({ stage, sessionId, fieldWorkers, isLast, prevStageName }: St
                     <div className="mt-1">
                         <p className="text-xs text-slate-400">
                             {stage.pic_user
-                                ? `Pra-penugasan: PIC ${stage.pic_user.name} — aktif otomatis setelah ${prevStageName || 'tahap sebelumnya'} selesai.`
-                                : `Pra-tugaskan PIC & worker (opsional) — aktif otomatis setelah ${prevStageName || 'tahap sebelumnya'} selesai.`}
+                                ? `Pre-assignment: PIC ${stage.pic_user.name} — activates automatically after ${prevStageName || 'previous stage'} is completed.`
+                                : `Pre-assign PIC & workers (optional) — activates automatically after ${prevStageName || 'previous stage'} is completed.`}
                         </p>
                         <button
                             type="button"
                             onClick={() => setIsPrePlanOpen(!isPrePlanOpen)}
                             className="mt-1.5 flex items-center gap-1 text-xs text-slate-400 hover:text-[#06283A] transition-colors"
                         >
-                            <span>{isPrePlanOpen ? 'Tutup' : 'Pra-tugaskan'}</span>
+                            <span>{isPrePlanOpen ? 'Close' : 'Pre-assign'}</span>
                             {isPrePlanOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                         </button>
 
@@ -360,19 +360,19 @@ function StageItem({ stage, sessionId, fieldWorkers, isLast, prevStageName }: St
                                         fieldWorkers={fieldWorkers}
                                         value={picUserId}
                                         onChange={setPicUserId}
-                                        placeholder="-- Pilih Petugas PIC --"
+                                        placeholder="-- Select PIC Officer --"
                                     />
                                 </div>
 
                                 <div className="space-y-1">
                                     <label className="block text-[11px] font-semibold text-slate-600 uppercase">
-                                        Anggota Worker
+                                        Worker Members
                                     </label>
                                     <WorkerMultiSelect
                                         fieldWorkers={fieldWorkers}
                                         value={workerIds}
                                         onChange={setWorkerIds}
-                                        placeholder="-- Pilih Pekerja Lapangan Tambahan --"
+                                        placeholder="-- Select Additional Field Workers --"
                                     />
                                 </div>
 
@@ -383,7 +383,7 @@ function StageItem({ stage, sessionId, fieldWorkers, isLast, prevStageName }: St
                                         disabled={!picUserId || isSubmitting}
                                         className="px-3.5 py-2 rounded-xl text-xs font-bold bg-[#06283A] text-white hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
                                     >
-                                        {isSubmitting ? 'Menyimpan...' : 'Simpan Pra-Penugasan'}
+                                        {isSubmitting ? 'Saving...' : 'Save Pre-Assignment'}
                                     </button>
                                 </div>
                             </div>

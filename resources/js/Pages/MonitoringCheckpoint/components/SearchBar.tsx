@@ -12,7 +12,7 @@ interface SearchBarProps {
  * Tidak ada filter tambahan (customer/status/tanggal) untuk saat ini — sengaja
  * diminimalkan sesuai kebutuhan awal fitur.
  */
-export default function SearchBar({ value, onChange, placeholder = "Cari no. assignment atau customer..." }: SearchBarProps) {
+export default function SearchBar({ value, onChange, placeholder = "Search assignment no. or customer..." }: SearchBarProps) {
     return (
         <div className="relative w-full max-w-sm">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />

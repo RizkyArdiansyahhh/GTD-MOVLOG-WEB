@@ -69,7 +69,7 @@ export default function TambahAkun() {
                 setToast({
                     id: String(Date.now()),
                     type: 'error',
-                    message: 'Gagal menambahkan akun. Silakan periksa kembali data yang diisi.',
+                    message: 'Failed to create account. Please check the entered data.',
                 });
             },
         });
@@ -80,7 +80,7 @@ export default function TambahAkun() {
 
     return (
         <DashboardLayout>
-            <Head title="Tambah Akun — Global Trans Djaya" />
+            <Head title="Add Account — Global Trans Djaya" />
 
             {/* Floating Toast Notification */}
             <ToastNotification toast={toast} onClose={() => setToast(null)} />
@@ -95,7 +95,7 @@ export default function TambahAkun() {
                     Kelola Akun
                 </Link>
                 <ChevronRight size={14} className="text-gray-400 shrink-0" />
-                <span className="font-medium text-gray-500">Tambah Akun</span>
+                <span className="font-medium text-gray-500">Add Account</span>
             </nav>
 
             {/* ── Page Title ── */}
@@ -237,7 +237,7 @@ export default function TambahAkun() {
                                         }`}
                                         style={{ height: 44, backgroundColor: '#F8FAFC' }}
                                     >
-                                        <option value="">Pilih Role</option>
+                                        <option value="">Select Role</option>
                                         {availableRoles?.map((role) => (
                                             <option key={role.value} value={role.value}>
                                                 {role.label}
@@ -249,14 +249,14 @@ export default function TambahAkun() {
                                     )}
                                 </div>
 
-                                {/* Password Sementara */}
+                                {/* Temporary Password */}
                                 <div>
                                     <label
                                         htmlFor="password"
                                         className="block text-sm font-medium mb-1.5"
                                         style={{ color: '#06283A' }}
                                     >
-                                        Password Sementara <span className="text-red-500">*</span>
+                                        Temporary Password <span className="text-red-500">*</span>
                                     </label>
                                     <div className="relative">
                                         <input
@@ -264,7 +264,7 @@ export default function TambahAkun() {
                                             type={showPassword ? 'text' : 'password'}
                                             value={form.password}
                                             onChange={(e) => handleChange('password', e.target.value)}
-                                            placeholder="Min. 8 karakter"
+                                            placeholder="Min. 8 characters"
                                             className={`w-full rounded-xl px-4 pr-11 text-sm text-gray-700 placeholder-gray-400 border outline-none transition-all duration-150 focus:ring-2 focus:ring-amber-100 ${
                                                 serverErrors.password
                                                     ? 'border-red-300 focus:border-red-400'
@@ -286,14 +286,14 @@ export default function TambahAkun() {
                                     )}
                                 </div>
 
-                                {/* Konfirmasi Password */}
+                                {/* Confirm Password */}
                                 <div>
                                     <label
                                         htmlFor="password_confirmation"
                                         className="block text-sm font-medium mb-1.5"
                                         style={{ color: '#06283A' }}
                                     >
-                                        Konfirmasi Password <span className="text-red-500">*</span>
+                                        Confirm Password <span className="text-red-500">*</span>
                                     </label>
                                     <div className="relative">
                                         <input
@@ -301,7 +301,7 @@ export default function TambahAkun() {
                                             type={showConfirmPassword ? 'text' : 'password'}
                                             value={form.password_confirmation}
                                             onChange={(e) => handleChange('password_confirmation', e.target.value)}
-                                            placeholder="Ulangi password"
+                                            placeholder="Repeat password"
                                             className={`w-full rounded-xl px-4 pr-11 text-sm text-gray-700 placeholder-gray-400 border outline-none transition-all duration-150 focus:ring-2 focus:ring-amber-100 ${
                                                 serverErrors.password_confirmation
                                                     ? 'border-red-300 focus:border-red-400'
@@ -350,7 +350,7 @@ export default function TambahAkun() {
                                     }}
                                 >
                                     <Save size={16} strokeWidth={2.2} />
-                                    {isSubmitting ? 'Menyimpan...' : 'Save User'}
+                                    {isSubmitting ? 'Saving...' : 'Save User'}
                                 </button>
                             </div>
                         </div>

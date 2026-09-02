@@ -19,10 +19,10 @@ export function WizardHeader({ customerName, onCancelWizard }: WizardHeaderProps
             margin: 0,
           }}
         >
-          Submit Berkas
+          Submit Documents
         </h1>
         <p style={{ fontSize: 13, color: '#6B7280', marginTop: 4 }}>
-          Lengkapi data dan dokumen sebelum pengiriman diproses
+          Complete information and documents before shipment is processed
         </p>
 
         {customerName && (
@@ -78,7 +78,7 @@ export function WizardHeader({ customerName, onCancelWizard }: WizardHeaderProps
           }}
         >
           <ArrowLeft size={15} />
-          Kembali ke Dashboard Berkas
+          Back to Documents Dashboard
         </button>
       )}
     </div>

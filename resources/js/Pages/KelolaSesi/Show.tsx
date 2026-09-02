@@ -17,9 +17,9 @@ export default function KelolaSesiShow({ session: propSession, fieldWorkers: pro
     if (!session) {
         return (
             <DashboardLayout>
-                <Head title="Detail Sesi - GTD Logistics" />
+                <Head title="Session Detail - GTD Logistics" />
                 <div className="flex items-center justify-center py-20 text-slate-400">
-                    Sesi tidak ditemukan.
+                    Session not found.
                 </div>
             </DashboardLayout>
         );
@@ -35,17 +35,17 @@ export default function KelolaSesiShow({ session: propSession, fieldWorkers: pro
                     <Link
                         href="/sesi-pekerja"
                         className="flex items-center justify-center w-9 h-9 rounded-xl bg-white border border-[#E2E8F0] text-slate-600 hover:bg-slate-50 transition-colors"
-                        title="Kembali"
+                        title="Back"
                     >
                         <ArrowLeft size={18} />
                     </Link>
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight text-[#06283A]">
-                            Detail Sesi{' '}
+                            Session Detail{' '}
                             <span className="font-mono text-[#F5B800]">{session.sessionId}</span>
                         </h1>
                         <p className="text-xs text-slate-500">
-                            Kelola tahap logistik dan assignment petugas untuk sesi ini.
+                            Manage logistics stages and officer assignment for this session.
                         </p>
                     </div>
                 </div>
@@ -58,7 +58,7 @@ export default function KelolaSesiShow({ session: propSession, fieldWorkers: pro
                             <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200/60 flex items-center justify-center text-[#F5B800]">
                                 <Package size={16} />
                             </div>
-                            <h2 className="text-sm font-bold text-[#06283A]">Unit Alat Berat</h2>
+                            <h2 className="text-sm font-bold text-[#06283A]">Heavy Equipment Units</h2>
                         </div>
                         {session.units && session.units.length > 0 ? (
                             <p className="text-sm text-slate-600">
@@ -70,7 +70,7 @@ export default function KelolaSesiShow({ session: propSession, fieldWorkers: pro
                                 ))}
                             </p>
                         ) : (
-                            <p className="text-xs text-slate-400">Belum ada unit.</p>
+                            <p className="text-xs text-slate-400">No units added yet.</p>
                         )}
                     </div>
 
@@ -86,7 +86,7 @@ export default function KelolaSesiShow({ session: propSession, fieldWorkers: pro
                 {/* ── Stage Stepper ── */}
                 <div className="bg-white border border-[#E2E8F0] shadow-sm rounded-2xl p-6">
                     <h2 className="text-base font-bold text-[#06283A] mb-5">
-                        Progress Tahap Logistik
+                        Logistics Stage Progress
                     </h2>
                     <StageStepper
                         sessionId={session.id}

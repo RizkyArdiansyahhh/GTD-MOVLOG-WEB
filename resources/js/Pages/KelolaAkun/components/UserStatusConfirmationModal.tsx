@@ -30,7 +30,7 @@ export default function UserStatusConfirmationModal({
 
     if (!isOpen || !user) return null;
 
-    const isCurrentlyActive = user.status === 'Aktif';
+    const isCurrentlyActive = user.status === 'Active';
 
     return (
         <div
@@ -74,27 +74,27 @@ export default function UserStatusConfirmationModal({
                     className="text-lg font-bold mb-2"
                     style={{ color: '#06283A' }}
                 >
-                    {isCurrentlyActive ? 'Nonaktifkan Akun?' : 'Aktifkan Akun?'}
+                    {isCurrentlyActive ? 'Deactivate Account?' : 'Activate Account?'}
                 </h3>
 
                 {/* Message */}
                 <p className="text-sm text-gray-500 leading-relaxed mb-6">
                     {isCurrentlyActive ? (
                         <>
-                            Apakah Anda yakin ingin menonaktifkan akun{' '}
+                            Are you sure you want to deactivate the account of{' '}
                             <strong className="text-gray-900 font-semibold">{user.name}</strong>?
                             <br />
                             <span className="block mt-2 text-xs text-gray-400">
-                                Pengguna tidak akan dapat masuk ke sistem sampai akun diaktifkan kembali.
+                                This user will not be able to log in until the account is reactivated.
                             </span>
                         </>
                     ) : (
                         <>
-                            Apakah Anda yakin ingin mengaktifkan kembali akun{' '}
+                            Are you sure you want to reactivate the account of{' '}
                             <strong className="text-gray-900 font-semibold">{user.name}</strong>?
                             <br />
                             <span className="block mt-2 text-xs text-gray-400">
-                                Pengguna akan kembali dapat mengakses seluruh fitur sesuai role yang dimiliki.
+                                This user will regain access to all features according to their role.
                             </span>
                         </>
                     )}
@@ -109,7 +109,7 @@ export default function UserStatusConfirmationModal({
                         className="rounded-xl px-4 text-sm font-semibold text-gray-600 border border-gray-200 hover:bg-gray-50 transition-all duration-150 disabled:opacity-50 cursor-pointer"
                         style={{ height: 42 }}
                     >
-                        Batal
+                        Cancel
                     </button>
 
                     <button
@@ -123,7 +123,7 @@ export default function UserStatusConfirmationModal({
                         }}
                     >
                         {isSubmitting && <Loader2 size={16} className="animate-spin" />}
-                        {isCurrentlyActive ? 'Ya, Nonaktifkan' : 'Ya, Aktifkan'}
+                        {isCurrentlyActive ? 'Yes, Deactivate' : 'Yes, Activate'}
                     </button>
                 </div>
             </div>

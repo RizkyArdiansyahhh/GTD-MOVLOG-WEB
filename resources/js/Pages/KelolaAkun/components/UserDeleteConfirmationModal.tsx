@@ -80,18 +80,18 @@ export default function UserDeleteConfirmationModal({
                     className="text-lg font-bold mb-2"
                     style={{ color: '#06283A' }}
                 >
-                    Hapus Pengguna
+                    Delete User
                 </h3>
 
                 {/* Message */}
                 <p className="text-sm text-gray-600 leading-relaxed mb-4">
-                    Apakah Anda yakin ingin menghapus pengguna berikut?
+                    Are you sure you want to delete the following user?
                 </p>
 
                 {/* User Info Details */}
                 <div className="bg-gray-50 rounded-xl p-4 mb-4 border border-gray-100 text-sm space-y-2">
                     <div className="flex justify-between items-center gap-2">
-                        <span className="text-gray-500 font-medium shrink-0">Nama:</span>
+                        <span className="text-gray-500 font-medium shrink-0">Name:</span>
                         <span className="font-semibold text-gray-900 truncate">{user.name}</span>
                     </div>
                     <div className="flex justify-between items-center gap-2">
@@ -107,7 +107,7 @@ export default function UserDeleteConfirmationModal({
                 {/* Warning text */}
                 <div className="flex items-center gap-1.5 text-xs text-red-600 font-medium mb-6">
                     <AlertTriangle size={14} className="shrink-0" />
-                    <span>Tindakan ini tidak dapat dibatalkan.</span>
+                    <span>This action cannot be undone.</span>
                 </div>
 
                 {/* Action Buttons */}
@@ -120,7 +120,7 @@ export default function UserDeleteConfirmationModal({
                         className="rounded-xl px-4 text-sm font-semibold text-gray-600 border border-gray-200 hover:bg-gray-100 transition-all duration-150 disabled:opacity-50 cursor-pointer"
                         style={{ height: 42 }}
                     >
-                        Batal
+                        Cancel
                     </button>
 
                     <button
@@ -136,10 +136,10 @@ export default function UserDeleteConfirmationModal({
                         {isSubmitting ? (
                             <>
                                 <Loader2 size={16} className="animate-spin" />
-                                <span>Menghapus...</span>
+                                <span>Deleting...</span>
                             </>
                         ) : (
-                            'Hapus'
+                            'Delete'
                         )}
                     </button>
                 </div>

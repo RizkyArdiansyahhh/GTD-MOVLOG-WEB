@@ -140,7 +140,7 @@ function SubmitBerkasHubContent({
               <CheckCircle2 size={18} color="#16A34A" />
               <div>
                 <p style={{ margin: 0, fontSize: 13.5, fontWeight: 700 }}>
-                  Dokumen Telah Terverifikasi (Read-Only)
+                  Documents Verified (Read-Only)
                 </p>
                 <p style={{ margin: '2px 0 0', fontSize: 12, color: '#166534' }}>
                   Seluruh data penugasan ini sudah fix dan tidak dapat diedit kembali. Anda dapat meninjau setiap dokumen melalui navigasi step.
@@ -213,8 +213,8 @@ export default function SubmitBerkas({ customers = [], assignments = [] }: Submi
   const [isWizardActive, setIsWizardActive] = useState(false);
 
   return (
-    <DashboardLayout title="Submit Berkas">
-      <Head title="Submit Berkas" />
+    <DashboardLayout title="Submit Documents">
+      <Head title="Submit Documents" />
       <WizardProvider>
         <SubmitBerkasHubContent
           customers={customers}
