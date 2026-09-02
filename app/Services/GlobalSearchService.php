@@ -13,7 +13,6 @@ use App\Models\Customer;
 use App\Models\Document;
 use App\Models\ShippingSession;
 use App\Models\User;
-use Illuminate\Support\Collection;
 
 /**
  * Global Search Service
@@ -36,18 +35,18 @@ class GlobalSearchService
         $keyword = trim($query);
         if ($keyword === '') {
             return [
-                'query'       => '',
-                'categories'  => [],
+                'query' => '',
+                'categories' => [],
                 'total_count' => 0,
             ];
         }
 
         $categories = [
-            'barang'     => ['label' => 'Cargo / Tracking', 'items' => []],
-            'sesi'       => ['label' => 'Worker Sessions', 'items' => []],
-            'dokumen'    => ['label' => 'Documents', 'items' => []],
+            'barang' => ['label' => 'Cargo / Tracking', 'items' => []],
+            'sesi' => ['label' => 'Worker Sessions', 'items' => []],
+            'dokumen' => ['label' => 'Documents', 'items' => []],
             'checkpoint' => ['label' => 'Checkpoint', 'items' => []],
-            'users'      => ['label' => 'Users', 'items' => []],
+            'users' => ['label' => 'Users', 'items' => []],
         ];
 
         $totalCount = 0;
@@ -65,8 +64,8 @@ class GlobalSearchService
         }
 
         return [
-            'query'       => $keyword,
-            'categories'  => $categories,
+            'query' => $keyword,
+            'categories' => $categories,
             'total_count' => $totalCount,
         ];
     }
@@ -86,20 +85,20 @@ class GlobalSearchService
     {
         $keyword = trim($query);
         $allCategories = [
-            'barang'     => 'Cargo / Tracking',
-            'sesi'       => 'Worker Sessions',
-            'dokumen'    => 'Documents',
+            'barang' => 'Cargo / Tracking',
+            'sesi' => 'Worker Sessions',
+            'dokumen' => 'Documents',
             'checkpoint' => 'Checkpoint',
-            'users'      => 'Users',
+            'users' => 'Users',
         ];
 
         if ($keyword === '') {
             return [
-                'query'           => '',
+                'query' => '',
                 'active_category' => $selectedCategory,
-                'categories'      => [],
-                'results'         => [],
-                'total_count'     => 0,
+                'categories' => [],
+                'results' => [],
+                'total_count' => 0,
             ];
         }
 
@@ -109,7 +108,7 @@ class GlobalSearchService
 
         foreach ($allCategories as $catKey => $catLabel) {
             // Check if user is allowed to access this category at all
-            if (!$this->canAccessCategory($user, $catKey)) {
+            if (! $this->canAccessCategory($user, $catKey)) {
                 continue;
             }
 
@@ -130,11 +129,11 @@ class GlobalSearchService
         }
 
         return [
-            'query'           => $keyword,
+            'query' => $keyword,
             'active_category' => $selectedCategory ?: 'all',
             'category_counts' => $categoryCounts,
-            'results'         => $collectedResults,
-            'total_count'     => $totalCount,
+            'results' => $collectedResults,
+            'total_count' => $totalCount,
         ];
     }
 
@@ -143,17 +142,17 @@ class GlobalSearchService
      */
     public function searchByCategory(User $user, string $keyword, string $category, int $limit = 10): array
     {
-        if (!$this->canAccessCategory($user, $category)) {
+        if (! $this->canAccessCategory($user, $category)) {
             return [];
         }
 
         return match ($category) {
-            'barang'     => $this->searchBarang($user, $keyword, $limit),
-            'sesi'       => $this->searchSesiPekerja($user, $keyword, $limit),
-            'dokumen'    => $this->searchDokumen($user, $keyword, $limit),
+            'barang' => $this->searchBarang($user, $keyword, $limit),
+            'sesi' => $this->searchSesiPekerja($user, $keyword, $limit),
+            'dokumen' => $this->searchDokumen($user, $keyword, $limit),
             'checkpoint' => $this->searchCheckpoint($user, $keyword, $limit),
-            'users'      => $this->searchUsers($user, $keyword, $limit),
-            default      => [],
+            'users' => $this->searchUsers($user, $keyword, $limit),
+            default => [],
         };
     }
 
@@ -169,12 +168,12 @@ class GlobalSearchService
         $isCustomer = $user->hasRole(UserRole::Customer->value);
 
         return match ($category) {
-            'users'      => $isSuperAdmin || $isSupervisor,
-            'sesi'       => $isSuperAdmin || $isSupervisor || $isStaff || $isFieldWorker,
-            'barang'     => true,
-            'dokumen'    => true,
+            'users' => $isSuperAdmin || $isSupervisor,
+            'sesi' => $isSuperAdmin || $isSupervisor || $isStaff || $isFieldWorker,
+            'barang' => true,
+            'dokumen' => true,
             'checkpoint' => true,
-            default      => false,
+            default => false,
         };
     }
 
@@ -191,46 +190,48 @@ class GlobalSearchService
      */
     private function searchBarang(User $user, string $keyword, int $limit): array
     {
-        $lower = '%' . strtolower($keyword) . '%';
+        $lower = '%'.strtolower($keyword).'%';
         $query = ShippingSession::with(['customer', 'currentCheckpoint']);
 
         // -- Role Authorization Scoping --
         if ($user->hasRole(UserRole::Customer->value)) {
             $customer = $this->getCustomerForUser($user);
-            if (!$customer) return [];
+            if (! $customer) {
+                return [];
+            }
             $query->where('customer_id', $customer->id);
         } elseif ($user->hasRole(UserRole::FieldWorker->value)) {
             $query->where(function ($q) use ($user) {
                 $q->where('created_by', $user->id)
-                  ->orWhereHas('sessionCheckpoints', function ($sq) use ($user) {
-                      $sq->where('pic_user_id', $user->id);
-                  });
+                    ->orWhereHas('sessionCheckpoints', function ($sq) use ($user) {
+                        $sq->where('pic_user_id', $user->id);
+                    });
             });
         }
 
         // -- Search Filters --
         $query->where(function ($q) use ($lower) {
             $q->whereRaw('LOWER(assignment_no) LIKE ?', [$lower])
-              ->orWhereRaw('LOWER(cargo_name) LIKE ?', [$lower])
-              ->orWhereRaw('LOWER(origin) LIKE ?', [$lower])
-              ->orWhereRaw('LOWER(destination) LIKE ?', [$lower])
-              ->orWhereHas('customer', function ($cq) use ($lower) {
-                  $cq->whereRaw('LOWER(company_name) LIKE ?', [$lower]);
-              })
-              ->orWhereHas('currentCheckpoint', function ($cpq) use ($lower) {
-                  $cpq->whereRaw('LOWER(name) LIKE ?', [$lower]);
-              });
+                ->orWhereRaw('LOWER(cargo_name) LIKE ?', [$lower])
+                ->orWhereRaw('LOWER(origin) LIKE ?', [$lower])
+                ->orWhereRaw('LOWER(destination) LIKE ?', [$lower])
+                ->orWhereHas('customer', function ($cq) use ($lower) {
+                    $cq->whereRaw('LOWER(company_name) LIKE ?', [$lower]);
+                })
+                ->orWhereHas('currentCheckpoint', function ($cpq) use ($lower) {
+                    $cpq->whereRaw('LOWER(name) LIKE ?', [$lower]);
+                });
         });
 
         $items = $query->orderBy('created_at', 'desc')->limit($limit)->get();
 
-        return $items->map(function (ShippingSession $session) {
+        return $items->map(function (ShippingSession $session) use ($user) {
             $statusLabel = match ($session->status) {
                 ShippingSessionStatus::IN_TRANSIT => 'In Transit',
-                ShippingSessionStatus::DELIVERED  => 'Delivered',
-                ShippingSessionStatus::PENDING    => 'Pending',
-                ShippingSessionStatus::CANCELLED  => 'Cancelled',
-                default                           => ucfirst((string) ($session->status->value ?? $session->status)),
+                ShippingSessionStatus::DELIVERED => 'Delivered',
+                ShippingSessionStatus::PENDING => 'Pending',
+                ShippingSessionStatus::CANCELLED => 'Cancelled',
+                default => ucfirst((string) ($session->status->value ?? $session->status)),
             };
 
             $routeText = ($session->origin && $session->destination)
@@ -241,20 +242,22 @@ class GlobalSearchService
             $cpName = $session->currentCheckpoint?->name ?? 'Belum ada Checkpoint';
 
             return [
-                'id'             => (string) $session->id,
-                'category'       => 'barang',
+                'id' => (string) $session->id,
+                'category' => 'barang',
                 'category_label' => 'Cargo / Tracking',
-                'title'          => $session->cargo_name,
-                'subtitle'       => "{$session->assignment_no} Â· {$routeText} Â· {$customerName}",
-                'status'         => $statusLabel,
-                'status_type'    => strtolower((string) ($session->status->value ?? $session->status)),
-                'url'            => '/monitoring-barang',
-                'metadata'       => [
+                'title' => $session->cargo_name,
+                'subtitle' => "{$session->assignment_no} Â· {$routeText} Â· {$customerName}",
+                'status' => $statusLabel,
+                'status_type' => strtolower((string) ($session->status->value ?? $session->status)),
+                'url' => $user->hasRole(UserRole::Customer->value)
+                    ? '/customer/shipment/'.$session->id
+                    : '/monitoring-barang',
+                'metadata' => [
                     'assignment_no' => $session->assignment_no,
-                    'cargo_name'    => $session->cargo_name,
-                    'customer'      => $customerName,
-                    'checkpoint'    => $cpName,
-                    'quantity'      => "{$session->total_quantity} {$session->unit}",
+                    'cargo_name' => $session->cargo_name,
+                    'customer' => $customerName,
+                    'checkpoint' => $cpName,
+                    'quantity' => "{$session->total_quantity} {$session->unit}",
                 ],
             ];
         })->all();
@@ -265,12 +268,12 @@ class GlobalSearchService
      */
     private function searchSesiPekerja(User $user, string $keyword, int $limit): array
     {
-        $lower = '%' . strtolower($keyword) . '%';
+        $lower = '%'.strtolower($keyword).'%';
         $query = ShippingSession::with([
             'sessionCheckpoints.picUser',
             'sessionCheckpoints.checkpoint',
             'customer',
-            'currentCheckpoint'
+            'currentCheckpoint',
         ]);
 
         // -- Role Authorization Scoping --
@@ -285,21 +288,21 @@ class GlobalSearchService
         // -- Search Filters --
         $query->where(function ($q) use ($lower) {
             $q->whereRaw('LOWER(assignment_no) LIKE ?', [$lower])
-              ->orWhereRaw('LOWER(cargo_name) LIKE ?', [$lower])
-              ->orWhereHas('sessionCheckpoints', function ($sq) use ($lower) {
-                  $sq->whereHas('picUser', function ($uq) use ($lower) {
-                      $uq->whereRaw('LOWER(name) LIKE ?', [$lower]);
-                  })->orWhereHas('checkpoint', function ($cpq) use ($lower) {
-                      $cpq->whereRaw('LOWER(name) LIKE ?', [$lower]);
-                  });
-              });
+                ->orWhereRaw('LOWER(cargo_name) LIKE ?', [$lower])
+                ->orWhereHas('sessionCheckpoints', function ($sq) use ($lower) {
+                    $sq->whereHas('picUser', function ($uq) use ($lower) {
+                        $uq->whereRaw('LOWER(name) LIKE ?', [$lower]);
+                    })->orWhereHas('checkpoint', function ($cpq) use ($lower) {
+                        $cpq->whereRaw('LOWER(name) LIKE ?', [$lower]);
+                    });
+                });
         });
 
         $items = $query->orderBy('created_at', 'desc')->limit($limit)->get();
 
         return $items->map(function (ShippingSession $session) {
             $picNames = $session->sessionCheckpoints
-                ->map(fn($scp) => $scp->picUser?->name)
+                ->map(fn ($scp) => $scp->picUser?->name)
                 ->filter()
                 ->unique()
                 ->implode(', ');
@@ -314,25 +317,25 @@ class GlobalSearchService
 
             $statusLabel = match ($session->status) {
                 ShippingSessionStatus::IN_TRANSIT => 'Active',
-                ShippingSessionStatus::DELIVERED  => 'Completed',
-                ShippingSessionStatus::PENDING    => 'Pending',
-                default                           => 'Aktif',
+                ShippingSessionStatus::DELIVERED => 'Completed',
+                ShippingSessionStatus::PENDING => 'Pending',
+                default => 'Aktif',
             };
 
             return [
-                'id'             => (string) $session->id,
-                'category'       => 'sesi',
+                'id' => (string) $session->id,
+                'category' => 'sesi',
                 'category_label' => 'Worker Sessions',
-                'title'          => "{$session->assignment_no} â€” {$session->cargo_name}",
-                'subtitle'       => "Petugas: {$picNames} Â· Checkpoint: {$currentCheckpoint}",
-                'status'         => $statusLabel,
-                'status_type'    => $statusLabel === 'Aktif' ? 'active' : 'completed',
-                'url'            => '/sesi-pekerja',
-                'metadata'       => [
+                'title' => "{$session->assignment_no} â€” {$session->cargo_name}",
+                'subtitle' => "Petugas: {$picNames} Â· Checkpoint: {$currentCheckpoint}",
+                'status' => $statusLabel,
+                'status_type' => $statusLabel === 'Aktif' ? 'active' : 'completed',
+                'url' => '/sesi-pekerja',
+                'metadata' => [
                     'session_id' => $session->assignment_no,
-                    'cargo'      => $session->cargo_name,
-                    'worker'     => $picNames,
-                    'stage'      => $currentCheckpoint,
+                    'cargo' => $session->cargo_name,
+                    'worker' => $picNames,
+                    'stage' => $currentCheckpoint,
                 ],
             ];
         })->all();
@@ -343,13 +346,15 @@ class GlobalSearchService
      */
     private function searchDokumen(User $user, string $keyword, int $limit): array
     {
-        $lower = '%' . strtolower($keyword) . '%';
+        $lower = '%'.strtolower($keyword).'%';
         $query = Document::with(['documentType', 'shippingSession.customer', 'uploadedBy', 'verifiedBy']);
 
         // -- Role Authorization Scoping --
         if ($user->hasRole(UserRole::Customer->value)) {
             $customer = $this->getCustomerForUser($user);
-            if (!$customer) return [];
+            if (! $customer) {
+                return [];
+            }
             $query->whereHas('shippingSession', function ($sq) use ($customer) {
                 $sq->where('customer_id', $customer->id);
             });
@@ -362,18 +367,18 @@ class GlobalSearchService
         // -- Search Filters --
         $query->where(function ($q) use ($lower) {
             $q->whereRaw('LOWER(file_name) LIKE ?', [$lower])
-              ->orWhereRaw('LOWER(remarks) LIKE ?', [$lower])
-              ->orWhereRaw('LOWER(CAST(document_data AS TEXT)) LIKE ?', [$lower])
-              ->orWhereHas('documentType', function ($tq) use ($lower) {
-                  $tq->whereRaw('LOWER(name) LIKE ?', [$lower]);
-              })
-              ->orWhereHas('shippingSession', function ($sq) use ($lower) {
-                  $sq->whereRaw('LOWER(assignment_no) LIKE ?', [$lower])
-                    ->orWhereRaw('LOWER(cargo_name) LIKE ?', [$lower])
-                    ->orWhereHas('customer', function ($cq) use ($lower) {
-                        $cq->whereRaw('LOWER(company_name) LIKE ?', [$lower]);
-                    });
-              });
+                ->orWhereRaw('LOWER(remarks) LIKE ?', [$lower])
+                ->orWhereRaw('LOWER(CAST(document_data AS TEXT)) LIKE ?', [$lower])
+                ->orWhereHas('documentType', function ($tq) use ($lower) {
+                    $tq->whereRaw('LOWER(name) LIKE ?', [$lower]);
+                })
+                ->orWhereHas('shippingSession', function ($sq) use ($lower) {
+                    $sq->whereRaw('LOWER(assignment_no) LIKE ?', [$lower])
+                        ->orWhereRaw('LOWER(cargo_name) LIKE ?', [$lower])
+                        ->orWhereHas('customer', function ($cq) use ($lower) {
+                            $cq->whereRaw('LOWER(company_name) LIKE ?', [$lower]);
+                        });
+                });
         });
 
         $items = $query->orderBy('created_at', 'desc')->limit($limit)->get();
@@ -397,27 +402,33 @@ class GlobalSearchService
             $statusLabel = match (strtoupper($statusVal)) {
                 'APPROVED' => 'Approved',
                 'REJECTED' => 'Rejected',
-                'PENDING'  => 'Pending',
-                default    => ucfirst(strtolower($statusVal)),
+                'PENDING' => 'Pending',
+                default => ucfirst(strtolower($statusVal)),
             };
 
-            $url = $user->hasRole(UserRole::Supervisor->value) ? '/verifikasi-berkas' : '/submit-dokumen';
+            if ($user->hasRole(UserRole::Customer->value)) {
+                $url = $doc->shipping_session_id
+                    ? '/customer/shipment/'.$doc->shipping_session_id
+                    : '/customer/monitoring-barang';
+            } else {
+                $url = $user->hasRole(UserRole::Supervisor->value) ? '/verifikasi-berkas' : '/submit-berkas';
+            }
 
             return [
-                'id'             => (string) $doc->id,
-                'category'       => 'dokumen',
+                'id' => (string) $doc->id,
+                'category' => 'dokumen',
                 'category_label' => 'Documents',
-                'title'          => $primaryTitle,
-                'subtitle'       => $subtitle,
-                'status'         => $statusLabel,
-                'status_type'    => strtolower($statusVal),
-                'url'            => $url,
-                'metadata'       => [
+                'title' => $primaryTitle,
+                'subtitle' => $subtitle,
+                'status' => $statusLabel,
+                'status_type' => strtolower($statusVal),
+                'url' => $url,
+                'metadata' => [
                     'doc_number' => $docNumber,
-                    'type'       => $typeName,
-                    'file_name'  => $doc->file_name,
-                    'shipment'   => $sessionNo,
-                    'remarks'    => $doc->remarks,
+                    'type' => $typeName,
+                    'file_name' => $doc->file_name,
+                    'shipment' => $sessionNo,
+                    'remarks' => $doc->remarks,
                 ],
             ];
         })->all();
@@ -428,7 +439,7 @@ class GlobalSearchService
      */
     private function searchCheckpoint(User $user, string $keyword, int $limit): array
     {
-        $lower = '%' . strtolower($keyword) . '%';
+        $lower = '%'.strtolower($keyword).'%';
         $query = Checkpoint::with(['shippingSessions' => function ($sq) use ($user) {
             if ($user->hasRole(UserRole::Customer->value)) {
                 $customer = $this->getCustomerForUser($user);
@@ -446,16 +457,16 @@ class GlobalSearchService
 
         $query->where(function ($q) use ($lower) {
             $q->whereRaw('LOWER(name) LIKE ?', [$lower])
-              ->orWhereRaw('LOWER(description) LIKE ?', [$lower])
-              ->orWhereHas('shippingSessions', function ($sq) use ($lower) {
-                  $sq->whereRaw('LOWER(assignment_no) LIKE ?', [$lower])
-                    ->orWhereRaw('LOWER(cargo_name) LIKE ?', [$lower]);
-              });
+                ->orWhereRaw('LOWER(description) LIKE ?', [$lower])
+                ->orWhereHas('shippingSessions', function ($sq) use ($lower) {
+                    $sq->whereRaw('LOWER(assignment_no) LIKE ?', [$lower])
+                        ->orWhereRaw('LOWER(cargo_name) LIKE ?', [$lower]);
+                });
         });
 
         $items = $query->orderBy('sequence', 'asc')->limit($limit)->get();
 
-        return $items->map(function (Checkpoint $cp) {
+        return $items->map(function (Checkpoint $cp) use ($user) {
             $activeCount = $cp->shippingSessions->count();
             $unitText = $activeCount > 0 ? "{$activeCount} Unit Terpantau" : '0 Unit Terpantau';
 
@@ -464,17 +475,19 @@ class GlobalSearchService
             $subtitle = $units ? "{$desc} Â· Unit: {$units}" : "{$desc} Â· Urutan #{$cp->sequence}";
 
             return [
-                'id'             => (string) $cp->id,
-                'category'       => 'checkpoint',
+                'id' => (string) $cp->id,
+                'category' => 'checkpoint',
                 'category_label' => 'Checkpoint',
-                'title'          => "Checkpoint {$cp->name}",
-                'subtitle'       => $subtitle,
-                'status'         => $unitText,
-                'status_type'    => 'checkpoint',
-                'url'            => '/monitoring-cp',
-                'metadata'       => [
-                    'sequence'     => $cp->sequence,
-                    'name'         => $cp->name,
+                'title' => "Checkpoint {$cp->name}",
+                'subtitle' => $subtitle,
+                'status' => $unitText,
+                'status_type' => 'checkpoint',
+                'url' => $user->hasRole(UserRole::Customer->value)
+                    ? '/customer/checkpoints'
+                    : '/monitoring-checkpoint',
+                'metadata' => [
+                    'sequence' => $cp->sequence,
+                    'name' => $cp->name,
                     'active_units' => $activeCount,
                 ],
             ];
@@ -486,7 +499,7 @@ class GlobalSearchService
      */
     private function searchUsers(User $user, string $keyword, int $limit): array
     {
-        $lower = '%' . strtolower($keyword) . '%';
+        $lower = '%'.strtolower($keyword).'%';
         $query = User::with('roles');
 
         // Supervisor can only view non-admin operational users
@@ -498,11 +511,11 @@ class GlobalSearchService
 
         $query->where(function ($q) use ($lower) {
             $q->whereRaw('LOWER(name) LIKE ?', [$lower])
-              ->orWhereRaw('LOWER(email) LIKE ?', [$lower])
-              ->orWhereRaw('LOWER(phone) LIKE ?', [$lower])
-              ->orWhereHas('roles', function ($rq) use ($lower) {
-                  $rq->whereRaw('LOWER(name) LIKE ?', [$lower]);
-              });
+                ->orWhereRaw('LOWER(email) LIKE ?', [$lower])
+                ->orWhereRaw('LOWER(phone) LIKE ?', [$lower])
+                ->orWhereHas('roles', function ($rq) use ($lower) {
+                    $rq->whereRaw('LOWER(name) LIKE ?', [$lower]);
+                });
         });
 
         $items = $query->orderBy('name', 'asc')->limit($limit)->get();
@@ -510,28 +523,28 @@ class GlobalSearchService
         return $items->map(function (User $u) {
             $firstRole = $u->roles->first()?->name;
             $roleLabel = match ($firstRole) {
-                'super-admin'  => 'Super Admin',
-                'supervisor'   => 'Supervisor',
-                'staff'        => 'Staff',
+                'super-admin' => 'Super Admin',
+                'supervisor' => 'Supervisor',
+                'staff' => 'Staff',
                 'field-worker' => 'Field Worker',
-                'customer'     => 'Customer',
-                default        => ucfirst($firstRole ?? 'User'),
+                'customer' => 'Customer',
+                default => ucfirst($firstRole ?? 'User'),
             };
 
             $statusLabel = $u->status === UserStatus::Active ? 'Active' : 'Inactive';
 
             return [
-                'id'             => (string) $u->id,
-                'category'       => 'users',
+                'id' => (string) $u->id,
+                'category' => 'users',
                 'category_label' => 'Users',
-                'title'          => $u->name,
-                'subtitle'       => "{$roleLabel} Â· {$u->email}" . ($u->phone ? " Â· {$u->phone}" : ''),
-                'status'         => $statusLabel,
-                'status_type'    => $u->status === UserStatus::Active ? 'active' : 'inactive',
-                'url'            => '/kelola-akun',
-                'metadata'       => [
+                'title' => $u->name,
+                'subtitle' => "{$roleLabel} Â· {$u->email}".($u->phone ? " Â· {$u->phone}" : ''),
+                'status' => $statusLabel,
+                'status_type' => $u->status === UserStatus::Active ? 'active' : 'inactive',
+                'url' => '/kelola-akun',
+                'metadata' => [
                     'email' => $u->email,
-                    'role'  => $roleLabel,
+                    'role' => $roleLabel,
                     'phone' => $u->phone,
                 ],
             ];

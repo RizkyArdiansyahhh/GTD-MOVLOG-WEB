@@ -9,8 +9,10 @@ use App\Enums\UserRole;
 use App\Enums\UserStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\StoreUserRequest;
+use App\Models\Customer;
 use App\Models\User;
 use App\Services\UserService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -29,11 +31,11 @@ class KelolaAkunController extends Controller
      * Map Spatie role names to Indonesian display labels.
      */
     private const ROLE_MAP = [
-        'super-admin'  => 'Super Admin',
-        'supervisor'   => 'Supervisor',
-        'staff'        => 'Staff',
+        'super-admin' => 'Super Admin',
+        'supervisor' => 'Supervisor',
+        'staff' => 'Staff',
         'field-worker' => 'Field Worker',
-        'customer'     => 'Customer',
+        'customer' => 'Customer',
     ];
 
     public function __construct(
@@ -47,12 +49,12 @@ class KelolaAkunController extends Controller
     public function index(Request $request): Response
     {
         $perPage = (int) $request->query('per_page', 5);
-        $search  = $request->query('search');
-        $role    = $request->query('role');
-        $status  = $request->query('status');
+        $search = $request->query('search');
+        $role = $request->query('role');
+        $status = $request->query('status');
 
         // ── Build user query ──
-        $query = User::with('roles')
+        $query = User::with(['roles', 'customer'])
             ->orderBy('created_at', 'desc');
 
         // Search by name or email (DB agnostic case-insensitive search)
@@ -60,7 +62,7 @@ class KelolaAkunController extends Controller
             $keyword = strtolower(trim($search));
             $query->where(function ($q) use ($keyword) {
                 $q->whereRaw('LOWER(name) LIKE ?', ["%{$keyword}%"])
-                  ->orWhereRaw('LOWER(email) LIKE ?', ["%{$keyword}%"]);
+                    ->orWhereRaw('LOWER(email) LIKE ?', ["%{$keyword}%"]);
             });
         }
 
@@ -75,10 +77,10 @@ class KelolaAkunController extends Controller
         // Filter by status
         if ($status && $status !== 'All Statuses') {
             $statusValue = match (strtolower($status)) {
-                'aktif', 'active'             => 'active',
-                'tidak aktif', 'inactive'     => 'inactive',
+                'aktif', 'active' => 'active',
+                'tidak aktif', 'inactive' => 'inactive',
                 'pending', 'pending verification' => 'pending',
-                default                       => null,
+                default => null,
             };
             if ($statusValue) {
                 $query->where('status', $statusValue);
@@ -92,21 +94,23 @@ class KelolaAkunController extends Controller
             $firstRole = $user->roles->first()?->name;
 
             return [
-                'id'        => (string) $user->id,
-                'name'      => $user->name,
-                'email'     => $user->email,
-                'status'    => $user->status === UserStatus::Active ? 'Active' : 'Inactive',
-                'role'      => $this->mapRoleLabel($firstRole),
+                'id' => (string) $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'status' => $user->status === UserStatus::Active ? 'Active' : 'Inactive',
+                'role' => $this->mapRoleLabel($firstRole),
                 'avatarUrl' => $user->avatar_url
-                    ?? 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=F5B800&color=fff&bold=true&size=128',
-                'phone'     => $user->phone,
+                    ?? 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=F5B800&color=fff&bold=true&size=128',
+                'phone' => $user->phone,
+                'companyName' => $user->customer?->company_name,
+                'customerId' => $user->customer_id,
                 'createdAt' => $user->created_at?->toISOString(),
             ];
         });
 
         // ── Stats ──
-        $totalUsers     = User::count();
-        $inactiveUsers  = User::where('status', UserStatus::Inactive)->count();
+        $totalUsers = User::count();
+        $inactiveUsers = User::where('status', UserStatus::Inactive)->count();
 
         // Count users by internal roles (non-customer)
         $internalRoles = ['super-admin', 'supervisor', 'staff', 'field-worker'];
@@ -124,11 +128,11 @@ class KelolaAkunController extends Controller
         return Inertia::render('KelolaAkun/Index', [
             'users' => $transformedUsers,
             'stats' => [
-                'totalUsers'            => $totalUsers,
-                'totalUsersThisMonth'   => User::where('created_at', '>=', now()->startOfMonth())->count(),
-                'adminInternal'         => $adminInternal,
-                'customer'              => $customerCount,
-                'inactiveAccounts'      => $inactiveUsers,
+                'totalUsers' => $totalUsers,
+                'totalUsersThisMonth' => User::where('created_at', '>=', now()->startOfMonth())->count(),
+                'adminInternal' => $adminInternal,
+                'customer' => $customerCount,
+                'inactiveAccounts' => $inactiveUsers,
             ],
             'availableRoles' => $availableRoles,
             'filters' => $request->only(['search', 'role', 'status', 'per_page']),
@@ -156,9 +160,9 @@ class KelolaAkunController extends Controller
         ]);
 
         $newStatusValue = match (strtolower($validated['status'])) {
-            'active'             => UserStatus::Active->value,
-            'inactive'           => UserStatus::Inactive->value,
-            default                       => UserStatus::Inactive->value,
+            'active' => UserStatus::Active->value,
+            'inactive' => UserStatus::Inactive->value,
+            default => UserStatus::Inactive->value,
         };
 
         $user->update([
@@ -168,6 +172,26 @@ class KelolaAkunController extends Controller
         $actionLabel = $newStatusValue === UserStatus::Active->value ? 'activated' : 'deactivated';
 
         return redirect()->to('/kelola-akun')->with('success', "Account {$user->name} has been {$actionLabel}.");
+    }
+
+    /**
+     * GET /kelola-akun/companies
+     * Retrieve available companies for customer account assignment.
+     */
+    public function getCompanies(): JsonResponse
+    {
+        $companies = Customer::orderBy('company_name', 'asc')
+            ->get(['id', 'company_name'])
+            ->unique('company_name')
+            ->values()
+            ->map(fn (Customer $customer) => [
+                'id' => (string) $customer->id,
+                'name' => $customer->company_name,
+                'company_name' => $customer->company_name,
+            ])
+            ->all();
+
+        return response()->json($companies);
     }
 
     /**
@@ -181,8 +205,20 @@ class KelolaAkunController extends Controller
             'label' => $role->label(),
         ])->values()->all();
 
+        $companies = Customer::orderBy('company_name', 'asc')
+            ->get(['id', 'company_name'])
+            ->unique('company_name')
+            ->values()
+            ->map(fn (Customer $customer) => [
+                'id' => (string) $customer->id,
+                'name' => $customer->company_name,
+                'company_name' => $customer->company_name,
+            ])
+            ->all();
+
         return Inertia::render('KelolaAkun/TambahAkun', [
             'availableRoles' => $availableRoles,
+            'companies' => $companies,
         ]);
     }
 
@@ -203,7 +239,10 @@ class KelolaAkunController extends Controller
      */
     private function mapRoleLabel(?string $role): string
     {
-        if (!$role) return 'No Role';
+        if (! $role) {
+            return 'No Role';
+        }
+
         return self::ROLE_MAP[strtolower($role)] ?? ucfirst($role);
     }
 
@@ -213,6 +252,7 @@ class KelolaAkunController extends Controller
     private function unmapRoleLabel(string $label): string
     {
         $flipped = array_flip(self::ROLE_MAP);
+
         return $flipped[$label] ?? strtolower($label);
     }
 }

@@ -29,6 +29,118 @@ interface HubContentProps extends SubmitBerkasPageProps {
   setIsWizardActive: (v: boolean) => void;
 }
 
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+  stepName?: string;
+  onGoBack?: () => void;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+class StepErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('Step rendering error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div
+          style={{
+            background: '#FFFFFF',
+            borderRadius: 14,
+            border: '1px solid #FECACA',
+            padding: '32px 24px',
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 16,
+            maxWidth: 600,
+            margin: '20px auto',
+            boxShadow: '0 4px 16px rgba(220, 38, 38, 0.08)',
+          }}
+        >
+          <div
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: '50%',
+              background: '#FEE2E2',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#DC2626',
+            }}
+          >
+            <Lock size={22} />
+          </div>
+          <div>
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#991B1B' }}>
+              Terjadi Kesalahan Saat Menampilkan {this.props.stepName || 'Step'}
+            </h3>
+            <p style={{ margin: '6px 0 0', fontSize: 13, color: '#7F1D1D', lineHeight: 1.5 }}>
+              {this.state.error?.message || 'Data yang dibutuhkan step ini belum lengkap atau terjadi error.'}
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button
+              type="button"
+              onClick={() => this.setState({ hasError: false, error: null })}
+              style={{
+                padding: '8px 16px',
+                borderRadius: 8,
+                border: '1px solid #E2E8F0',
+                background: '#FFF',
+                color: '#334155',
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              Coba Lagi
+            </button>
+            {this.props.onGoBack && (
+              <button
+                type="button"
+                onClick={() => {
+                  this.setState({ hasError: false, error: null });
+                  this.props.onGoBack!();
+                }}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: 8,
+                  border: 'none',
+                  background: '#06283A',
+                  color: '#FFF',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Kembali ke Step Sebelumnya
+              </button>
+            )}
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function SubmitBerkasHubContent({
   customers = [],
   assignments = [],
@@ -43,6 +155,7 @@ function SubmitBerkasHubContent({
     setSelectedCustomer,
     resetWizard,
     hydrateFromExisting,
+    goBack,
   } = useWizard();
 
   // State daftar customer lokal agar update realtime saat ada customer baru dibuat
@@ -159,19 +272,25 @@ function SubmitBerkasHubContent({
             />
           )}
 
-          {currentStepIndex === 0 && <BillOfLadingStep />}
-          {currentStepIndex === 1 && <CommercialInvoiceStep />}
-          {currentStepIndex === 2 && <PackingListStep />}
-          {currentStepIndex === 3 && <CertificateOfOriginStep />}
-          {currentStepIndex === 4 && <InsuranceStep />}
-          {currentStepIndex === 5 && (
-            <PreviewPibStep
-              onFinished={() => {
-                resetWizard();
-                setIsWizardActive(false);
-              }}
-            />
-          )}
+          <StepErrorBoundary
+            key={currentStepIndex}
+            stepName={['Bill of Lading', 'Commercial Invoice', 'Packing List', 'Certificate of Origin (COO)', 'Insurance', 'Preview PIB'][currentStepIndex]}
+            onGoBack={goBack}
+          >
+            {currentStepIndex === 0 && <BillOfLadingStep />}
+            {currentStepIndex === 1 && <CommercialInvoiceStep />}
+            {currentStepIndex === 2 && <PackingListStep />}
+            {currentStepIndex === 3 && <CertificateOfOriginStep />}
+            {currentStepIndex === 4 && <InsuranceStep />}
+            {currentStepIndex === 5 && (
+              <PreviewPibStep
+                onFinished={() => {
+                  resetWizard();
+                  setIsWizardActive(false);
+                }}
+              />
+            )}
+          </StepErrorBoundary>
         </>
       ) : (
         /* ── KONDISI 2: HUB UTAMA DASHBOARD (LAYOUT 70 - 30) ── */
