@@ -30,7 +30,7 @@ export default function UserStatusConfirmationModal({
 
     if (!isOpen || !user) return null;
 
-    const isCurrentlyActive = user.status === 'Active';
+    const isCurrentlyActive = user.status === 'Active' || user.status === 'Aktif' || String(user.status).toLowerCase() === 'active';
 
     return (
         <div

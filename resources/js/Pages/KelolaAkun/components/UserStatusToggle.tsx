@@ -11,7 +11,7 @@ export default function UserStatusToggle({
     onToggle,
     disabled = false,
 }: UserStatusToggleProps) {
-    const isActive = status === 'Aktif';
+    const isActive = status === 'Active' || status === 'Aktif' || String(status).toLowerCase() === 'active';
 
     return (
         <button

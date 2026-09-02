@@ -76,8 +76,8 @@ export default function Index() {
     const baseUsers: KelolaAkunUser[] = hasServerData ? users.data : localUsers;
 
     const [search, setSearch] = useState(filters?.search ?? '');
-    const [roleFilter, setRoleFilter] = useState(filters?.role ?? 'Semua Role');
-    const [statusFilter, setStatusFilter] = useState(filters?.status ?? 'Semua Status');
+    const [roleFilter, setRoleFilter] = useState(filters?.role ?? 'All Roles');
+    const [statusFilter, setStatusFilter] = useState(filters?.status ?? 'All Statuses');
     const [currentPage, setCurrentPage] = useState(users?.current_page ?? 1);
 
     // State for Status Confirmation Modal, Delete Confirmation Modal & Toast
@@ -116,10 +116,10 @@ export default function Index() {
                 user.email.toLowerCase().includes(search.toLowerCase());
 
             const matchRole =
-                roleFilter === 'Semua Role' || user.role === roleFilter;
+                roleFilter === 'All Roles' || roleFilter === 'Semua Role' || user.role === roleFilter;
 
             const matchStatus =
-                statusFilter === 'Semua Status' || user.status === statusFilter;
+                statusFilter === 'All Statuses' || statusFilter === 'Semua Status' || user.status === statusFilter || (statusFilter === 'Active' && (user.status === 'Active' || user.status === 'Aktif')) || (statusFilter === 'Inactive' && (user.status === 'Inactive' || user.status === 'Tidak Aktif'));
 
             return matchSearch && matchRole && matchStatus;
         });
@@ -145,11 +145,11 @@ export default function Index() {
 
     // Available role options
     const roleOptions = availableRoles && availableRoles.length > 0
-        ? ['Semua Role', ...availableRoles]
+        ? ['All Roles', ...availableRoles]
         : Array.from(defaultRoleOptions);
 
     // Handlers
-    const hasActiveFilters = search !== '' || roleFilter !== 'Semua Role' || statusFilter !== 'Semua Status';
+    const hasActiveFilters = search !== '' || (roleFilter !== 'All Roles' && roleFilter !== 'Semua Role') || (statusFilter !== 'All Statuses' && statusFilter !== 'Semua Status');
 
     const handleSearchChange = (value: string) => {
         setSearch(value);
@@ -180,8 +180,8 @@ export default function Index() {
 
     const handleReset = () => {
         setSearch('');
-        setRoleFilter('Semua Role');
-        setStatusFilter('Semua Status');
+        setRoleFilter('All Roles');
+        setStatusFilter('All Statuses');
         setCurrentPage(1);
         if (hasServerData) {
             router.get('/kelola-akun', {}, { preserveState: true, preserveScroll: true });
