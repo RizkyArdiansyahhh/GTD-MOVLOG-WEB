@@ -118,12 +118,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('kelola-akun.store');
         Route::patch('kelola-akun/{user}/status', [KelolaAkunController::class, 'toggleStatus'])
             ->name('kelola-akun.toggle-status');
+    });
 
-        // Kelola Sesi Pekerja
+    // --- Kelola Sesi Pekerja (Super Admin & Staff) --------------------
+    Route::middleware('role:super-admin|staff')->group(function () {
         Route::get('sesi-pekerja', [SesiPekerjaController::class, 'index'])
             ->name('sesi-pekerja');
         Route::get('sesi-pekerja/tambah', [SesiPekerjaController::class, 'create'])
             ->name('sesi-pekerja.create');
+        Route::post('sesi-pekerja', [SesiPekerjaController::class, 'store'])
+            ->name('sesi-pekerja.store');
+        Route::get('sesi-pekerja/{session}', [SesiPekerjaController::class, 'show'])
+            ->name('sesi-pekerja.show');
+        Route::post('sesi-pekerja/{session}/stages/{stage}/assign', [SesiPekerjaController::class, 'assignStage'])
+            ->name('sesi-pekerja.stages.assign');
+        Route::post('sesi-pekerja/{session}/stages/{stage}/complete', [SesiPekerjaController::class, 'completeStage'])
+            ->name('sesi-pekerja.stages.complete');
     });
 
     // --- Supervisor Routes --------------------------------------------
@@ -142,19 +152,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::resource('users', UserController::class);
-
-    // Sesi Pekerja Operations
-    Route::post('sesi-pekerja', [SesiPekerjaController::class, 'store'])
-        ->name('sesi-pekerja.store');
-
-    Route::get('sesi-pekerja/{session}', [SesiPekerjaController::class, 'show'])
-        ->name('sesi-pekerja.show');
-
-    Route::post('sesi-pekerja/{session}/stages/{stage}/assign', [SesiPekerjaController::class, 'assignStage'])
-        ->name('sesi-pekerja.stages.assign');
-
-    Route::post('sesi-pekerja/{session}/stages/{stage}/complete', [SesiPekerjaController::class, 'completeStage'])
-        ->name('sesi-pekerja.stages.complete');
 
     // Monitoring Barang
     Route::get('monitoring-barang', [MonitoringBarangController::class, 'index'])
