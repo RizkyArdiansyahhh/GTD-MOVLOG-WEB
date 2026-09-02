@@ -18,7 +18,7 @@ export default function BlurText({ text, className = '', delay = 0 }: BlurTextPr
             {words.map((word, i) => (
                 <motion.span
                     key={i}
-                    className="inline-block mr-[0.3em]"
+                    className="inline-block mr-2"
                     initial={{ filter: 'blur(10px)', opacity: 0 }}
                     animate={
                         isInView

@@ -34,6 +34,7 @@ services:
   # ─────────────────────────────────────────
   nginx:
     image: nginx:1.27-alpine
+    pull_policy: if_not_present
     container_name: lms_nginx
     restart: unless-stopped
     ports:
@@ -52,6 +53,7 @@ services:
   # ─────────────────────────────────────────
   postgres:
     image: postgres:17
+    pull_policy: if_not_present
     container_name: lms_postgres
     restart: unless-stopped
     environment:
@@ -77,6 +79,7 @@ services:
   # ─────────────────────────────────────────
   redis:
     image: redis:7
+    pull_policy: if_not_present
     container_name: lms_redis
     restart: unless-stopped
     command: redis-server --appendonly yes --requirepass "${REDIS_PASSWORD:-secret}"
@@ -97,6 +100,7 @@ services:
   # ─────────────────────────────────────────
   pgadmin:
     image: dpage/pgadmin4:latest
+    pull_policy: if_not_present
     platform: linux/amd64
     container_name: lms_pgadmin
     restart: unless-stopped
