@@ -39,7 +39,7 @@ class DocumentSubmissionService
         // Normalisasi path agar tidak ada leading slash '/'
         $filePath = !empty($data['file_path'])
             ? ltrim($data['file_path'], '/')
-            : ('documents/' . $data['assignment_no_ref'] . '/' . $fileName);
+            : ('pdf_dokumen/' . $data['assignment_no_ref'] . '/' . $fileName);
 
         return DB::transaction(function () use ($data, $fileName, $filePath, $uploadedBy) {
             return Document::updateOrCreate(

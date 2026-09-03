@@ -204,14 +204,19 @@ export function CertificateOfOriginStep() {
         setShowChangedModal(false);
         setIsSaving(true);
         try {
-            await axios.post('/submit-berkas/step', {
-                assignment_no_ref: assignmentNoRef,
-                customer_id: selectedCustomer?.id,
-                document_type_id: DOCUMENT_TYPE_ID_COO,
-                document_data: data,
-                file_name: pdf?.name ?? null,
-                file_path: pdf?.url ?? null,
-            });
+            const formData = new FormData();
+      formData.append('assignment_no_ref', assignmentNoRef);
+      formData.append('customer_id', String(selectedCustomer?.id));
+      formData.append('document_type_id', '4');
+      formData.append('document_data', JSON.stringify(data));
+      const fName = pdf?.name ?? null;
+      if (fName) formData.append('file_name', fName);
+      const fPath = pdf?.url ?? null;
+      if (fPath) formData.append('file_path', fPath);
+      if (pdf?.file) formData.append('pdf', pdf.file);
+      await axios.post('/submit-berkas/step', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
 
             saveStepData('certificateOfOrigin', data, pdf);
             goNext();
