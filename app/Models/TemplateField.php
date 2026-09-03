@@ -13,9 +13,12 @@ class TemplateField extends Model
      */
     protected $fillable = [
         'template_id',
+        'field_key',
         'field_name',
+        'label',
         'field_type',
         'required',
+        'options',
         'sort_order',
     ];
 
@@ -26,6 +29,7 @@ class TemplateField extends Model
     {
         return [
             'required' => 'boolean',
+            'options' => 'array',
             'sort_order' => 'integer',
 
             'created_at' => 'datetime',
@@ -50,5 +54,13 @@ class TemplateField extends Model
     public function reportValues(): HasMany
     {
         return $this->hasMany(ReportValue::class);
+    }
+
+    /**
+     * Get all report photos associated with this photo slot template field.
+     */
+    public function photos(): HasMany
+    {
+        return $this->hasMany(ReportPhoto::class, 'template_field_id');
     }
 }

@@ -56,29 +56,6 @@ class AuthService extends BaseService
     }
 
     /**
-     * Register a new user (public registration).
-     */
-    public function register(array $data): array
-    {
-        /** @var User $user */
-        $user = $this->userRepository->create([
-            'name'     => $data['name'],
-            'email'    => $data['email'],
-            'password' => Hash::make($data['password']),
-            'status'   => \App\Enums\UserStatus::Active->value,
-        ]);
-
-        $user->assignRole(\App\Enums\UserRole::Driver->value);
-
-        $token = $user->createToken('api')->plainTextToken;
-
-        return [
-            'user'  => $user->load('roles'),
-            'token' => $token,
-        ];
-    }
-
-    /**
      * Revoke all tokens for the authenticated user (logout).
      */
     public function logout(User $user): void

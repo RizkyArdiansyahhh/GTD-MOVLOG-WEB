@@ -1,0 +1,1717 @@
+openapi: 3.0.3
+info:
+  title: GTD Logistics Mobile REST API
+  description: |
+    # GTD Logistics Mobile REST API Contract (v1)
+
+    Official API documentation and contract for the GTD Logistics Flutter Mobile Application.
+    This contract strictly mirrors the actual backend implementation built on Laravel 12 Sanctum.
+
+    ## Key Architectural Principles
+    1. **Authentication:** Bearer token issued via Laravel Sanctum (`/api/v1/auth/login`).
+    2. **Envelope:** All responses follow a standardized JSON envelope with `success`, `message`, `data`, and consistent `error_code` attributes.
+    3. **Domain Isolation:** Multi-modal transport sessions strictly isolate movements, reports, and photos per checkpoint and physical asset.
+    4. **Dynamic Reporting:** Checkpoint report forms and photo slots are dynamically defined by `template_snapshot` captured at session creation.
+    5. **Immutability:** Once a report or checkpoint is `COMPLETED`, or a session is `DELIVERED`, operational mutations are strictly prohibited (HTTP 422 `BUSINESS_RULE_VIOLATION`).
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local Development Server
+  - url: https://api.gtd.co.id/api/v1
+    description: Production Server
+
+tags:
+  - name: Authentication
+    description: Login, token lifecycle, and authenticated user profile
+  - name: Sessions
+    description: Shipping sessions and multi-modal progress
+  - name: Checkpoints
+    description: Checkpoint stage progression and dynamic template snapshot
+  - name: Movements
+    description: Physical transport asset registration, updating, and lineage
+  - name: Reports
+    description: Checkpoint-movement activity reports, GPS, and custom field values
+  - name: Photos
+    description: Multipart photo evidence upload and slot management
+  - name: Users
+    description: User account administration (Super Admin)
+
+paths:
+  # ─── AUTHENTICATION ────────────────────────────────────────────────────────
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: Authenticate user and obtain Sanctum Bearer token
+      description: Validates email and password. Returns a Sanctum Personal Access Token for subsequent authenticated requests.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: Email atau password yang Anda masukkan salah.
+                error_code: UNAUTHENTICATED
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+
+  /auth/logout:
+    post:
+      tags: [Authentication]
+      summary: Revoke current access token
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseSuccessResponse'
+              example:
+                success: true
+                message: Logout berhasil.
+                data: null
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+
+  /auth/me:
+    get:
+      tags: [Authentication]
+      summary: Get authenticated user profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current user profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Data pengguna berhasil diambil.
+                  data:
+                    $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+
+  # ─── SESSIONS ──────────────────────────────────────────────────────────────
+  /sessions:
+    get:
+      tags: [Sessions]
+      summary: List shipping sessions
+      description: |
+        Retrieves shipping sessions accessible to the authenticated user.
+        - **Super Admin / Supervisor / Staff:** All sessions.
+        - **Field Worker:** Sessions where user is assigned as PIC to at least one checkpoint.
+        - **Customer:** Sessions owned by the authenticated customer.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          description: Filter by session status
+          required: false
+          schema:
+            type: string
+            enum: [draft, in_transit, delivered, completed, cancelled]
+        - name: search
+          in: query
+          description: Search assignment number, cargo name, origin, or destination
+          required: false
+          schema:
+            type: string
+        - name: per_page
+          in: query
+          description: Number of records per page (default 15)
+          required: false
+          schema:
+            type: integer
+            default: 15
+        - name: page
+          in: query
+          description: Page number
+          required: false
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Paginated shipping sessions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionListResponse'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+
+  /sessions/{session}:
+    get:
+      tags: [Sessions]
+      summary: Get shipping session detail
+      description: Returns complete session details including units, stage checkpoints, and current active stage.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Detailed shipping session
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Data sesi berhasil dimuat.
+                  data:
+                    $ref: '#/components/schemas/ShippingSession'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+
+  # ─── CHECKPOINTS ───────────────────────────────────────────────────────────
+  /sessions/{session}/checkpoints/{checkpoint}:
+    get:
+      tags: [Checkpoints]
+      summary: Get checkpoint stage detail and template snapshot
+      description: |
+        Returns checkpoint metadata, assigned PIC, and the frozen `template_snapshot`.
+        Authorized for Super Admin, Supervisor, Staff, and the assigned Field Worker PIC.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+        - $ref: '#/components/parameters/CheckpointId'
+      responses:
+        '200':
+          description: Checkpoint stage detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Checkpoint berhasil dimuat.
+                  data:
+                    $ref: '#/components/schemas/CheckpointDetail'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+
+  /sessions/{session}/checkpoints/{checkpoint}/complete:
+    post:
+      tags: [Checkpoints]
+      summary: Complete checkpoint stage
+      description: |
+        Completes the current stage checkpoint.
+        - Verifies all registered movements have completed reports (`COMPLETED`).
+        - Automatically advances the next checkpoint to `IN_PROGRESS`.
+        - If Step 4 is completed, transitions shipping session to `DELIVERED`.
+        - Protected with pessimistic row locking against concurrent execution.
+        - Authorized for Super Admin and the checkpoint Field Worker PIC.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+        - $ref: '#/components/parameters/CheckpointId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Checkpoint completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Checkpoint berhasil diselesaikan.
+                  data:
+                    $ref: '#/components/schemas/CheckpointDetail'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '409':
+          $ref: '#/components/responses/409Conflict'
+        '422':
+          $ref: '#/components/responses/422BusinessViolation'
+
+  # ─── MOVEMENTS ─────────────────────────────────────────────────────────────
+  /sessions/{session}/checkpoints/{checkpoint}/movements:
+    get:
+      tags: [Movements]
+      summary: List movements for a checkpoint stage
+      description: |
+        Returns the physical transport assets for this checkpoint:
+        - **Step 1:** Tongkang created in Step 1.
+        - **Step 2:** Same Tongkang reused from Step 1.
+        - **Step 3:** Trucks created in Step 3 (referencing parent Tongkang).
+        - **Step 4:** Same Trucks reused from Step 3.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+        - $ref: '#/components/parameters/CheckpointId'
+      responses:
+        '200':
+          description: List of movements
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Data pergerakan berhasil diambil.
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Movement'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+
+    post:
+      tags: [Movements]
+      summary: Register a new physical movement
+      description: |
+        Registers a new transport asset. Allowed ONLY on Step 1 (Tongkang) and Step 3 (Truck).
+        Registration on Step 2 or Step 4 is rejected with HTTP 422.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+        - $ref: '#/components/parameters/CheckpointId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMovementRequest'
+            examples:
+              step1Tongkang:
+                summary: Step 1 Tongkang Asset
+                value:
+                  movement_name: Tongkang Oceanic 88
+              step3Truck:
+                summary: Step 3 Hauling Truck
+                value:
+                  movement_name: Truk Volvo B 8888 GTD
+                  parent_movement_id: 01j7abc123step1tongkang
+      responses:
+        '201':
+          description: Movement created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Armada berhasil ditambahkan.
+                  data:
+                    $ref: '#/components/schemas/Movement'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '409':
+          $ref: '#/components/responses/409Conflict'
+        '422':
+          $ref: '#/components/responses/422BusinessViolation'
+
+  /sessions/{session}/movements/{movement}:
+    patch:
+      tags: [Movements]
+      summary: Update movement asset name
+      description: |
+        Renames a physical movement. Only `movement_name` is mutable.
+        Lineage (`parent_movement_id`, `movement_type`, stage) cannot be altered.
+        Rejected if checkpoint is completed/skipped, session is delivered, or movement is completed.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+        - $ref: '#/components/parameters/MovementId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMovementRequest'
+            example:
+              movement_name: Tongkang Oceanic 88 Rev
+      responses:
+        '200':
+          description: Movement updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Armada berhasil diperbarui.
+                  data:
+                    $ref: '#/components/schemas/Movement'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '409':
+          $ref: '#/components/responses/409Conflict'
+        '422':
+          $ref: '#/components/responses/422BusinessViolation'
+
+    put:
+      tags: [Movements]
+      summary: Update movement asset name (alias)
+      description: Alias for `PATCH /sessions/{session}/movements/{movement}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+        - $ref: '#/components/parameters/MovementId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMovementRequest'
+      responses:
+        '200':
+          description: Movement updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Armada berhasil diperbarui.
+                  data:
+                    $ref: '#/components/schemas/Movement'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '409':
+          $ref: '#/components/responses/409Conflict'
+        '422':
+          $ref: '#/components/responses/422BusinessViolation'
+
+    delete:
+      tags: [Movements]
+      summary: Delete unstarted movement asset
+      description: |
+        Deletes a physical movement. Rejected if the movement already has report activity or if a Tongkang has child trucks.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+        - $ref: '#/components/parameters/MovementId'
+      responses:
+        '200':
+          description: Movement deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseSuccessResponse'
+              example:
+                success: true
+                message: Armada berhasil dihapus.
+                data: null
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '422':
+          $ref: '#/components/responses/422BusinessViolation'
+
+  # ─── REPORTS ───────────────────────────────────────────────────────────────
+  /sessions/{session}/checkpoints/{checkpoint}/movements/{movement}/report:
+    get:
+      tags: [Reports]
+      summary: Get activity report for a movement at a checkpoint
+      description: |
+        Retrieves the isolated report instance for the given `(session_checkpoint_id, movement_id)` tuple.
+        Includes all saved form values and photo slot records.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+        - $ref: '#/components/parameters/CheckpointId'
+        - $ref: '#/components/parameters/MovementId'
+      responses:
+        '200':
+          description: Report detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Laporan pergerakan berhasil diambil.
+                  data:
+                    $ref: '#/components/schemas/Report'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+
+    post:
+      tags: [Reports]
+      summary: Save draft report values and metadata
+      description: |
+        Saves partial/draft report values, GPS coordinates, notes, and timestamp.
+        Status remains `in_progress`.
+        Rejected with HTTP 422 if the report is already `completed`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+        - $ref: '#/components/parameters/CheckpointId'
+        - $ref: '#/components/parameters/MovementId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaveReportRequest'
+            example:
+              latitude: -1.269160
+              longitude: 116.825264
+              event_at: "2026-09-03T10:00:00Z"
+              notes: "Pemuatan batubara lancar, cuaca cerah."
+              fields:
+                tonnage: 5200
+                moisture_percent: 8.5
+                inspector_name: "Andi Wijaya"
+      responses:
+        '200':
+          description: Draft report saved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Data laporan berhasil disimpan.
+                  data:
+                    $ref: '#/components/schemas/Report'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '409':
+          $ref: '#/components/responses/409Conflict'
+        '422':
+          $ref: '#/components/responses/422BusinessViolation'
+
+  /sessions/{session}/checkpoints/{checkpoint}/movements/{movement}/report/complete:
+    post:
+      tags: [Reports]
+      summary: Finalize and complete movement report
+      description: |
+        Validates all mandatory fields from `template_snapshot['fields']`, required photo slots,
+        valid non-null GPS coordinates, and event timestamp.
+        Transitions report and movement status to `completed`.
+        Once `completed`, the report is strictly immutable.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+        - $ref: '#/components/parameters/CheckpointId'
+        - $ref: '#/components/parameters/MovementId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Report finalized and completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Laporan pergerakan berhasil diselesaikan.
+                  data:
+                    $ref: '#/components/schemas/Report'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '409':
+          $ref: '#/components/responses/409Conflict'
+        '422':
+          $ref: '#/components/responses/422BusinessViolation'
+
+  # ─── PHOTOS ────────────────────────────────────────────────────────────────
+  /sessions/{session}/checkpoints/{checkpoint}/movements/{movement}/report/photos:
+    post:
+      tags: [Photos]
+      summary: Upload photo evidence for a report slot
+      description: |
+        Uploads a photo for a specific slot defined in `template_snapshot['photo_slots']`.
+        - Semantics: Exactly 1 active photo per slot. Uploading to an existing slot replaces the old photo and deletes the physical file.
+        - Allowed MIME: `jpeg`, `jpg`, `png`, `webp`. Max size: 10 MB.
+        - Rejected if report status is `completed`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+        - $ref: '#/components/parameters/CheckpointId'
+        - $ref: '#/components/parameters/MovementId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - photo
+                - field_key
+              properties:
+                photo:
+                  type: string
+                  format: binary
+                  description: Image file (jpeg, jpg, png, webp, max 10MB)
+                field_key:
+                  type: string
+                  description: Key of the photo slot defined in template_snapshot
+                  example: cargo_overview
+                caption:
+                  type: string
+                  nullable: true
+                  example: Tampak atas muatan tongkang
+                taken_at:
+                  type: string
+                  format: date-time
+                  nullable: true
+                  example: "2026-09-03T10:15:00Z"
+      responses:
+        '201':
+          description: Photo uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Foto berhasil diunggah.
+                  data:
+                    $ref: '#/components/schemas/ReportPhoto'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '409':
+          $ref: '#/components/responses/409Conflict'
+        '422':
+          $ref: '#/components/responses/422BusinessViolation'
+
+  /sessions/{session}/checkpoints/{checkpoint}/movements/{movement}/report/photos/{photo}:
+    delete:
+      tags: [Photos]
+      summary: Delete uploaded photo
+      description: |
+        Deletes the database record and cleans up the stored physical file.
+        Rejected if report is `completed`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+        - $ref: '#/components/parameters/CheckpointId'
+        - $ref: '#/components/parameters/MovementId'
+        - name: photo
+          in: path
+          required: true
+          description: ULID of the report photo
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Photo deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseSuccessResponse'
+              example:
+                success: true
+                message: Foto berhasil dihapus.
+                data: null
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '422':
+          $ref: '#/components/responses/422BusinessViolation'
+
+  # ─── USERS ─────────────────────────────────────────────────────────────────
+  /users:
+    get:
+      tags: [Users]
+      summary: List system users (Super Admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: per_page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 15
+      responses:
+        '200':
+          description: Paginated users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserListResponse'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+
+    post:
+      tags: [Users]
+      summary: Create new system user (Super Admin only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreUserRequest'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: User created successfully.
+                  data:
+                    $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '422':
+          $ref: '#/components/responses/422Validation'
+
+  /users/{user}:
+    get:
+      tags: [Users]
+      summary: Get user detail
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user
+          in: path
+          required: true
+          description: ULID of the user
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+
+    put:
+      tags: [Users]
+      summary: Update user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: User updated successfully.
+                  data:
+                    $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '422':
+          $ref: '#/components/responses/422Validation'
+
+    patch:
+      tags: [Users]
+      summary: Update user (alias)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '422':
+          $ref: '#/components/responses/422Validation'
+
+    delete:
+      tags: [Users]
+      summary: Delete user (Super Admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: User deleted
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+
+# ─── COMPONENTS ──────────────────────────────────────────────────────────────
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Sanctum
+      description: Enter Bearer token received from `/auth/login`.
+
+  parameters:
+    SessionId:
+      name: session
+      in: path
+      required: true
+      description: ULID of the shipping session
+      schema:
+        type: string
+      example: 01j7session1234567890abcdef
+    CheckpointId:
+      name: checkpoint
+      in: path
+      required: true
+      description: ULID of the session checkpoint stage
+      schema:
+        type: string
+      example: 01j7checkpoint1234567890abc
+    MovementId:
+      name: movement
+      in: path
+      required: true
+      description: ULID of the movement transport asset
+      schema:
+        type: string
+      example: 01j7movement1234567890abcde
+    IdempotencyKey:
+      name: X-Idempotency-Key
+      in: header
+      required: false
+      description: Optional unique operation key (UUIDv4 or ULID) for safe offline retry and replay semantics (7-day TTL).
+      schema:
+        type: string
+      example: 01j7idemp1234567890abcdef1
+
+  responses:
+    401Unauthorized:
+      description: Unauthenticated request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: Unauthenticated.
+            error_code: UNAUTHENTICATED
+    403Forbidden:
+      description: Access forbidden for role or non-PIC user
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: Anda bukan petugas PIC yang berwenang untuk tahap ini.
+            error_code: FORBIDDEN
+    404NotFound:
+      description: Resource not found or mismatched session
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: Resource not found.
+            error_code: NOT_FOUND
+    409Conflict:
+      description: Idempotency conflict (concurrent execution or payload mismatch)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            concurrentRequest:
+              summary: Concurrent request in progress
+              value:
+                success: false
+                message: Permintaan dengan kunci idempotensi ini sedang diproses. Silakan coba sesaat lagi.
+                error_code: CONCURRENT_REQUEST
+            payloadMismatch:
+              summary: Payload mismatch on reused key
+              value:
+                success: false
+                message: Kunci idempotensi telah digunakan sebelumnya dengan parameter atau data yang berbeda.
+                error_code: IDEMPOTENCY_KEY_PAYLOAD_MISMATCH
+    422BusinessViolation:
+      description: Domain rule violation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: Laporan armada yang sudah berstatus COMPLETED tidak dapat diubah lagi.
+            error_code: BUSINESS_RULE_VIOLATION
+    422Validation:
+      description: Request parameter validation failure
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrorResponse'
+
+  schemas:
+    BaseSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Operasi berhasil.
+        data:
+          nullable: true
+
+    ErrorResponse:
+      type: object
+      required:
+        - success
+        - message
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: An error occurred.
+        error_code:
+          type: string
+          example: BUSINESS_RULE_VIOLATION
+
+    ValidationErrorResponse:
+      type: object
+      required:
+        - success
+        - message
+        - errors
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: The given data was invalid.
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            movement_name:
+              - "The movement name field is required."
+
+    PaginatedMeta:
+      type: object
+      properties:
+        current_page:
+          type: integer
+          example: 1
+        last_page:
+          type: integer
+          example: 3
+        per_page:
+          type: integer
+          example: 15
+        total:
+          type: integer
+          example: 42
+
+    PaginatedLinks:
+      type: object
+      properties:
+        first:
+          type: string
+          nullable: true
+          example: "http://localhost:8000/api/v1/sessions?page=1"
+        last:
+          type: string
+          nullable: true
+          example: "http://localhost:8000/api/v1/sessions?page=3"
+        prev:
+          type: string
+          nullable: true
+          example: null
+        next:
+          type: string
+          nullable: true
+          example: "http://localhost:8000/api/v1/sessions?page=2"
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 01j7user1234567890abcdef
+        name:
+          type: string
+          example: Budi Santoso
+        email:
+          type: string
+          format: email
+          example: budi@gtd.co.id
+        status:
+          type: string
+          enum: [active, inactive, suspended]
+          example: active
+        status_label:
+          type: string
+          example: Aktif
+        phone:
+          type: string
+          nullable: true
+          example: "081234567890"
+        avatar_url:
+          type: string
+          nullable: true
+          example: "https://storage.gtd.co.id/avatars/user1.jpg"
+        roles:
+          type: array
+          items:
+            type: string
+          example: [field-worker]
+        permissions:
+          type: array
+          items:
+            type: string
+          example: [view-sessions, create-movements]
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-09-01T08:00:00.000000Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2026-09-01T08:00:00.000000Z"
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: budi@gtd.co.id
+        password:
+          type: string
+          format: password
+          example: Password123!
+
+    LoginResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Login berhasil.
+        data:
+          type: object
+          properties:
+            token:
+              type: string
+              example: 1|qX1234567890abcdef
+            token_type:
+              type: string
+              example: Bearer
+            user:
+              $ref: '#/components/schemas/User'
+
+    ShippingSession:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 01j7session1234567890abcdef
+        assignment_no:
+          type: string
+          example: TRK-2026-001
+        cargo_name:
+          type: string
+          example: Batu Bara (Steam Coal)
+        total_quantity:
+          type: number
+          example: 50000
+        unit:
+          type: string
+          example: MT
+        origin:
+          type: string
+          example: Muara Teweh, Kalteng
+        destination:
+          type: string
+          example: Tanjung Perak, Surabaya
+        status:
+          type: string
+          enum: [draft, in_transit, delivered, completed, cancelled]
+          example: in_transit
+        status_label:
+          type: string
+          example: Dalam Perjalanan
+        notes:
+          type: string
+          nullable: true
+          example: Catatan instruksi pengiriman
+        current_checkpoint:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+            sequence:
+              type: integer
+            name:
+              type: string
+            status:
+              type: string
+            status_label:
+              type: string
+            pic_name:
+              type: string
+        units:
+          type: array
+          items:
+            type: object
+        checkpoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/CheckpointDetail'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    SessionListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Data sesi berhasil dimuat.
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShippingSession'
+        meta:
+          $ref: '#/components/schemas/PaginatedMeta'
+        links:
+          $ref: '#/components/schemas/PaginatedLinks'
+
+    CheckpointDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 01j7cp1234567890abcdef
+        shipping_session_id:
+          type: string
+          example: 01j7session1234567890abcdef
+        checkpoint_id:
+          type: string
+          example: 01j7mastercp1234567890
+        sequence:
+          type: integer
+          enum: [1, 2, 3, 4]
+          example: 1
+        name:
+          type: string
+          example: Muat Pelabuhan Asal
+        status:
+          type: string
+          enum: [pending, in_progress, completed, skipped]
+          example: in_progress
+        status_label:
+          type: string
+          example: Sedang Berjalan
+        can_add_movement:
+          type: boolean
+          example: true
+        movement_label:
+          type: string
+          example: Tongkang
+        actual_start:
+          type: string
+          format: date-time
+          nullable: true
+        actual_finish:
+          type: string
+          format: date-time
+          nullable: true
+        pic:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            email:
+              type: string
+            phone:
+              type: string
+              nullable: true
+        template_snapshot:
+          $ref: '#/components/schemas/TemplateSnapshot'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    TemplateSnapshot:
+      type: object
+      description: Frozen snapshot of the report structure captured at session initialization.
+      properties:
+        template_id:
+          type: string
+          example: 01j7template1234567890
+        name:
+          type: string
+          example: Laporan Pemuatan Pelabuhan
+        version:
+          type: integer
+          example: 1
+        fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/TemplateField'
+        photo_slots:
+          type: array
+          items:
+            $ref: '#/components/schemas/PhotoSlot'
+
+    TemplateField:
+      type: object
+      properties:
+        field_key:
+          type: string
+          example: tonnage
+        field_name:
+          type: string
+          example: Tonase Muatan
+        label:
+          type: string
+          example: Tonase Aktual (MT)
+        field_type:
+          type: string
+          enum: [text, number, dropdown, date, photo]
+          example: number
+        required:
+          type: boolean
+          example: true
+        options:
+          type: array
+          items:
+            type: string
+          nullable: true
+        sort_order:
+          type: integer
+          example: 1
+
+    PhotoSlot:
+      type: object
+      properties:
+        field_key:
+          type: string
+          example: cargo_overview
+        label:
+          type: string
+          example: Foto Muatan Keseluruhan
+        required:
+          type: boolean
+          example: true
+        sort_order:
+          type: integer
+          example: 1
+
+    Movement:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 01j7mov1234567890abcdef
+        session_checkpoint_id:
+          type: string
+          example: 01j7cp1234567890abcdef
+        movement_name:
+          type: string
+          example: Tongkang Oceanic 88
+        movement_type:
+          type: string
+          enum: [transfer, hauling]
+          example: transfer
+        parent_movement_id:
+          type: string
+          nullable: true
+          example: null
+        parent_name:
+          type: string
+          nullable: true
+          example: null
+        sequence:
+          type: integer
+          example: 1
+        status:
+          type: string
+          enum: [in_progress, completed, cancelled]
+          example: in_progress
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateMovementRequest:
+      type: object
+      required:
+        - movement_name
+      properties:
+        id:
+          type: string
+          nullable: true
+          description: Optional client-generated ULID for offline creation correlation.
+          example: 01j7mov1234567890abcdef
+        movement_name:
+          type: string
+          example: Tongkang Oceanic 88
+        parent_movement_id:
+          type: string
+          nullable: true
+          description: Required when creating Step 3 Hauling Truck (must refer to valid Step 1 Tongkang).
+          example: 01j7parent1234567890
+
+    UpdateMovementRequest:
+      type: object
+      required:
+        - movement_name
+      properties:
+        movement_name:
+          type: string
+          example: Tongkang Oceanic 88 Rev
+
+    Report:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 01j7report1234567890abcdef
+        session_checkpoint_id:
+          type: string
+          example: 01j7cp1234567890abcdef
+        movement_id:
+          type: string
+          example: 01j7mov1234567890abcdef
+        status:
+          type: string
+          enum: [draft, in_progress, completed]
+          example: in_progress
+        event_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2026-09-03T10:00:00.000000Z"
+        latitude:
+          type: number
+          format: double
+          nullable: true
+          example: -1.269160
+        longitude:
+          type: number
+          format: double
+          nullable: true
+          example: 116.825264
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReportValue'
+        photos:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReportPhoto'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ReportValue:
+      type: object
+      properties:
+        template_field_id:
+          type: string
+          example: 01j7field1234567890
+        field_key:
+          type: string
+          example: tonnage
+        field_name:
+          type: string
+          example: Tonase Muatan
+        label:
+          type: string
+          example: Tonase Aktual (MT)
+        field_type:
+          type: string
+          example: number
+        value:
+          example: 5200
+
+    SaveReportRequest:
+      type: object
+      properties:
+        latitude:
+          type: number
+          format: double
+          nullable: true
+          minimum: -90
+          maximum: 90
+          example: -1.269160
+        longitude:
+          type: number
+          format: double
+          nullable: true
+          minimum: -180
+          maximum: 180
+          example: 116.825264
+        event_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2026-09-03T10:00:00Z"
+        notes:
+          type: string
+          nullable: true
+          example: "Catatan operasional lapangan."
+        fields:
+          type: object
+          additionalProperties: true
+          description: Dynamic key-value pairs where key is field_key or template_field_id
+          example:
+            tonnage: 5200
+            moisture_percent: 8.5
+
+    ReportPhoto:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 01j7photo1234567890
+        template_field_id:
+          type: string
+          nullable: true
+        field_key:
+          type: string
+          example: cargo_overview
+        label:
+          type: string
+          nullable: true
+          example: Foto Muatan Keseluruhan
+        photo_url:
+          type: string
+          example: "http://localhost:8000/storage/report-photos/01j7photo1234567890.jpg"
+        caption:
+          type: string
+          nullable: true
+          example: Tampak atas muatan tongkang
+        sort_order:
+          type: integer
+          example: 1
+        is_cover:
+          type: boolean
+          example: false
+        taken_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    StoreUserRequest:
+      type: object
+      required:
+        - name
+        - email
+        - password
+        - password_confirmation
+        - role
+      properties:
+        customer_id:
+          type: string
+          nullable: true
+          description: Required if role is customer
+        name:
+          type: string
+          example: Joko Widodo
+        email:
+          type: string
+          format: email
+          example: joko@gtd.co.id
+        password:
+          type: string
+          format: password
+          example: Password123!
+        password_confirmation:
+          type: string
+          format: password
+          example: Password123!
+        role:
+          type: string
+          enum: [super-admin, supervisor, staff, field-worker, customer]
+          example: field-worker
+        phone:
+          type: string
+          nullable: true
+          example: "081234567890"
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Joko Widodo Rev
+        email:
+          type: string
+          format: email
+          example: joko.rev@gtd.co.id
+        phone:
+          type: string
+          nullable: true
+          example: "081234567890"
+        role:
+          type: string
+          enum: [super-admin, supervisor, staff, field-worker, customer]
+          example: field-worker
+        status:
+          type: string
+          enum: [active, inactive, suspended]
+          example: active
+
+    UserListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Request successful.
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        meta:
+          $ref: '#/components/schemas/PaginatedMeta'
+        links:
+          $ref: '#/components/schemas/PaginatedLinks'

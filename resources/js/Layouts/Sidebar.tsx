@@ -9,6 +9,7 @@ import {
     FileUp,
     FileCheck2,
     BarChart3,
+    FileSpreadsheet,
     LifeBuoy,
     BookOpen,
     X,
@@ -43,11 +44,11 @@ const menuSections: MenuSection[] = [
         ],
     },
     {
-        title: 'Monitoring',
+        title: 'Operations',
         items: [
+            { label: 'Worker Sessions', href: '/sesi-pekerja', routeName: 'kelola-sesi', icon: ClipboardList, roles: ['super-admin'] },
             { label: 'Cargo Monitoring', href: '/monitoring-barang', icon: PackageSearch },
             { label: 'Checkpoint Monitoring', href: '/monitoring-checkpoint', icon: MapPin },
-            { label: 'Worker Sessions', href: '/sesi-pekerja', routeName: 'kelola-sesi', icon: ClipboardList, roles: ['super-admin'] },
         ],
     },
     {
@@ -59,11 +60,17 @@ const menuSections: MenuSection[] = [
         ],
     },
     {
-        title: 'Support & Settings',
+        title: 'Configuration',
+        items: [
+            { label: 'Report Templates', href: '/template-laporan', routeName: 'template-laporan.index', icon: FileSpreadsheet, roles: ['super-admin'] },
+            { label: 'Account Management', href: '/kelola-akun', routeName: 'kelola-akun', icon: Users, roles: ['super-admin'] },
+        ],
+    },
+    {
+        title: 'Support',
         items: [
             { label: 'Help Center', href: '/pusat-bantuan', routeName: 'pusat-bantuan', icon: LifeBuoy },
             { label: 'System Guide', href: '/panduan', routeName: 'panduan', icon: BookOpen },
-            { label: 'Account Management', href: '/kelola-akun', routeName: 'kelola-akun', icon: Users, roles: ['super-admin'] },
         ],
     },
 ];

@@ -11,9 +11,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Checkpoint;
 use App\Models\Document;
 use App\Models\ShippingSession;
+use App\Services\SessionCheckpointService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -31,6 +33,9 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  */
 class VerifikasiBerkasController extends Controller
 {
+    public function __construct(
+        private readonly SessionCheckpointService $sessionCheckpointService,
+    ) {}
     /**
      * The 5 mandatory document types required for every shipment verification.
      */
@@ -266,25 +271,30 @@ class VerifikasiBerkasController extends Controller
             ->filter()
             ->implode(', ');
 
-        $firstCheckpoint = Checkpoint::query()->orderBy('id')->first();
+        $firstCheckpoint = Checkpoint::query()->orderBy('sequence', 'asc')->first();
 
-        $shippingSession = ShippingSession::create([
-            'customer_id'           => $customerId,
-            'created_by'            => auth()->id(),
-            'assignment_no'         => $assignmentNoRef,
-            'cargo_name'            => $cargoNames !== '' ? $cargoNames : '-',
-            'total_quantity'        => (float) ($ciData['totalQuantity']['totalGoods'] ?? 0),
-            'unit'                  => $ciData['totalQuantity']['totalGoodsUnit'] ?? '-',
-            'origin'                => $ciData['transportDetail']['portOfLoading'] ?? null,
-            'destination'           => $ciData['transportDetail']['portOfDischarge'] ?? null,
-            'current_checkpoint_id' => $firstCheckpoint?->id,
-            'status'                => ShippingSessionStatus::PENDING->value,
-        ]);
+        DB::transaction(function () use ($assignmentNoRef, $customerId, $cargoNames, $ciData, $firstCheckpoint) {
+            $shippingSession = ShippingSession::create([
+                'customer_id'           => $customerId,
+                'created_by'            => auth()->id(),
+                'assignment_no'         => $assignmentNoRef,
+                'cargo_name'            => $cargoNames !== '' ? $cargoNames : '-',
+                'total_quantity'        => (float) ($ciData['totalQuantity']['totalGoods'] ?? 0),
+                'unit'                  => $ciData['totalQuantity']['totalGoodsUnit'] ?? '-',
+                'origin'                => $ciData['transportDetail']['portOfLoading'] ?? null,
+                'destination'           => $ciData['transportDetail']['portOfDischarge'] ?? null,
+                'current_checkpoint_id' => $firstCheckpoint?->id,
+                'status'                => ShippingSessionStatus::PENDING->value,
+            ]);
 
-        // Isi shipping_session_id di seluruh dokumen assignment ini (sebelumnya kosong).
-        Document::query()
-            ->where('assignment_no_ref', $assignmentNoRef)
-            ->update(['shipping_session_id' => $shippingSession->id]);
+            // Isi shipping_session_id di seluruh dokumen assignment ini (sebelumnya kosong).
+            Document::query()
+                ->where('assignment_no_ref', $assignmentNoRef)
+                ->update(['shipping_session_id' => $shippingSession->id]);
+
+            // Inisialisasi 4 Checkpoints + template snapshot
+            $this->sessionCheckpointService->createCheckpointsForSession($shippingSession);
+        });
     }
 
     /**

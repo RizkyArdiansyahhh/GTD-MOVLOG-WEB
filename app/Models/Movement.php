@@ -14,6 +14,7 @@ class Movement extends Model
     use HasUlids;
 
     protected $fillable = [
+        'id',
         'session_checkpoint_id',
         'parent_movement_id',
         'movement_name',

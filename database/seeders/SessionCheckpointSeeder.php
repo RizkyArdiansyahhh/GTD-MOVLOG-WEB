@@ -22,55 +22,72 @@ class SessionCheckpointSeeder extends Seeder
         $session3 = ShippingSession::where('assignment_no', 'TRK-2024-002')->first();
         $session4 = ShippingSession::where('assignment_no', 'TRK-2024-003')->first();
 
-        $checkpoints = Checkpoint::all()->keyBy('name');
+        $checkpoints = Checkpoint::orderBy('sequence', 'asc')->get()->keyBy('name');
 
-        $assignments = [
-            // SES-2048 - Excavator CAT 320 GC (Budi Santoso at Pelabuhan)
+        // Define strict sequential checkpoint states for each session
+        $sessionConfigs = [
+            // TRK-2024-001 - Excavator CAT 320 (Currently in Stage 3: Pelabuhan)
             [
-                'session'    => $session2,
-                'checkpoint' => $checkpoints['Pelabuhan'] ?? null,
-                'pic'        => $budi,
-                'status'     => 'in_progress',
+                'session' => $session1,
+                'stages'  => [
+                    ['name' => 'Kapal',     'pic' => $budi, 'status' => 'completed'],
+                    ['name' => 'Tongkang',  'pic' => $budi, 'status' => 'completed'],
+                    ['name' => 'Pelabuhan', 'pic' => $budi, 'status' => 'in_progress'],
+                    ['name' => 'Site',      'pic' => null,  'status' => 'pending'],
+                ],
             ],
+            // SES-2048 - Excavator CAT 320 GC (Currently in Stage 3: Pelabuhan)
             [
-                'session'    => $session2,
-                'checkpoint' => $checkpoints['Kapal'] ?? null,
-                'pic'        => $budi,
-                'status'     => 'completed',
+                'session' => $session2,
+                'stages'  => [
+                    ['name' => 'Kapal',     'pic' => $budi, 'status' => 'completed'],
+                    ['name' => 'Tongkang',  'pic' => $budi, 'status' => 'completed'],
+                    ['name' => 'Pelabuhan', 'pic' => $budi, 'status' => 'in_progress'],
+                    ['name' => 'Site',      'pic' => null,  'status' => 'pending'],
+                ],
             ],
-            // TRK-2024-001 - Excavator CAT 320 (Budi Santoso)
+            // TRK-2024-002 - Dump Truck Hino 500 (Currently in Stage 2: Tongkang)
             [
-                'session'    => $session1,
-                'checkpoint' => $checkpoints['Pelabuhan'] ?? null,
-                'pic'        => $budi,
-                'status'     => 'in_progress',
+                'session' => $session3,
+                'stages'  => [
+                    ['name' => 'Kapal',     'pic' => $rudi, 'status' => 'completed'],
+                    ['name' => 'Tongkang',  'pic' => $rudi, 'status' => 'in_progress'],
+                    ['name' => 'Pelabuhan', 'pic' => null,  'status' => 'pending'],
+                    ['name' => 'Site',      'pic' => null,  'status' => 'pending'],
+                ],
             ],
-            // TRK-2024-002 - Dump Truck Hino (Rudi Hermawan at Tongkang)
+            // TRK-2024-003 - Komatsu PC200-8 (Delivered - All 4 Stages Completed)
             [
-                'session'    => $session3,
-                'checkpoint' => $checkpoints['Tongkang'] ?? null,
-                'pic'        => $rudi,
-                'status'     => 'in_progress',
-            ],
-            // TRK-2024-003 - Komatsu PC200 (Rudi Hermawan at Site)
-            [
-                'session'    => $session4,
-                'checkpoint' => $checkpoints['Site'] ?? null,
-                'pic'        => $rudi,
-                'status'     => 'completed',
+                'session' => $session4,
+                'stages'  => [
+                    ['name' => 'Kapal',     'pic' => $rudi, 'status' => 'completed'],
+                    ['name' => 'Tongkang',  'pic' => $rudi, 'status' => 'completed'],
+                    ['name' => 'Pelabuhan', 'pic' => $rudi, 'status' => 'completed'],
+                    ['name' => 'Site',      'pic' => $rudi, 'status' => 'completed'],
+                ],
             ],
         ];
 
-        foreach ($assignments as $item) {
-            if ($item['session'] && $item['checkpoint']) {
-                SessionCheckpoint::firstOrCreate(
+        foreach ($sessionConfigs as $config) {
+            $session = $config['session'];
+            if (!$session) {
+                continue;
+            }
+
+            foreach ($config['stages'] as $stageConfig) {
+                $checkpoint = $checkpoints[$stageConfig['name']] ?? null;
+                if (!$checkpoint) {
+                    continue;
+                }
+
+                SessionCheckpoint::updateOrCreate(
                     [
-                        'shipping_session_id' => $item['session']->id,
-                        'checkpoint_id'       => $item['checkpoint']->id,
+                        'shipping_session_id' => $session->id,
+                        'checkpoint_id'       => $checkpoint->id,
                     ],
                     [
-                        'pic_user_id' => $item['pic']?->id,
-                        'status'      => $item['status'],
+                        'pic_user_id' => $stageConfig['pic']?->id,
+                        'status'      => $stageConfig['status'],
                         'sync_status' => 'SYNCED',
                     ]
                 );

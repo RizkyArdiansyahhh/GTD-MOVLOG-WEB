@@ -27,6 +27,7 @@ class SessionCheckpointService extends BaseService
      *
      * The first checkpoint starts as IN_PROGRESS (aktif) and gets assigned to the provided PIC.
      * Subsequent checkpoints start as PENDING.
+     * Each checkpoint captures an immutable template_snapshot from the active master ReportTemplate.
      *
      * @param  array{pic_user_id?: string}|null  $initialAssignment
      */
@@ -36,12 +37,47 @@ class SessionCheckpointService extends BaseService
     ): void {
         DB::transaction(function () use ($session, $initialAssignment) {
             $now = Carbon::now();
-            $checkpoints = Checkpoint::orderBy('sequence', 'asc')->get();
+            $checkpoints = Checkpoint::with(['reportTemplates.templateFields'])->orderBy('sequence', 'asc')->get();
 
             $firstCheckpoint = null;
 
             foreach ($checkpoints as $index => $checkpoint) {
                 $isFirst = ($index === 0);
+
+                // Build immutable template snapshot from active master template
+                $template = $checkpoint->reportTemplates->sortByDesc('created_at')->first();
+                $snapshot = null;
+
+                if ($template) {
+                    $fields = $template->templateFields->sortBy('sort_order');
+                    $formFields = [];
+                    $photoSlots = [];
+
+                    foreach ($fields as $field) {
+                        $fieldData = [
+                            'field_key'  => $field->field_key ?? $field->field_name,
+                            'label'      => $field->label ?? $field->field_name,
+                            'field_type' => $field->field_type,
+                            'required'   => (bool) $field->required,
+                            'options'    => $field->options,
+                            'sort_order' => (int) $field->sort_order,
+                        ];
+
+                        if ($field->field_type === 'photo') {
+                            $photoSlots[] = $fieldData;
+                        } else {
+                            $formFields[] = $fieldData;
+                        }
+                    }
+
+                    $snapshot = [
+                        'template_id'   => $template->id,
+                        'template_name' => $template->name,
+                        'version'       => 1,
+                        'fields'        => array_values($formFields),
+                        'photo_slots'   => array_values($photoSlots),
+                    ];
+                }
 
                 SessionCheckpoint::create([
                     'shipping_session_id' => $session->id,
@@ -50,6 +86,7 @@ class SessionCheckpointService extends BaseService
                     'status'              => $isFirst ? SessionCheckpointStatus::IN_PROGRESS : SessionCheckpointStatus::PENDING,
                     'actual_start'        => $isFirst ? $now : null,
                     'sync_status'         => SyncStatus::SYNCED,
+                    'template_snapshot'   => $snapshot,
                 ]);
 
                 if ($isFirst) {
@@ -93,39 +130,65 @@ class SessionCheckpointService extends BaseService
      */
     public function completeCheckpoint(SessionCheckpoint $sessionCheckpoint): void
     {
-        if ($sessionCheckpoint->status !== SessionCheckpointStatus::IN_PROGRESS) {
-            throw new BusinessException(
-                'Hanya checkpoint dengan status aktif yang bisa diselesaikan.'
-            );
-        }
+        DB::transaction(function () use ($sessionCheckpoint) {
+            $lockedCheckpoint = SessionCheckpoint::where('id', $sessionCheckpoint->id)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        if (empty($sessionCheckpoint->pic_user_id)) {
-            throw new BusinessException(
-                'Checkpoint harus memiliki PIC sebelum diselesaikan.'
-            );
-        }
+            if ($lockedCheckpoint->status !== SessionCheckpointStatus::IN_PROGRESS) {
+                throw new BusinessException(
+                    'Hanya checkpoint dengan status aktif yang bisa diselesaikan.'
+                );
+            }
 
-        $session = $sessionCheckpoint->shippingSession;
-        $currentSeq = $sessionCheckpoint->checkpoint->sequence;
+            if (empty($lockedCheckpoint->pic_user_id)) {
+                throw new BusinessException(
+                    'Checkpoint harus memiliki PIC sebelum diselesaikan.'
+                );
+            }
 
-        // Verify prior checkpoints are completed
-        $incompletePrior = SessionCheckpoint::where('shipping_session_id', $session->id)
-            ->whereHas('checkpoint', function ($query) use ($currentSeq) {
-                $query->where('sequence', '<', $currentSeq);
-            })
-            ->where('status', '!=', SessionCheckpointStatus::COMPLETED->value)
-            ->exists();
+            $session = $lockedCheckpoint->shippingSession;
+            $currentSeq = $lockedCheckpoint->checkpoint->sequence;
 
-        if ($incompletePrior) {
-            throw new BusinessException(
-                'Tidak bisa menyelesaikan checkpoint ini — checkpoint sebelumnya belum selesai.'
-            );
-        }
+            // Verify prior checkpoints are completed
+            $incompletePrior = SessionCheckpoint::where('shipping_session_id', $session->id)
+                ->whereHas('checkpoint', function ($query) use ($currentSeq) {
+                    $query->where('sequence', '<', $currentSeq);
+                })
+                ->where('status', '!=', SessionCheckpointStatus::COMPLETED->value)
+                ->exists();
 
-        DB::transaction(function () use ($sessionCheckpoint, $session, $currentSeq) {
+            if ($incompletePrior) {
+                throw new BusinessException(
+                    'Tidak bisa menyelesaikan checkpoint ini — checkpoint sebelumnya belum selesai.'
+                );
+            }
+
+            // Verify that physical movements are registered and have completed reports
+            $movementService = app(MovementService::class);
+            $movements = $movementService->resolveMovementsForCheckpoint($session, $lockedCheckpoint);
+
+            if ($movements->isEmpty()) {
+                throw new BusinessException(
+                    'Tidak bisa menyelesaikan tahap ini karena belum ada armada fisik yang terdaftar.'
+                );
+            }
+
+            foreach ($movements as $mov) {
+                $report = \App\Models\Report::where('session_checkpoint_id', $lockedCheckpoint->id)
+                    ->where('movement_id', $mov->id)
+                    ->first();
+
+                if (!$report || $report->status !== \App\Enums\ReportStatus::COMPLETED) {
+                    throw new BusinessException(
+                        "Armada '{$mov->movement_name}' belum menyelesaikan seluruh laporan/foto pada tahap ini."
+                    );
+                }
+            }
+
             $now = Carbon::now();
 
-            $sessionCheckpoint->update([
+            $lockedCheckpoint->update([
                 'status'        => SessionCheckpointStatus::COMPLETED,
                 'actual_finish' => $now,
             ]);

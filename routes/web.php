@@ -13,6 +13,7 @@ use App\Http\Controllers\Web\LaporanController;
 use App\Http\Controllers\Web\MonitoringBarangController;
 use App\Http\Controllers\Web\MonitoringCheckpointController;
 use App\Http\Controllers\Web\ProfileController;
+use App\Http\Controllers\Web\ReportTemplateController;
 use App\Http\Controllers\Web\SesiPekerjaController;
 use App\Http\Controllers\Web\SubmitBerkasController;
 use App\Http\Controllers\Web\SupportController;
@@ -135,8 +136,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Kelola Sesi Pekerja
         Route::get('sesi-pekerja', [SesiPekerjaController::class, 'index'])
             ->name('sesi-pekerja');
-        Route::get('sesi-pekerja/tambah', [SesiPekerjaController::class, 'create'])
-            ->name('sesi-pekerja.create');
+
+        // Master Template Laporan
+        Route::resource('template-laporan', ReportTemplateController::class)->except(['show']);
     });
 
     // --- Supervisor Routes --------------------------------------------
@@ -157,17 +159,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('users', UserController::class);
 
     // Sesi Pekerja Operations
-    Route::post('sesi-pekerja', [SesiPekerjaController::class, 'store'])
-        ->name('sesi-pekerja.store');
-
     Route::get('sesi-pekerja/{session}', [SesiPekerjaController::class, 'show'])
         ->name('sesi-pekerja.show');
+
+    Route::post('sesi-pekerja/{session}/assign-all', [SesiPekerjaController::class, 'assignAllStages'])
+        ->name('sesi-pekerja.assign-all');
 
     Route::post('sesi-pekerja/{session}/stages/{stage}/assign', [SesiPekerjaController::class, 'assignStage'])
         ->name('sesi-pekerja.stages.assign');
 
     Route::post('sesi-pekerja/{session}/stages/{stage}/complete', [SesiPekerjaController::class, 'completeStage'])
         ->name('sesi-pekerja.stages.complete');
+
+    // Movement & Report Operations for Web Admin
+    Route::post('sesi-pekerja/{session}/stages/{stage}/movements', [SesiPekerjaController::class, 'storeMovement'])
+        ->name('sesi-pekerja.stages.movements.store');
+
+    Route::delete('sesi-pekerja/{session}/movements/{movement}', [SesiPekerjaController::class, 'deleteMovement'])
+        ->name('sesi-pekerja.movements.destroy');
+
+    Route::post('sesi-pekerja/{session}/stages/{stage}/movements/{movement}/reports', [SesiPekerjaController::class, 'saveReport'])
+        ->name('sesi-pekerja.stages.movements.reports.save');
+
+    Route::post('sesi-pekerja/{session}/stages/{stage}/movements/{movement}/complete-report', [SesiPekerjaController::class, 'completeReport'])
+        ->name('sesi-pekerja.stages.movements.reports.complete');
 
     // Monitoring Barang
     Route::get('monitoring-barang', [MonitoringBarangController::class, 'index'])

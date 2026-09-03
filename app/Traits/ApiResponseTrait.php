@@ -53,7 +53,8 @@ trait ApiResponseTrait
     protected function error(
         string $message = 'An error occurred.',
         int $statusCode = 400,
-        mixed $errors = null
+        mixed $errors = null,
+        ?string $errorCode = null,
     ): JsonResponse {
         $response = [
             'success' => false,
@@ -64,6 +65,10 @@ trait ApiResponseTrait
             $response['errors'] = $errors;
         }
 
+        if ($errorCode !== null) {
+            $response['error_code'] = $errorCode;
+        }
+
         return response()->json($response, $statusCode);
     }
 
@@ -72,7 +77,7 @@ trait ApiResponseTrait
      */
     protected function notFound(string $message = 'Resource not found.'): JsonResponse
     {
-        return $this->error($message, 404);
+        return $this->error($message, 404, null, 'NOT_FOUND');
     }
 
     /**
@@ -80,7 +85,7 @@ trait ApiResponseTrait
      */
     protected function forbidden(string $message = 'Forbidden.'): JsonResponse
     {
-        return $this->error($message, 403);
+        return $this->error($message, 403, null, 'FORBIDDEN');
     }
 
     /**

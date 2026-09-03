@@ -29,8 +29,8 @@ export default function KelolaSesiIndex({ sessions, fieldWorkers }: KelolaSesiIn
         return activeSessions.filter(
             (s) =>
                 (s.sessionId || s.id).toLowerCase().includes(q) ||
-                s.unitName.toLowerCase().includes(q) ||
-                s.petugas.toLowerCase().includes(q)
+                (s.unitName || '').toLowerCase().includes(q) ||
+                (s.petugas || '').toLowerCase().includes(q)
         );
     }, [searchQuery, activeSessions]);
 
@@ -52,31 +52,16 @@ export default function KelolaSesiIndex({ sessions, fieldWorkers }: KelolaSesiIn
             <Head title="Kelola Sesi Pekerja - GTD Logistics" />
 
             <div className="max-w-7xl mx-auto space-y-6">
-                {/* ── Outer Page Title & Primary Action ── */}
+                {/* ── Outer Page Title ── */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight text-[#06283A]">
                             Kelola Sesi
                         </h1>
                         <p className="text-xs text-slate-500 mt-1">
-                            Pusat monitoring progress pekerjaan alat berat sebelum memasuki monitoring checkpoint.
+                            Pusat monitoring progress pekerjaan logistik yang dibuat otomatis setelah verifikasi berkas lengkap.
                         </p>
                     </div>
-
-                    {/* Primary Action Button */}
-                    <Link
-                        href="/sesi-pekerja/tambah"
-                        className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-all duration-150 shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
-                        style={{
-                            backgroundColor: '#F5B800',
-                            color: '#06283A',
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#E0A800')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#F5B800')}
-                    >
-                        <Plus size={18} strokeWidth={2.5} />
-                        <span>Buat Sesi Baru</span>
-                    </Link>
                 </div>
 
                 {/* ── Flash Message ── */}

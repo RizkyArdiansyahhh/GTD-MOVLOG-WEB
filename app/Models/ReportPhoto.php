@@ -12,6 +12,7 @@ class ReportPhoto extends Model
 
     protected $fillable = [
         'report_id',
+        'template_field_id',
         'photo_url',
         'caption',
         'sort_order',
@@ -36,6 +37,14 @@ class ReportPhoto extends Model
     {
         return $this->belongsTo(
             Report::class
+        );
+    }
+
+    public function templateField(): BelongsTo
+    {
+        return $this->belongsTo(
+            TemplateField::class,
+            'template_field_id'
         );
     }
 }

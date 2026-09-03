@@ -26,7 +26,7 @@
         <env name="DB_CONNECTION" value="pgsql"/>
         <env name="DB_HOST" value="postgres"/>
         <env name="DB_PORT" value="5432"/>
-        <env name="DB_DATABASE" value="lms_db"/>
+        <env name="DB_DATABASE" value="lms_db_testing"/>
         <env name="DB_USERNAME" value="lms_user"/>
         <env name="DB_PASSWORD" value="secret"/>
         <env name="MAIL_MAILER" value="array"/>

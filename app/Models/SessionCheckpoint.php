@@ -21,6 +21,7 @@ class SessionCheckpoint extends Model
         'actual_start',
         'actual_finish',
         'sync_status',
+        'template_snapshot',
     ];
 
     protected function casts(): array
@@ -28,6 +29,7 @@ class SessionCheckpoint extends Model
         return [
             'status' => SessionCheckpointStatus::class,
             'sync_status' => SyncStatus::class,
+            'template_snapshot' => 'array',
 
             'actual_start' => 'datetime',
             'actual_finish' => 'datetime',

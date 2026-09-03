@@ -35,6 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+            'idempotent' => \App\Http\Middleware\HandleIdempotency::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [
@@ -46,52 +47,69 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Business rule violations (from Services)
         $exceptions->render(function (BusinessException $e, Request $request) {
-            if ($request->expectsJson()) {
+            if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->json([
-                    'success' => false,
-                    'message' => $e->getMessage(),
-                ], $e->getCode() ?: 422);
+                    'success'    => false,
+                    'message'    => $e->getMessage(),
+                    'error_code' => 'BUSINESS_RULE_VIOLATION',
+                ], 422);
             }
         });
 
         // Model not found → 404
         $exceptions->render(function (ModelNotFoundException $e, Request $request) {
-            if ($request->expectsJson()) {
+            if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->json([
-                    'success' => false,
-                    'message' => 'Resource not found.',
+                    'success'    => false,
+                    'message'    => 'Resource not found.',
+                    'error_code' => 'NOT_FOUND',
                 ], 404);
             }
         });
 
         // Validation errors → 422
         $exceptions->render(function (ValidationException $e, Request $request) {
-            if ($request->expectsJson()) {
+            if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Validation failed.',
-                    'errors' => $e->errors(),
+                    'message' => 'The given data was invalid.',
+                    'errors'  => $e->errors(),
                 ], 422);
             }
         });
 
         // Unauthenticated → 401
         $exceptions->render(function (AuthenticationException $e, Request $request) {
-            if ($request->expectsJson()) {
+            if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->json([
-                    'success' => false,
-                    'message' => 'Unauthenticated.',
+                    'success'    => false,
+                    'message'    => 'Unauthenticated.',
+                    'error_code' => 'UNAUTHENTICATED',
                 ], 401);
             }
         });
 
         // HTTP Exceptions (403, 404, etc.)
         $exceptions->render(function (HttpException $e, Request $request) {
-            if ($request->expectsJson()) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                $status = $e->getStatusCode();
+                $errorCode = match ($status) {
+                    403     => 'FORBIDDEN',
+                    404     => 'NOT_FOUND',
+                    400     => 'BAD_REQUEST',
+                    405     => 'METHOD_NOT_ALLOWED',
+                    default => 'HTTP_ERROR',
+                };
+
                 return response()->json([
-                    'success' => false,
-                    'message' => $e->getMessage() ?: 'An error occurred.',
-                ], $e->getStatusCode());
+                    'success'    => false,
+                    'message'    => $e->getMessage() ?: match ($status) {
+                        403     => 'Forbidden.',
+                        404     => 'Resource not found.',
+                        default => 'An error occurred.',
+                    },
+                    'error_code' => $errorCode,
+                ], $status);
             }
         });
     })->create();

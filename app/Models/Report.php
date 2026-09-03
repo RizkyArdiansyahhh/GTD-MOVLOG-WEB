@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ReportStatus;
 use App\Enums\ReportType;
 use App\Enums\SyncStatus;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -17,6 +18,7 @@ class Report extends Model
         'session_checkpoint_id',
         'movement_id',
         'report_template_id',
+        'status',
         'event_at',
         'report_type',
         'moved_quantity',
@@ -30,6 +32,7 @@ class Report extends Model
     protected function casts(): array
     {
         return [
+            'status' => ReportStatus::class,
             'event_at' => 'datetime',
 
             'moved_quantity' => 'decimal:2',

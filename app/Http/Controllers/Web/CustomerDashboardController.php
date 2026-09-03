@@ -27,19 +27,6 @@ class CustomerDashboardController extends Controller
         $user = $request->user();
         $customer = $user?->customer;
 
-        if (!$customer && $user) {
-            $customer = Customer::firstOrCreate(
-                ['email' => $user->email],
-                [
-                    'company_name' => $user->name,
-                    'pic_name'     => $user->name,
-                    'email'        => $user->email,
-                ]
-            );
-            $user->update(['customer_id' => $customer->id]);
-            $user->setRelation('customer', $customer);
-        }
-
         if (!$customer) {
             abort(403, 'Akun Anda belum terhubung ke perusahaan customer manapun. Hubungi Admin GTD untuk menyelesaikan konfigurasi akun.');
         }

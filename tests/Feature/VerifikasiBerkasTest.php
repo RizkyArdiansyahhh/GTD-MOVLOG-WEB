@@ -64,15 +64,10 @@ class VerifikasiBerkasTest extends TestCase
         ]);
         $this->supervisorUser->assignRole('supervisor');
 
-        $this->docTypeBL = DocumentType::firstOrCreate(
-            ['name' => 'Bill of Lading'],
-            ['description' => 'Surat Muatan Kapal']
-        );
+        $this->seed(\Database\Seeders\DocumentTypeSeeder::class);
 
-        $this->docTypeINV = DocumentType::firstOrCreate(
-            ['name' => 'Commercial Invoice'],
-            ['description' => 'Faktur Komersial']
-        );
+        $this->docTypeBL = DocumentType::find(1);
+        $this->docTypeINV = DocumentType::find(2);
     }
 
     public function test_non_supervisor_cannot_access_verification_queue(): void
@@ -299,7 +294,7 @@ class VerifikasiBerkasTest extends TestCase
         $docBL = Document::create([
             'assignment_no_ref' => $asg,
             'customer_id'       => $this->customer->id,
-            'document_type_id'  => 1,
+            'document_type_id'  => $this->docTypeBL->id,
             'document_data'     => ['documentDetail' => ['number' => 'BL-001', 'date' => '2026-08-28']],
             'file_name'         => 'bl.pdf',
             'file_path'         => "documents/{$asg}/bl.pdf",
@@ -314,7 +309,7 @@ class VerifikasiBerkasTest extends TestCase
         $docINV = Document::create([
             'assignment_no_ref' => $asg,
             'customer_id'       => $this->customer->id,
-            'document_type_id'  => 2,
+            'document_type_id'  => $this->docTypeINV->id,
             'document_data'     => ['documentDetail' => ['number' => 'INV-001', 'date' => '2026-08-28']],
             'file_name'         => 'inv.pdf',
             'file_path'         => "documents/{$asg}/inv.pdf",

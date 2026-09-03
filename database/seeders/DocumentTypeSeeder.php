@@ -27,5 +27,9 @@ class DocumentTypeSeeder extends Seeder
                 ]
             );
         }
+
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement("SELECT setval(pg_get_serial_sequence('document_types', 'id'), COALESCE((SELECT MAX(id) FROM document_types), 1))");
+        }
     }
 }

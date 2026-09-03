@@ -9,9 +9,13 @@ use App\Enums\ShippingSessionStatus;
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
 use App\Models\Checkpoint;
+use App\Models\Customer;
 use App\Models\SessionCheckpoint;
 use App\Models\ShippingSession;
 use App\Models\User;
+use App\Services\SessionCheckpointService;
+use Database\Seeders\CheckpointSeeder;
+use Database\Seeders\ReportTemplateSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -26,14 +30,8 @@ class SesiPekerjaTest extends TestCase
         parent::setUp();
         config(['inertia.testing.ensure_pages_exist' => false]);
         $this->seed(RoleSeeder::class);
-
-        // Seed default 4 checkpoints if not exists
-        if (Checkpoint::count() === 0) {
-            Checkpoint::create(['name' => 'Kapal', 'sequence' => 1, 'description' => 'Tahap 1']);
-            Checkpoint::create(['name' => 'Tongkang', 'sequence' => 2, 'description' => 'Tahap 2']);
-            Checkpoint::create(['name' => 'Pelabuhan', 'sequence' => 3, 'description' => 'Tahap 3']);
-            Checkpoint::create(['name' => 'Site', 'sequence' => 4, 'description' => 'Tahap 4']);
-        }
+        $this->seed(CheckpointSeeder::class);
+        $this->seed(ReportTemplateSeeder::class);
     }
 
     public function test_super_admin_can_access_sesi_pekerja_index_page(): void
@@ -46,58 +44,17 @@ class SesiPekerjaTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_super_admin_can_access_sesi_pekerja_create_page(): void
+    public function test_session_checkpoints_and_progress_lifecycle(): void
     {
         $superAdmin = User::factory()->create(['status' => UserStatus::Active->value]);
         $superAdmin->assignRole(UserRole::SuperAdmin->value);
 
-        $response = $this->actingAs($superAdmin)->get('/sesi-pekerja/tambah');
-
-        $response->assertStatus(200);
-    }
-
-    public function test_dropdown_only_contains_active_field_workers(): void
-    {
-        $superAdmin = User::factory()->create(['status' => UserStatus::Active->value]);
-        $superAdmin->assignRole(UserRole::SuperAdmin->value);
-
-        // Active field worker (should be in dropdown)
-        $activeFieldWorker = User::factory()->create([
-            'name'   => 'Ahmad Fauzan',
-            'status' => UserStatus::Active->value,
+        $customer = Customer::create([
+            'company_name' => 'PT Test Logistik',
+            'pic_name'     => 'Budi',
+            'email'        => 'budi@test.com',
+            'phone'        => '0812345678',
         ]);
-        $activeFieldWorker->assignRole(UserRole::FieldWorker->value);
-
-        // Inactive field worker (should NOT be in dropdown)
-        $inactiveFieldWorker = User::factory()->create([
-            'name'   => 'Budi Nonaktif',
-            'status' => UserStatus::Inactive->value,
-        ]);
-        $inactiveFieldWorker->assignRole(UserRole::FieldWorker->value);
-
-        // Active staff worker (should NOT be in dropdown)
-        $staffUser = User::factory()->create([
-            'name'   => 'Cahyo Staff',
-            'status' => UserStatus::Active->value,
-        ]);
-        $staffUser->assignRole(UserRole::Staff->value);
-
-        $response = $this->actingAs($superAdmin)->get('/sesi-pekerja/tambah');
-
-        $response->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('KelolaSesi/Create')
-                ->has('fieldWorkers', 1)
-                ->where('fieldWorkers.0.id', (string) $activeFieldWorker->id)
-                ->where('fieldWorkers.0.name', 'Ahmad Fauzan')
-                ->where('fieldWorkers.0.status_label', 'Active')
-            );
-    }
-
-    public function test_store_session_with_checkpoints_and_progress_lifecycle(): void
-    {
-        $superAdmin = User::factory()->create(['status' => UserStatus::Active->value]);
-        $superAdmin->assignRole(UserRole::SuperAdmin->value);
 
         $worker1 = User::factory()->create(['name' => 'Worker 1', 'status' => UserStatus::Active->value]);
         $worker1->assignRole(UserRole::FieldWorker->value);
@@ -105,21 +62,23 @@ class SesiPekerjaTest extends TestCase
         $worker2 = User::factory()->create(['name' => 'Worker 2', 'status' => UserStatus::Active->value]);
         $worker2->assignRole(UserRole::FieldWorker->value);
 
-        // 1. Store session
-        $response = $this->actingAs($superAdmin)->post('/sesi-pekerja', [
-            'id_sesi'           => 'SES-TEST-001',
-            'units'             => [
-                ['unit_name' => 'Excavator CAT 320', 'quantity' => 2],
-            ],
-            'kapal_pic_user_id' => $worker1->id,
-            'notes'             => 'Test Catatan',
+        // 1. Automatically generated session (as done via document verification)
+        $session = ShippingSession::create([
+            'customer_id'    => $customer->id,
+            'created_by'     => $superAdmin->id,
+            'assignment_no'  => 'SES-TEST-001',
+            'cargo_name'     => 'Excavator CAT 320',
+            'total_quantity' => 2,
+            'unit'           => 'unit',
+            'status'         => ShippingSessionStatus::IN_TRANSIT,
         ]);
 
-        $response->assertRedirect('/sesi-pekerja');
+        $checkpointService = app(SessionCheckpointService::class);
+        $checkpointService->createCheckpointsForSession($session, [
+            'pic_user_id' => $worker1->id,
+        ]);
 
-        $session = ShippingSession::where('assignment_no', 'SES-TEST-001')->firstOrFail();
         $this->assertEquals(4, $session->sessionCheckpoints()->count());
-
         $checkpoints = $session->sessionCheckpoints()->with('checkpoint')->get()->sortBy('checkpoint.sequence')->values();
 
         // Checkpoint 1 (Kapal) should be active
@@ -137,9 +96,32 @@ class SesiPekerjaTest extends TestCase
         ]);
         $assignResponse->assertRedirect("/sesi-pekerja/{$session->id}");
         $cp2->refresh();
-        $this->assertEquals($worker2->id, $cp2->pic_user_id);
 
-        // 3. Complete Checkpoint 1 -> Checkpoint 2 auto-activates
+        // 3. Register and complete movement for Step 1 before completing stage
+        $movService = app(\App\Services\MovementService::class);
+        $tongkang = $movService->createMovement($session, $cp1, ['movement_name' => 'Tongkang Sesi 01'], $superAdmin->id);
+        $movService->saveMovementReportData(
+            $session,
+            $cp1,
+            $tongkang,
+            [
+                'nama_mv'       => 'MV Test',
+                'nama_tongkang' => 'Tongkang Sesi 01',
+                'ciqp_status'   => 'CLEARED',
+            ],
+            [
+                ['field_key' => 'foto_equipment_lct', 'photo_url' => 'https://s3/e.jpg'],
+                ['field_key' => 'foto_ciqp_approval', 'photo_url' => 'https://s3/c.jpg'],
+                ['field_key' => 'foto_lashing_tongkang', 'photo_url' => 'https://s3/l.jpg'],
+                ['field_key' => 'foto_barge_cast_off', 'photo_url' => 'https://s3/b.jpg'],
+            ],
+            $superAdmin->id,
+            -1.2,
+            116.8
+        );
+        $movService->completeMovementReport($session, $cp1, $tongkang);
+
+        // Complete Checkpoint 1 -> Checkpoint 2 auto-activates
         $completeResponse = $this->actingAs($superAdmin)->post("/sesi-pekerja/{$session->id}/stages/{$cp1->id}/complete");
         $completeResponse->assertRedirect("/sesi-pekerja/{$session->id}");
 

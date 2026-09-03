@@ -46,7 +46,7 @@ class UserServiceTest extends TestCase
         $this->repository
             ->shouldReceive('paginate')
             ->once()
-            ->with(15, ['*'], ['roles'], [])
+            ->with(15, ['*'], ['roles'])
             ->andReturn($paginator);
 
         $result = $this->service->list(15, null);
@@ -87,24 +87,23 @@ class UserServiceTest extends TestCase
     }
 
     #[Test]
-    public function it_throws_business_exception_when_deleting_last_super_admin(): void
+    public function it_throws_business_exception_when_deleting_self(): void
     {
         $this->expectException(BusinessException::class);
-        $this->expectExceptionMessage('Cannot delete the last super-admin user.');
+        $this->expectExceptionMessage('Anda tidak dapat menghapus akun Anda sendiri.');
 
-        $user = Mockery::mock(User::class);
-        $user->shouldReceive('hasRole')->with('super-admin')->andReturn(true);
+        $user = new User();
+        $user->id = 'user-1';
+
+        $currentUser = new User();
+        $currentUser->id = 'user-1';
 
         $this->repository
-            ->shouldReceive('findOrFail')
-            ->with(1, ['*'], ['roles', 'permissions'])
+            ->shouldReceive('find')
+            ->with('user-1')
             ->andReturn($user);
 
-        $this->repository
-            ->shouldReceive('count')
-            ->andReturn(1);
-
-        $this->service->delete(1);
+        $this->service->delete('user-1', $currentUser);
     }
 
     protected function tearDown(): void

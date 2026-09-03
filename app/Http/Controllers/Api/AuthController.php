@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Services\AuthService;
-use App\Traits\ApiResponseTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -19,10 +16,8 @@ use Illuminate\Http\Request;
  * Handles API authentication endpoints for Flutter application.
  * Thin controller: delegates all logic to AuthService.
  */
-class AuthController extends Controller
+class AuthController extends ApiController
 {
-    use ApiResponseTrait;
-
     public function __construct(
         private readonly AuthService $authService,
     ) {}
@@ -40,23 +35,10 @@ class AuthController extends Controller
         );
 
         return $this->success([
-            'user'  => new UserResource($result['user']),
-            'token' => $result['token'],
+            'token'      => $result['token'],
+            'token_type' => 'Bearer',
+            'user'       => new UserResource($result['user']),
         ], 'Login successful.');
-    }
-
-    /**
-     * POST /api/v1/auth/register
-     * Register a new public user account.
-     */
-    public function register(RegisterRequest $request): JsonResponse
-    {
-        $result = $this->authService->register($request->validated());
-
-        return $this->created([
-            'user'  => new UserResource($result['user']),
-            'token' => $result['token'],
-        ], 'Registration successful. Welcome!');
     }
 
     /**
