@@ -98,7 +98,7 @@ class MonitoringBarangService
 
                 $cargos[] = [
                     'id'                 => (string) ($cargo['id'] ?? ($idx + 1)),
-                    'descriptionOfGoods' => $name ?: ('Barang #' . ($idx + 1)),
+                    'descriptionOfGoods' => $name ?: ('Cargo Item #' . ($idx + 1)),
                     'type'               => $type ?: '-',
                     'brand'              => $brand ?: '-',
                     'quantity'           => $qty,
@@ -164,19 +164,19 @@ class MonitoringBarangService
             });
 
             $status = match (true) {
-                $statuses->contains(DocumentStatus::VERIFIED->value) => 'Dalam Perjalanan',
-                $statuses->contains(DocumentStatus::REJECTED->value) => 'Dibatalkan',
-                $statuses->contains(DocumentStatus::PENDING->value)  => 'Menunggu',
-                default                                              => 'Menunggu',
+                $statuses->contains(DocumentStatus::VERIFIED->value) => 'In Transit',
+                $statuses->contains(DocumentStatus::REJECTED->value) => 'Cancelled',
+                $statuses->contains(DocumentStatus::PENDING->value)  => 'Pending',
+                default                                              => 'Pending',
             };
 
             // 6. Dokumen Lampiran
             $documentItems = $docs->map(function ($doc) {
                 $rawStatus = $doc->status instanceof DocumentStatus ? $doc->status->value : (string) $doc->status;
                 $statusLabel = match ($rawStatus) {
-                    'VERIFIED' => 'Disetujui',
-                    'REJECTED' => 'Ditolak',
-                    'PENDING'  => 'Menunggu Verifikasi',
+                    'VERIFIED' => 'Approved',
+                    'REJECTED' => 'Rejected',
+                    'PENDING'  => 'Pending Verification',
                     default    => 'Draft',
                 };
 
@@ -212,7 +212,7 @@ class MonitoringBarangService
                 'createdBy'            => $uploader?->name ?? 'Staff',
                 'currentCheckpoint'    => $origin,
                 'totalCheckpoints'     => 4,
-                'completedCheckpoints' => $status === 'Dalam Perjalanan' ? 1 : 0,
+                'completedCheckpoints' => $status === 'In Transit' ? 1 : 0,
                 'itemCode'             => $itemCode,
                 'currentLocation'      => $origin,
                 'totalWeight'          => $totalWeight,
@@ -224,14 +224,14 @@ class MonitoringBarangService
                     [
                         'id' => 'cp1',
                         'name' => 'Pemuatan di ' . $origin,
-                        'status' => $status === 'Dalam Perjalanan' ? 'completed' : 'pending',
+                        'status' => $status === 'In Transit' ? 'completed' : 'pending',
                         'date' => $formattedDate,
                         'time' => $formattedTime,
-                        'notes' => $status === 'Dalam Perjalanan' ? 'Dokumen diverifikasi & muatan siap berangkat' : 'Menunggu verifikasi berkas',
+                        'notes' => $status === 'In Transit' ? 'Documents verified & cargo ready for departure' : 'Awaiting document verification',
                     ],
-                    ['id' => 'cp2', 'name' => 'Transit Transportasi', 'status' => $status === 'Dalam Perjalanan' ? 'current' : 'pending'],
-                    ['id' => 'cp3', 'name' => 'Bongkar Muat di ' . $destination, 'status' => 'pending'],
-                    ['id' => 'cp4', 'name' => 'Pengiriman ke Lokasi Akhir', 'status' => 'pending'],
+                    ['id' => 'cp2', 'name' => 'Transit Transport', 'status' => $status === 'In Transit' ? 'current' : 'pending'],
+                    ['id' => 'cp3', 'name' => 'Cargo Handling at ' . $destination, 'status' => 'pending'],
+                    ['id' => 'cp4', 'name' => 'Delivery to Final Destination', 'status' => 'pending'],
                 ],
                 'documents'            => $documentItems,
                 'reports'              => [],
@@ -241,11 +241,11 @@ class MonitoringBarangService
                         'id'    => 'act-' . $assignmentRef,
                         'time'  => $formattedTime,
                         'date'  => $formattedDate,
-                        'title' => $status === 'Dalam Perjalanan' 
-                            ? 'Dokumen disetujui & pengiriman aktif' 
-                            : ('Berkas disubmit (' . $docs->count() . ' dokumen)'),
+                        'title' => $status === 'In Transit' 
+                            ? 'Documents approved & shipment active' 
+                            : ('Documents submitted (' . $docs->count() . ' documents)'),
                         'user'  => $uploader?->name ?? 'Staff',
-                        'role'  => 'Staff Operasional',
+                        'role'  => 'Operations Staff',
                     ],
                 ],
             ];

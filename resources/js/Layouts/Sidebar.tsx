@@ -30,6 +30,16 @@ interface MenuItem {
     roles?: string[];
 }
 
+const menuItems: MenuItem[] = [
+    { label: 'Dashboard', href: '/', routeName: 'dashboard', icon: LayoutDashboard },
+    { label: 'Kelola Akun', href: '/kelola-akun', routeName: 'kelola-akun', icon: Users, roles: ['super-admin'] },
+    { label: 'Monitoring Barang', href: '/monitoring-barang', icon: PackageSearch },
+    { label: 'Monitoring Checkpoint', href: '/monitoring-checkpoint', icon: MapPin },
+    { label: 'Kelola Sesi Pekerja', href: '/sesi-pekerja', routeName: 'sesi-pekerja', icon: ClipboardList, roles: ['super-admin', 'staff'] },
+    { label: 'Submit Dokumen', href: '/submit-berkas', routeName: 'submit-berkas.index', icon: FileUp, roles: ['super-admin', 'staff'] },
+    { label: 'Verifikasi Dokumen', href: '/verifikasi-berkas', routeName: 'verifikasi-berkas', icon: FileCheck2, roles: ['supervisor'] },
+    { label: 'Laporan', href: '/laporan', icon: BarChart3 },
+];
 interface MenuSection {
     title: string;
     items: MenuItem[];
@@ -119,9 +129,8 @@ export default function Sidebar({
     const renderSidebarInner = (collapsed: boolean) => (
         <div className="flex flex-col h-full bg-white select-none relative">
             {/* -- Brand Header (Logo polos tanpa box) -- */}
-            <div className={`h-16 flex items-center justify-between border-b border-gray-100 shrink-0 ${
-                collapsed ? 'px-3 justify-center' : 'px-4'
-            }`}>
+            <div className={`h-16 flex items-center justify-between border-b border-gray-100 shrink-0 ${collapsed ? 'px-3 justify-center' : 'px-4'
+                }`}>
                 <Link href="/" className="flex items-center gap-3 group min-w-0">
                     <img
                         src="/logo.png"
@@ -146,9 +155,8 @@ export default function Sidebar({
                     <button
                         type="button"
                         onClick={onToggleCollapse}
-                        className={`hidden lg:flex items-center justify-center w-7 h-7 rounded-lg text-gray-400 hover:text-gray-800 hover:bg-gray-100 transition-colors ${
-                            collapsed ? 'mx-auto mt-1' : ''
-                        }`}
+                        className={`hidden lg:flex items-center justify-center w-7 h-7 rounded-lg text-gray-400 hover:text-gray-800 hover:bg-gray-100 transition-colors ${collapsed ? 'mx-auto mt-1' : ''
+                            }`}
                         title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
                         aria-label={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
                     >
@@ -202,13 +210,11 @@ export default function Sidebar({
                                         href={targetHref}
                                         onClick={() => { if (onClose) onClose(); }}
                                         title={collapsed ? item.label : undefined}
-                                        className={`group relative flex items-center ${
-                                            collapsed ? 'justify-center px-0 py-2.5 rounded-xl' : 'justify-between px-3 py-2.5 rounded-xl'
-                                        } text-xs font-semibold transition-all duration-150 ${
-                                            active
+                                        className={`group relative flex items-center ${collapsed ? 'justify-center px-0 py-2.5 rounded-xl' : 'justify-between px-3 py-2.5 rounded-xl'
+                                            } text-xs font-semibold transition-all duration-150 ${active
                                                 ? 'bg-[#0F172A] text-white shadow-sm'
                                                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/80'
-                                        }`}
+                                            }`}
                                     >
                                         <div className={`flex items-center gap-3 min-w-0 ${collapsed ? 'justify-center' : ''}`}>
                                             <Icon
@@ -226,9 +232,8 @@ export default function Sidebar({
                                         </div>
 
                                         {!collapsed && item.badge && (
-                                            <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
-                                                active ? 'bg-amber-400 text-gray-900' : 'bg-gray-100 text-gray-700'
-                                            }`}>
+                                            <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${active ? 'bg-amber-400 text-gray-900' : 'bg-gray-100 text-gray-700'
+                                                }`}>
                                                 {item.badge}
                                             </span>
                                         )}
@@ -265,9 +270,8 @@ export default function Sidebar({
         <>
             {/* -- Desktop Sidebar -- */}
             <aside
-                className={`hidden lg:flex fixed left-0 top-0 bottom-0 z-40 flex-col border-r border-gray-200/80 bg-white transition-all duration-200 ${
-                    isCollapsed ? 'w-20' : 'w-64'
-                }`}
+                className={`hidden lg:flex fixed left-0 top-0 bottom-0 z-40 flex-col border-r border-gray-200/80 bg-white transition-all duration-200 ${isCollapsed ? 'w-20' : 'w-64'
+                    }`}
             >
                 {renderSidebarInner(isCollapsed)}
             </aside>

@@ -49,7 +49,7 @@ class AuthenticatedSessionController extends Controller
             }
 
             throw ValidationException::withMessages([
-                'email' => 'Akun Anda saat ini dinonaktifkan. Silakan hubungi Administrator untuk informasi lebih lanjut.',
+                'email' => 'Your account has been deactivated. Please contact an Administrator for further assistance.',
             ]);
         }
 

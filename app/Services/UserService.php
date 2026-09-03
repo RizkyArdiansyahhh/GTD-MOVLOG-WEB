@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\DTOs\UserDTO;
+use App\Enums\UserRole;
+use App\Exceptions\BusinessException;
 use App\Models\User;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Spatie\LaravelData\Optional;
@@ -56,14 +58,30 @@ class UserService extends BaseService
     {
         return DB::transaction(function () use ($dto): User {
             $userData = [
-                'name'     => $dto->name,
-                'email'    => $dto->email,
+                'name' => $dto->name,
+                'email' => $dto->email,
                 'password' => Hash::make($dto->password),
-                'status'   => $dto->status->value,
+                'status' => $dto->status->value,
             ];
 
-            if ($dto->customer_id && !($dto->customer_id instanceof Optional)) {
-                $userData['customer_id'] = $dto->customer_id;
+            // Resolve customer ID from either customer_id or company_id
+            $customerId = ! ($dto->customer_id instanceof Optional) && $dto->customer_id ? $dto->customer_id : null;
+            if (! $customerId && ! ($dto->company_id instanceof Optional) && $dto->company_id) {
+                $customerId = $dto->company_id;
+            }
+
+            // Only assign customer_id if role is customer
+            $isCustomer = in_array(strtolower((string) $dto->role), [
+                UserRole::Customer->value,
+                'customer',
+            ], true);
+
+            if ($isCustomer && $customerId) {
+                $userData['customer_id'] = $customerId;
+            }
+
+            if (! ($dto->phone instanceof Optional) && $dto->phone) {
+                $userData['phone'] = $dto->phone;
             }
 
             /** @var User $user */
@@ -84,12 +102,12 @@ class UserService extends BaseService
     {
         return DB::transaction(function () use ($id, $dto): User {
             $data = [
-                'name'   => $dto->name,
-                'email'  => $dto->email,
+                'name' => $dto->name,
+                'email' => $dto->email,
                 'status' => $dto->status->value,
             ];
 
-            if ($dto->customer_id !== null && !($dto->customer_id instanceof Optional)) {
+            if ($dto->customer_id !== null && ! ($dto->customer_id instanceof Optional)) {
                 $data['customer_id'] = $dto->customer_id;
             }
 
@@ -116,13 +134,13 @@ class UserService extends BaseService
         /** @var User|null $user */
         $user = $this->userRepository->find($id);
 
-        if (!$user) {
-            throw new \Illuminate\Database\Eloquent\ModelNotFoundException('Pengguna tidak ditemukan.');
+        if (! $user) {
+            throw new ModelNotFoundException('User not found.');
         }
 
         // Business rule 1: Prevent deletion of currently logged-in user
         if ($currentUser && (string) $currentUser->id === (string) $user->id) {
-            throw new \App\Exceptions\BusinessException(
+            throw new BusinessException(
                 'Anda tidak dapat menghapus akun Anda sendiri.'
             );
         }
@@ -135,7 +153,7 @@ class UserService extends BaseService
             })->count();
 
             if ($adminCount <= 1) {
-                throw new \App\Exceptions\BusinessException(
+                throw new BusinessException(
                     'Minimal harus ada satu akun Admin.'
                 );
             }

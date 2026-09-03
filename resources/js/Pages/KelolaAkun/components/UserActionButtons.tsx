@@ -29,7 +29,7 @@ export default function UserActionButtons({
                 className="flex items-center justify-center rounded-lg transition-all duration-150 hover:bg-amber-50 cursor-pointer"
                 style={{ width: 32, height: 32 }}
                 title="Edit"
-                aria-label="Edit pengguna"
+                aria-label="Edit user"
             >
                 <Pencil size={16} className="text-gray-400 hover:text-amber-600" strokeWidth={1.8} />
             </button>
@@ -40,8 +40,8 @@ export default function UserActionButtons({
                 onClick={() => onDelete?.(userId)}
                 className="flex items-center justify-center rounded-lg transition-all duration-150 hover:bg-red-50 cursor-pointer"
                 style={{ width: 32, height: 32 }}
-                title="Hapus"
-                aria-label="Hapus pengguna"
+                title="Delete"
+                aria-label="Delete user"
             >
                 <Trash2 size={16} className="text-gray-400 hover:text-red-600" strokeWidth={1.8} />
             </button>

@@ -16,14 +16,14 @@ export default function MonitoringBarang({ items: propItems }: MonitoringBarangP
   const [selectedItem, setSelectedItem] = useState<MonitoringItem | null>(null);
 
   return (
-    <DashboardLayout title="Monitor Barang">
-      <Head title="Monitor Barang" />
+    <DashboardLayout title="Cargo Monitoring">
+      <Head title="Cargo Monitoring" />
 
       <div className="p-6 flex gap-4" style={{ minHeight: '100%', fontFamily: "'Poppins', sans-serif" }}>
         <div className="flex-1 min-w-0 flex flex-col gap-5">
           <div className="flex items-center justify-between">
             <h1 style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 600, fontSize: 32, color: '#06283A' }}>
-              Monitor Barang
+              Cargo Monitoring
             </h1>
             <div className="text-xs text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full font-medium">
               Total Pengiriman: {items.length}
@@ -37,7 +37,7 @@ export default function MonitoringBarang({ items: propItems }: MonitoringBarangP
               </div>
               <h3 className="text-base font-semibold text-slate-700">Belum Ada Data Pengiriman</h3>
               <p className="text-slate-500 text-xs max-w-md">
-                Data dokumen kargo belum tersedia. Silakan submit berkas penugasan pengiriman terlebih dahulu melalui menu <strong>Submit Berkas</strong>.
+                Cargo document data is not yet available. Please submit shipment assignment documents first via the <strong>Submit Documents</strong> menu.
               </p>
             </div>
           ) : (

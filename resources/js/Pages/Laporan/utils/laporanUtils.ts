@@ -75,7 +75,7 @@ export function getQuickFilterDates(filter: QuickFilterType): { startDate: strin
  * Helper to display period summary string
  */
 export function formatPeriodSummary(startDate: string, endDate: string): string {
-  if (!startDate || !endDate) return 'Semua Periode';
+  if (!startDate || !endDate) return 'All Periods';
   return `${formatDateDisplay(startDate)} - ${formatDateDisplay(endDate)}`;
 }
 

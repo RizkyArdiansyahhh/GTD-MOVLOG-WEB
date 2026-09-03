@@ -14,4 +14,4 @@
 
 export const TOTAL_CHECKPOINT_STEPS = 4;
 
-export const FALLBACK_CHECKPOINT_LABEL = "Belum Dimulai";
+export const FALLBACK_CHECKPOINT_LABEL = "Not Started";

@@ -255,7 +255,7 @@ export function AddCustomerModal({
         e.preventDefault();
 
         if (!form.companyName.trim()) {
-            setFormError('Nama perusahaan wajib diisi.');
+            setFormError('Company name is required.');
             return;
         }
 
@@ -297,7 +297,7 @@ export function AddCustomerModal({
             };
 
             // Munculkan toast notifikasi
-            setSuccessMsg('Customer berhasil ditambahkan!');
+            setSuccessMsg('Customer added successfully!');
 
             // Beri jeda 1.5 detik, lalu tutup modal
             setTimeout(() => {
@@ -311,7 +311,7 @@ export function AddCustomerModal({
             setIsLoading(false);
             if (axios.isCancel(err)) return;
 
-            let msg = 'Gagal menambahkan customer baru. Silakan coba lagi.';
+            let msg = 'Failed to add new customer. Please try again.';
 
             if (axios.isAxiosError<ApiErrorResponse>(err)) {
                 const validationErrors = err.response?.data?.errors as Record<string, string[]>;
@@ -374,7 +374,7 @@ export function AddCustomerModal({
                                 <Building2 size={18} />
                             </div>
                             <div>
-                                <h3 style={styles.title}>Tambah Customer Baru</h3>
+                                <h3 style={styles.title}>Add New Customer</h3>
                                 <p style={styles.subtitle}>
                                     Masukkan detail perusahaan untuk penugasan pengiriman
                                 </p>
@@ -471,7 +471,7 @@ export function AddCustomerModal({
                                 style={styles.submitButton(isFormDisabled)}
                             >
                                 <Plus size={15} />
-                                {isLoading ? 'Menyimpan...' : successMsg ? 'Tersimpan!' : 'Simpan Customer'}
+                                {isLoading ? 'Saving...' : successMsg ? 'Saved!' : 'Save Customer'}
                             </button>
                         </div>
                     </form>

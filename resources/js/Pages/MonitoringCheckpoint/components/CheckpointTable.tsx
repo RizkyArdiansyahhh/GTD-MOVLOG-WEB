@@ -20,7 +20,7 @@ export default function CheckpointTable({ shipments }: CheckpointTableProps) {
     if (shipments.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 py-16 text-center">
-                <p className="text-sm font-medium text-slate-500">Belum ada data shipment untuk ditampilkan.</p>
+                <p className="text-sm font-medium text-slate-500">No shipment data available to display.</p>
             </div>
         );
     }
@@ -30,11 +30,11 @@ export default function CheckpointTable({ shipments }: CheckpointTableProps) {
             <table className="w-full text-left text-sm">
                 <thead>
                     <tr className="border-b border-slate-200 bg-slate-50">
-                        <th className="px-4 py-3 font-semibold text-slate-600">No. Assignment</th>
+                        <th className="px-4 py-3 font-semibold text-slate-600">Assignment No.</th>
                         <th className="px-4 py-3 font-semibold text-slate-600">Customer</th>
-                        <th className="px-4 py-3 font-semibold text-slate-600">Checkpoint Saat Ini</th>
+                        <th className="px-4 py-3 font-semibold text-slate-600">Current Checkpoint</th>
                         <th className="px-4 py-3 font-semibold text-slate-600">Progress</th>
-                        <th className="px-4 py-3 font-semibold text-slate-600">Update Terakhir</th>
+                        <th className="px-4 py-3 font-semibold text-slate-600">Last Updated</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -67,7 +67,7 @@ export default function CheckpointTable({ shipments }: CheckpointTableProps) {
                             </td>
                             <td className="px-4 py-3 text-slate-500">
                                 {shipment.lastUpdatedAt
-                                    ? new Date(shipment.lastUpdatedAt).toLocaleString("id-ID", {
+                                    ? new Date(shipment.lastUpdatedAt).toLocaleString("en-US", {
                                         dateStyle: "medium",
                                         timeStyle: "short",
                                     })

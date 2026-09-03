@@ -19,7 +19,7 @@ export const seederUsers: KelolaAkunUser[] = [
         name: 'Super Admin',
         email: 'superadmin@lms.local',
         role: 'Super Admin',
-        status: 'Aktif',
+        status: 'Active',
         avatarUrl: 'https://ui-avatars.com/api/?name=Super+Admin&background=F5B800&color=fff&bold=true&size=128',
     },
     {
@@ -27,7 +27,7 @@ export const seederUsers: KelolaAkunUser[] = [
         name: 'Supervisor',
         email: 'supervisor@lms.local',
         role: 'Supervisor',
-        status: 'Aktif',
+        status: 'Active',
         avatarUrl: 'https://ui-avatars.com/api/?name=Supervisor&background=3b82f6&color=fff&bold=true&size=128',
     },
     {
@@ -35,7 +35,7 @@ export const seederUsers: KelolaAkunUser[] = [
         name: 'Staff',
         email: 'staff@lms.local',
         role: 'Staff',
-        status: 'Aktif',
+        status: 'Active',
         avatarUrl: 'https://ui-avatars.com/api/?name=Staff&background=8b5cf6&color=fff&bold=true&size=128',
     },
     {
@@ -43,7 +43,7 @@ export const seederUsers: KelolaAkunUser[] = [
         name: 'Field Worker',
         email: 'fieldworker@lms.local',
         role: 'Field Worker',
-        status: 'Aktif',
+        status: 'Active',
         avatarUrl: 'https://ui-avatars.com/api/?name=Field+Worker&background=10b981&color=fff&bold=true&size=128',
     },
     {
@@ -51,7 +51,7 @@ export const seederUsers: KelolaAkunUser[] = [
         name: 'Customer',
         email: 'customer@lms.local',
         role: 'Customer',
-        status: 'Aktif',
+        status: 'Active',
         avatarUrl: 'https://ui-avatars.com/api/?name=Customer&background=6b7280&color=fff&bold=true&size=128',
     },
 ];
@@ -60,11 +60,11 @@ export const seederUsers: KelolaAkunUser[] = [
 // Summary statistics matching seeder
 // ─────────────────────────────────────────────
 export const seederStats = {
-    totalPengguna: 5,
-    totalPenggunaBulanIni: 5,
+    totalUsers: 5,
+    totalUsersThisMonth: 5,
     adminInternal: 4,
     customer: 1,
-    akunNonaktif: 0,
+    inactiveAccounts: 0,
 };
 
 // ─────────────────────────────────────────────
@@ -81,6 +81,6 @@ export const roleOptions = [
 
 export const statusOptions = [
     'Semua Status',
-    'Aktif',
-    'Tidak Aktif',
+    'Active',
+    'Inactive',
 ] as const;

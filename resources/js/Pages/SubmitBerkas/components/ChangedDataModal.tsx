@@ -66,7 +66,7 @@ export function ChangedDataModal({
             </div>
             <div>
               <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#92400E' }}>
-                Ada Data yang Berubah!
+                Data Changes Detected!
               </p>
               <p style={{ margin: '3px 0 0', fontSize: 12, color: '#B45309' }}>
                 Data berikut berbeda dari {sourceLabel}
@@ -165,7 +165,7 @@ export function ChangedDataModal({
                   boxShadow: '0 4px 12px rgba(220,38,38,0.3)',
                 }}
               >
-                Tetap Simpan & Lanjut
+                Save Anyway & Continue
               </button>
             )}
           </div>

@@ -151,11 +151,11 @@ export function CommercialInvoiceStep() {
   const validate = (): boolean => {
     const next: Record<string, string> = {};
 
-    if (!data.documentDetail.number.trim()) next.documentNumber = 'Nomor dokumen wajib diisi.';
-    if (!data.shipper.name.trim()) next.shipperName = 'Nama shipper wajib diisi.';
-    if (!data.consignee.name.trim()) next.consigneeName = 'Nama consignee wajib diisi.';
-    if (!pdf) next.pdf = 'Dokumen PDF wajib diupload.';
-    if (!selectedCustomer?.id) next.general = 'Customer wajib dipilih terlebih dahulu.';
+    if (!data.documentDetail.number.trim()) next.documentNumber = 'Document number is required.';
+    if (!data.shipper.name.trim()) next.shipperName = 'Shipper name is required.';
+    if (!data.consignee.name.trim()) next.consigneeName = 'Consignee name is required.';
+    if (!pdf) next.pdf = 'PDF document is required.';
+    if (!selectedCustomer?.id) next.general = 'Customer must be selected first.';
     if (!assignmentNoRef) next.general = 'Assignment Reference tidak ditemukan.';
 
     setErrors(next);
@@ -237,7 +237,7 @@ export function CommercialInvoiceStep() {
       console.error('Gagal menyimpan step Commercial Invoice:', error);
       setErrors((prev) => ({
         ...prev,
-        general: error.response?.data?.message || 'Gagal menyimpan data ke server. Silakan coba lagi.',
+        general: error.response?.data?.message || 'Failed to save data to server. Please try again.',
       }));
     } finally {
       setIsSaving(false);
@@ -366,7 +366,7 @@ export function CommercialInvoiceStep() {
                     cursor: isReadOnly ? 'default' : 'pointer',
                   }}
                 >
-                  <option value="">Pilih Currency</option>
+                  <option value="">Select Currency</option>
                   {CURRENCIES.map((c) => (
                     <option key={c} value={c}>{c}</option>
                   ))}
@@ -384,7 +384,7 @@ export function CommercialInvoiceStep() {
                   value={data.documentDetail.oceanFreight ?? ''}
                   readOnly={isReadOnly}
                   onChange={(v) => updateDocDetail({ oceanFreight: v })}
-                  placeholder={data.documentDetail.oceanFreightCurrency ? '0.00' : 'Pilih currency dulu'}
+                  placeholder={data.documentDetail.oceanFreightCurrency ? '0.00' : 'Select currency first'}
                   numeric
                 />
               </div>
@@ -402,7 +402,7 @@ export function CommercialInvoiceStep() {
                     cursor: isReadOnly ? 'default' : 'pointer',
                   }}
                 >
-                  <option value="">Pilih Currency</option>
+                  <option value="">Select Currency</option>
                   {CURRENCIES.map((c) => (
                     <option key={c} value={c}>{c}</option>
                   ))}
@@ -420,7 +420,7 @@ export function CommercialInvoiceStep() {
                   value={data.documentDetail.insurance ?? ''}
                   readOnly={isReadOnly}
                   onChange={(v) => updateDocDetail({ insurance: v })}
-                  placeholder={data.documentDetail.insuranceCurrency ? '0.00' : 'Pilih currency dulu'}
+                  placeholder={data.documentDetail.insuranceCurrency ? '0.00' : 'Select currency first'}
                   numeric
                 />
               </div>
@@ -567,7 +567,7 @@ export function CommercialInvoiceStep() {
                         cursor: isReadOnly ? 'default' : 'pointer',
                       }}
                     >
-                      <option value="">Pilih Satuan</option>
+                      <option value="">Select Unit</option>
                       {GOODS_UNITS.map((u) => (
                         <option key={u} value={u}>{u}</option>
                       ))}
@@ -593,7 +593,7 @@ export function CommercialInvoiceStep() {
                         cursor: isReadOnly ? 'default' : 'pointer',
                       }}
                     >
-                      <option value="">Pilih Satuan</option>
+                      <option value="">Select Unit</option>
                       {PACKAGE_UNITS.map((u) => (
                         <option key={u} value={u}>{u}</option>
                       ))}
@@ -615,7 +615,7 @@ export function CommercialInvoiceStep() {
                         cursor: isReadOnly ? 'default' : 'pointer',
                       }}
                     >
-                      <option value="">Pilih Currency</option>
+                      <option value="">Select Currency</option>
                       {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
                     </select>
                   </div>
@@ -625,7 +625,7 @@ export function CommercialInvoiceStep() {
                       value={item.priceOfGoods}
                       readOnly={isReadOnly}
                       onChange={(v) => updateItem({ priceOfGoods: v })}
-                      placeholder={item.currency ? '' : 'Pilih currency dulu'}
+                      placeholder={item.currency ? '' : 'Select currency first'}
                       numeric
                     />
                   </div>

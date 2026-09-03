@@ -30,7 +30,7 @@ class EnsureUserIsActive
                 $request->session()->regenerateToken();
             }
 
-            $errorMessage = 'Akun Anda saat ini dinonaktifkan. Silakan hubungi Administrator untuk informasi lebih lanjut.';
+            $errorMessage = 'Your account has been deactivated. Please contact an Administrator for further assistance.';
 
             if ($request->header('X-Inertia')) {
                 return \Inertia\Inertia::location(route('login'));

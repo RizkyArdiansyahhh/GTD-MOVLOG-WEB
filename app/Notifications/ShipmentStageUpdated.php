@@ -35,12 +35,12 @@ class ShipmentStageUpdated extends Notification
         $statusUpper = strtoupper((string) $statusVal);
 
         $actionText = in_array($statusUpper, ['COMPLETED', 'SELESAI'], true)
-            ? "telah selesai diproses di {$checkpointName}"
-            : "telah tiba di {$checkpointName}";
+            ? "has completed processing at {$checkpointName}"
+            : "has arrived at {$checkpointName}";
 
         return [
             'type'              => 'shipment_stage_updated',
-            'title'             => "Kargo #{$this->session->assignment_no} {$actionText}",
+            'title'             => "Cargo #{$this->session->assignment_no} {$actionText}",
             'shipment_id'       => (string) $this->session->id,
             'assignment_no'     => (string) $this->session->assignment_no,
             'checkpoint_name'   => (string) $checkpointName,

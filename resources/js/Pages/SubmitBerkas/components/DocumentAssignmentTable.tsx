@@ -145,10 +145,10 @@ export function DocumentAssignmentTable({ assignments = [], onOpenAssignment }: 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14 }}>
                 <div>
                     <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#06283A' }}>
-                        Daftar Berkas Penugasan
+                        Document Assignment List
                     </h2>
                     <p style={{ margin: '4px 0 0', fontSize: 13, color: '#64748B' }}>
-                        Klik baris atau tombol aksi untuk melihat atau merevisi berkas
+                        Click a row or action button to view or revise documents
                     </p>
                 </div>
 
@@ -162,7 +162,7 @@ export function DocumentAssignmentTable({ assignments = [], onOpenAssignment }: 
                         <Search size={15} color="#94A3B8" style={{ position: 'absolute', left: 12 }} />
                         <input
                             type="text"
-                            placeholder="Cari PT atau No. Ref..."
+                            placeholder="Search Company or Ref No..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             style={{
@@ -193,7 +193,7 @@ export function DocumentAssignmentTable({ assignments = [], onOpenAssignment }: 
                             cursor: 'pointer'
                         }}
                     >
-                        <option value="ALL">Semua Status</option>
+                        <option value="ALL">All Statuses</option>
                         <option value="REJECTED">Perlu Revisi</option>
                         <option value="PENDING">Pending</option>
                         <option value="DRAFT">Draft</option>
@@ -229,10 +229,10 @@ export function DocumentAssignmentTable({ assignments = [], onOpenAssignment }: 
                         <Inbox size={26} />
                     </div>
                     <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#0F172A' }}>
-                        Belum Ada Dokumen Penugasan
+                        No Document Assignments Yet
                     </h3>
                     <p style={{ margin: '6px 0 0', fontSize: 13, color: '#64748B', maxWidth: 360, lineHeight: 1.5 }}>
-                        Pilih customer atau buat customer baru di panel sebelah kanan untuk mulai menginput berkas pengiriman.
+                        Select a customer or create a new customer in the right panel to start inputting shipment documents.
                     </p>
                 </div>
             ) : (
@@ -243,10 +243,10 @@ export function DocumentAssignmentTable({ assignments = [], onOpenAssignment }: 
                                 <tr style={{ borderBottom: '1px solid #E2E8F0', color: '#64748B', fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                                     <th style={{ padding: '12px 16px', fontWeight: 600 }}>No. Penugasan</th>
                                     <th style={{ padding: '12px 16px', fontWeight: 600 }}>Nama Customer</th>
-                                    <th style={{ padding: '12px 16px', fontWeight: 600 }}>Dokumen</th>
+                                    <th style={{ padding: '12px 16px', fontWeight: 600 }}>Documents</th>
                                     <th style={{ padding: '12px 16px', fontWeight: 600 }}>Status</th>
                                     <th style={{ padding: '12px 16px', fontWeight: 600 }}>Waktu Submit</th>
-                                    <th style={{ padding: '12px 16px', fontWeight: 600, textAlign: 'center' }}>Aksi</th>
+                                    <th style={{ padding: '12px 16px', fontWeight: 600, textAlign: 'center' }}>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -279,7 +279,7 @@ export function DocumentAssignmentTable({ assignments = [], onOpenAssignment }: 
                                             </div>
                                         </td>
                                         <td style={{ padding: '14px 16px', color: '#475569', fontWeight: 600 }}>
-                                            <span style={{ color: '#0284C7' }}>{item.total_documents}</span> / 5 Berkas
+                                            <span style={{ color: '#0284C7' }}>{item.total_documents}</span> / 5 Documents
                                         </td>
                                         <td style={{ padding: '14px 16px' }}>
                                             {renderStatusBadge(item.status)}
@@ -412,7 +412,7 @@ export function DocumentAssignmentTable({ assignments = [], onOpenAssignment }: 
                                     }}
                                 >
                                     <ChevronLeft size={14} />
-                                    Sebelumnya
+                                    Previous
                                 </button>
 
                                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
@@ -454,7 +454,7 @@ export function DocumentAssignmentTable({ assignments = [], onOpenAssignment }: 
                                         cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'
                                     }}
                                 >
-                                    Berikutnya
+                                    Next
                                     <ChevronRight size={14} />
                                 </button>
                             </div>

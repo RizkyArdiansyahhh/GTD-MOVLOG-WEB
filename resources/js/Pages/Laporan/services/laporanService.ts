@@ -28,7 +28,7 @@ export const laporanService = {
                     clearInterval(timer);
                     onProgress(100);
                     resolve({
-                        fileName: `Laporan_Pengiriman_${new Date().toLocaleDateString('id-ID').replace(/\//g, '-')}.${_format === 'pdf' ? 'pdf' : 'xlsx'}`,
+                        fileName: `Shipment_Report_${new Date().toLocaleDateString('en-US').replace(/\//g, '-')}.${_format === 'pdf' ? 'pdf' : 'xlsx'}`,
                         fileSize: _format === 'pdf' ? '3.2 MB' : '1.4 MB',
                         downloadUrl: '#',
                     });

@@ -14,52 +14,52 @@ const faqData: FAQItem[] = [
     {
         id: 'faq-1',
         category: 'Cargo & Shipping',
-        question: 'Bagaimana alur pemantauan status kargo secara real-time?',
-        answer: 'Status kargo dipantau secara otomatis melalui modul Cargo Monitoring. Setiap kali petugas lapangan memperbarui status pada checkpoint tertentu, sistem akan langsung menyinkronkan status terkini ke dalam papan pantau supervisor dan portal pelanggan.',
+        question: 'How does real-time cargo status tracking work?',
+        answer: 'Cargo status is monitored automatically through the Cargo Monitoring module. Whenever field workers update status at a designated checkpoint, the system immediately syncs the latest status to the supervisor monitoring board and customer portal.',
     },
     {
         id: 'faq-2',
         category: 'Cargo & Shipping',
-        question: 'Apa yang harus dilakukan jika kargo mengalami keterlambatan di checkpoint?',
-        answer: 'Jika terjadi penundaan di luar jadwal estimasi, petugas lapangan wajib mengisi catatan kendala di modul Worker Sessions. Catatan ini akan otomatis memicu alert pada halaman Monitoring Checkpoint untuk ditindaklanjuti oleh Supervisor.',
+        question: 'What should be done if cargo experiences a checkpoint delay?',
+        answer: 'If an unexpected delay occurs beyond the estimated schedule, field personnel must enter an issue note in the Worker Sessions module. This note will automatically trigger an alert on the Checkpoint Monitoring page for supervisor escalation.',
     },
     {
         id: 'faq-3',
         category: 'Documents & Verification',
-        question: 'Berapa lama proses verifikasi dokumen oleh Supervisor?',
-        answer: 'Verifikasi dokumen PIB, Manifest, dan Bill of Lading dilakukan secara berkala. Standar Operasional Prosedur (SOP) verifikasi berkas diselesaikan maksimal 1x24 jam kerja setelah dokumen diunggah oleh staf operasional.',
+        question: 'How long does document verification take by a Supervisor?',
+        answer: 'Verification of PIB, Manifest, and Bill of Lading documents is conducted regularly. The Standard Operating Procedure (SOP) timeline for document verification is completed within a maximum of 1x24 business hours after documents are uploaded by operational staff.',
     },
     {
         id: 'faq-4',
         category: 'Documents & Verification',
-        question: 'Bagaimana prosedur perbaikan jika dokumen ditolak (Rejected)?',
-        answer: 'Dokumen yang ditolak akan menampilkan alasan penolakan pada modul Verify Documents. Staf dapat mengklik detail penolakan, memperbaiki berkas sesuai catatan revisi, dan mengunggah kembali melalui modul Submit Documents.',
+        question: 'What is the procedure if a document is rejected?',
+        answer: 'Rejected documents will display the reason for rejection in the Verify Documents module. Staff can click on the rejection details, correct the document according to revision remarks, and re-upload through the Submit Documents module.',
     },
     {
         id: 'faq-5',
         category: 'Account & Access',
-        question: 'Bagaimana cara mengubah kata sandi atau memperbarui informasi profil?',
-        answer: 'Anda dapat mengklik nama profil Anda di pojok kanan atas layar, lalu pilih "Edit Profil". Pada halaman tersebut, Anda dapat memperbarui nama, email, serta kata sandi akun Anda secara mandiri.',
+        question: 'How do I change my password or update profile information?',
+        answer: 'Click your profile name in the upper-right corner of the screen, then select \"Edit Profile\". On that page, you can independently update your name, email, and account password.',
     },
     {
         id: 'faq-6',
         category: 'Account & Access',
-        question: 'Siapa yang berwenang menambah atau menonaktifkan akun staf?',
-        answer: 'Penambahan dan penonaktifan akun staf serta penetapan hak akses role berada di bawah wewenang Super Admin melalui modul Account Management.',
+        question: 'Who is authorized to add or deactivate staff accounts?',
+        answer: 'Adding and deactivating staff accounts as well as configuring role access permissions is authorized exclusively for Super Admins via the Account Management module.',
     },
 ];
 
-const categories = ['Semua', 'Cargo & Shipping', 'Documents & Verification', 'Account & Access'];
+const categories = ['All', 'Cargo & Shipping', 'Documents & Verification', 'Account & Access'];
 
 export default function HelpCenter() {
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('Semua');
+    const [selectedCategory, setSelectedCategory] = useState('All');
     const [expandedFaq, setExpandedFaq] = useState<string | null>('faq-1');
     const [ticketSubmitted, setTicketSubmitted] = useState(false);
     const [formData, setFormData] = useState({ subject: '', category: 'Cargo & Shipping', message: '' });
 
     const filteredFaqs = faqData.filter((faq) => {
-        const matchesCategory = selectedCategory === 'Semua' || faq.category === selectedCategory;
+        const matchesCategory = selectedCategory === 'All' || faq.category === selectedCategory;
         const matchesSearch =
             faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
             faq.answer.toLowerCase().includes(searchQuery.toLowerCase());
@@ -68,12 +68,11 @@ export default function HelpCenter() {
 
     const handleSubmitTicket = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formData.subject || !formData.message) return;
         setTicketSubmitted(true);
         setTimeout(() => {
-            setFormData({ subject: '', category: 'Cargo & Shipping', message: '' });
             setTicketSubmitted(false);
-        }, 4000);
+            setFormData({ subject: '', category: 'Cargo & Shipping', message: '' });
+        }, 5000);
     };
 
     return (
@@ -81,28 +80,28 @@ export default function HelpCenter() {
             <Head title="Help Center - GTD Logistics" />
 
             <div className="max-w-5xl mx-auto space-y-10 pb-12">
-                {/* -- Luxury Header Section -- */}
-                <div className="text-center space-y-3 pt-4">
+                {/* -- Header & Search -- */}
+                <div className="text-center space-y-4 pt-4">
                     <span className="inline-block px-3 py-1 rounded-full bg-slate-100 border border-slate-200/80 text-[11px] font-bold text-slate-600 uppercase tracking-widest">
-                        Pusat Bantuan & Layanan Operational
+                        Help Center & Support
                     </span>
                     <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                        Bagaimana Kami Dapat Membantu Anda Hari Ini?
+                        How can we assist your operations today?
                     </h1>
                     <p className="text-sm text-slate-500 max-w-xl mx-auto leading-relaxed">
-                        Temukan solusi cepat terkait operasional logistik, verifikasi dokumen, dan pengelolaan akun sistem GTD.
+                        Find quick answers regarding cargo tracking, document verification procedures, and GTD system usage.
                     </p>
 
                     {/* Clean Search Input */}
-                    <div className="pt-4 max-w-xl mx-auto">
-                        <div className="relative">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <div className="max-w-md mx-auto relative pt-2">
+                        <div className="relative flex items-center">
+                            <Search className="absolute left-4 text-slate-400" size={18} />
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Cari masalah, dokumen, atau kata kunci..."
-                                className="w-full pl-11 pr-4 py-3 bg-white rounded-2xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent transition-all shadow-xs"
+                                placeholder="Search issues, documents, or keywords..."
+                                className="w-full pl-11 pr-4 py-3 bg-white rounded-2xl border border-slate-200/80 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 shadow-xs"
                             />
                         </div>
                     </div>
@@ -110,27 +109,27 @@ export default function HelpCenter() {
 
                 {/* -- Category Tabs -- */}
                 <div className="flex flex-wrap items-center justify-center gap-2">
-                    {categories.map((cat) => (
+                    {categories.map((category) => (
                         <button
-                            key={cat}
+                            key={category}
                             type="button"
-                            onClick={() => setSelectedCategory(cat)}
+                            onClick={() => setSelectedCategory(category)}
                             className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                                selectedCategory === cat
+                                selectedCategory === category
                                     ? 'bg-slate-900 text-white shadow-sm'
                                     : 'bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50'
                             }`}
                         >
-                            {cat}
+                            {category}
                         </button>
                     ))}
                 </div>
 
-                {/* -- FAQ Accordion Section -- */}
+                {/* -- Clean Modern Accordion FAQ -- */}
                 <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-xs space-y-4">
-                    <div className="border-b border-slate-100 pb-4">
-                        <h2 className="text-lg font-bold text-slate-900">Pertanyaan yang Sering Diajukan (FAQ)</h2>
-                        <p className="text-xs text-slate-500 mt-0.5">Penjelasan teknis dan jawaban standar operasional sistem.</p>
+                    <div className="border-b border-slate-100 pb-4 mb-2">
+                        <h2 className="text-base font-bold text-slate-900">Frequently Asked Questions</h2>
+                        <p className="text-xs text-slate-500 mt-0.5">Quick guides and answers for common operational issues.</p>
                     </div>
 
                     {filteredFaqs.length > 0 ? (
@@ -138,18 +137,18 @@ export default function HelpCenter() {
                             {filteredFaqs.map((faq) => {
                                 const isExpanded = expandedFaq === faq.id;
                                 return (
-                                    <div key={faq.id} className="py-4 first:pt-2 last:pb-0">
+                                    <div key={faq.id} className="py-4">
                                         <button
                                             type="button"
                                             onClick={() => setExpandedFaq(isExpanded ? null : faq.id)}
-                                            className="w-full flex items-center justify-between text-left gap-4 group cursor-pointer"
+                                            className="w-full flex items-center justify-between text-left gap-4 cursor-pointer group"
                                         >
-                                            <span className="text-sm font-bold text-slate-800 group-hover:text-slate-900 transition-colors">
+                                            <span className="text-sm font-semibold text-slate-800 group-hover:text-slate-900 transition-colors">
                                                 {faq.question}
                                             </span>
-                                            <span className="p-1 rounded-lg text-slate-400 group-hover:text-slate-600 transition-colors shrink-0">
-                                                {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                                            </span>
+                                            <div className="w-7 h-7 rounded-lg bg-slate-50 border border-slate-200/60 flex items-center justify-center shrink-0 text-slate-500">
+                                                {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                            </div>
                                         </button>
 
                                         {isExpanded && (
@@ -163,7 +162,7 @@ export default function HelpCenter() {
                         </div>
                     ) : (
                         <div className="text-center py-8 text-xs text-slate-400">
-                            Tidak ada pertanyaan yang sesuai dengan pencarian Anda.
+                            No questions match your search.
                         </div>
                     )}
                 </div>
@@ -174,26 +173,26 @@ export default function HelpCenter() {
                     <div className="md:col-span-1 bg-slate-900 text-white rounded-3xl p-6 sm:p-8 flex flex-col justify-between space-y-6">
                         <div className="space-y-3">
                             <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400">
-                                Layanan Bantuan 24/7
+                                24/7 Support Desk
                             </span>
-                            <h3 className="text-xl font-bold tracking-tight">Hubungi Tim Operasional</h3>
+                            <h3 className="text-xl font-bold tracking-tight">Contact Operations Team</h3>
                             <p className="text-xs text-slate-300 leading-relaxed">
-                                Apabila Anda memerlukan bantuan darurat di luar jam kerja umum, tim support GTD siap membantu Anda.
+                                If you require urgent assistance outside standard operating hours, the GTD support team is ready to help.
                             </p>
                         </div>
 
                         <div className="space-y-3 border-t border-slate-800 pt-4 text-xs">
                             <div>
-                                <p className="text-[10px] text-slate-400 font-semibold uppercase">Email Support</p>
+                                <p className="text-[10px] text-slate-400 font-semibold uppercase">Support Email</p>
                                 <p className="font-semibold text-slate-200 mt-0.5">support@gtd-logistics.com</p>
                             </div>
                             <div>
-                                <p className="text-[10px] text-slate-400 font-semibold uppercase">Hotline Operasional</p>
+                                <p className="text-[10px] text-slate-400 font-semibold uppercase">Operations Hotline</p>
                                 <p className="font-semibold text-slate-200 mt-0.5">+62 21 8000 9988</p>
                             </div>
                             <div>
-                                <p className="text-[10px] text-slate-400 font-semibold uppercase">Jam Kerja Helpdesk</p>
-                                <p className="font-semibold text-slate-200 mt-0.5">Senin - Minggu: 24 Jam Non-Stop</p>
+                                <p className="text-[10px] text-slate-400 font-semibold uppercase">Helpdesk Hours</p>
+                                <p className="font-semibold text-slate-200 mt-0.5">Monday - Sunday: 24 Hours Non-Stop</p>
                             </div>
                         </div>
                     </div>
@@ -201,16 +200,16 @@ export default function HelpCenter() {
                     {/* Support Ticket Form */}
                     <div className="md:col-span-2 bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-xs">
                         <div className="mb-6">
-                            <h3 className="text-base font-bold text-slate-900">Kirimkan Tiket Bantuan</h3>
-                            <p className="text-xs text-slate-500 mt-0.5">Isi formulir di bawah ini untuk kendala operasional yang membutuhkan penanganan teknis.</p>
+                            <h3 className="text-base font-bold text-slate-900">Submit a Support Ticket</h3>
+                            <p className="text-xs text-slate-500 mt-0.5">Fill out the form below for operational issues requiring technical attention.</p>
                         </div>
 
                         {ticketSubmitted ? (
                             <div className="p-6 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-center gap-3">
                                 <CheckCircle2 className="text-emerald-600 shrink-0" size={24} />
                                 <div>
-                                    <p className="text-xs font-bold">Tiket Bantuan Berhasil Terkirim</p>
-                                    <p className="text-[11px] text-emerald-700 mt-0.5">Tim teknis GTD akan segera menghubungi Anda dalam waktu maksimal 30 menit.</p>
+                                    <p className="text-xs font-bold">Support Ticket Submitted Successfully</p>
+                                    <p className="text-[11px] text-emerald-700 mt-0.5">The GTD technical team will contact you within a maximum of 30 minutes.</p>
                                 </div>
                             </div>
                         ) : (
@@ -218,7 +217,7 @@ export default function HelpCenter() {
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-xs font-bold text-slate-700 mb-1">
-                                            Kategori Kendala
+                                            Issue Category
                                         </label>
                                         <select
                                             value={formData.category}
@@ -228,19 +227,19 @@ export default function HelpCenter() {
                                             <option value="Cargo & Shipping">Cargo & Shipping</option>
                                             <option value="Documents & Verification">Documents & Verification</option>
                                             <option value="Account & Access">Account & Access</option>
-                                            <option value="Lainnya">Lainnya</option>
+                                            <option value="Other">Other</option>
                                         </select>
                                     </div>
                                     <div>
                                         <label className="block text-xs font-bold text-slate-700 mb-1">
-                                            Subjek Kendala
+                                            Subject
                                         </label>
                                         <input
                                             type="text"
                                             required
                                             value={formData.subject}
                                             onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                                            placeholder="Contoh: Berkas PIB Gagal Diunggah"
+                                            placeholder="Example: PIB Document Upload Failed"
                                             className="w-full px-3 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900"
                                         />
                                     </div>
@@ -248,14 +247,14 @@ export default function HelpCenter() {
 
                                 <div>
                                     <label className="block text-xs font-bold text-slate-700 mb-1">
-                                        Deskripsi Kendala Secara Detail
+                                        Detailed Issue Description
                                     </label>
                                     <textarea
                                         required
                                         rows={4}
                                         value={formData.message}
                                         onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                                        placeholder="Jelaskan kronologi kendala, nomor dokumen/sesi terkait, dan pesan error jika ada..."
+                                        placeholder="Describe the issue chronology, relevant document/session number, and error messages if any..."
                                         className="w-full px-3 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900 resize-none"
                                     />
                                 </div>
@@ -265,7 +264,7 @@ export default function HelpCenter() {
                                     className="px-6 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 transition-colors flex items-center gap-2 cursor-pointer shadow-xs"
                                 >
                                     <Send size={14} />
-                                    <span>Kirimkan Tiket</span>
+                                    <span>Submit Ticket</span>
                                 </button>
                             </form>
                         )}

@@ -114,7 +114,7 @@ class UserController extends Controller
         $this->userService->update($user, UserDTO::from($request->validated()));
 
         return redirect()->route('kelola-akun')
-            ->with('success', 'Data pengguna berhasil diperbarui.');
+            ->with('success', 'User data updated successfully.');
     }
 
     /**
@@ -130,14 +130,14 @@ class UserController extends Controller
             if ($request->expectsJson() && !$request->header('X-Inertia')) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Pengguna tidak ditemukan.',
+                    'message' => 'User not found.',
                 ], 404);
             }
-            return redirect()->back()->withErrors(['error' => 'Pengguna tidak ditemukan.']);
+            return redirect()->back()->withErrors(['error' => 'User not found.']);
         }
 
         if ($request->user() && $request->user()->cannot('delete', $userModel)) {
-            $msg = 'Anda tidak memiliki akses untuk menghapus pengguna ini.';
+            $msg = 'You do not have permission to delete this user.';
             if ($request->expectsJson() && !$request->header('X-Inertia')) {
                 return response()->json(['success' => false, 'message' => $msg], 403);
             }
@@ -158,15 +158,15 @@ class UserController extends Controller
             if ($request->expectsJson() && !$request->header('X-Inertia')) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Pengguna tidak ditemukan.',
+                    'message' => 'User not found.',
                 ], 404);
             }
-            return redirect()->back()->withErrors(['error' => 'Pengguna tidak ditemukan.']);
+            return redirect()->back()->withErrors(['error' => 'User not found.']);
         } catch (\Throwable $e) {
             if ($request->expectsJson() && !$request->header('X-Inertia')) {
                 return response()->json([
                     'success' => false,
-                    'message' => $e->getMessage() ?: 'Gagal menghapus pengguna.',
+                    'message' => $e->getMessage() ?: 'Failed to delete user.',
                 ], 500);
             }
             return redirect()->back()->withErrors(['error' => $e->getMessage()]);
@@ -175,10 +175,10 @@ class UserController extends Controller
         if ($request->expectsJson() && !$request->header('X-Inertia')) {
             return response()->json([
                 'success' => true,
-                'message' => 'Pengguna berhasil dihapus.',
+                'message' => 'User deleted successfully.',
             ]);
         }
 
-        return redirect()->back()->with('success', 'Pengguna berhasil dihapus.');
+        return redirect()->back()->with('success', 'User deleted successfully.');
     }
 }

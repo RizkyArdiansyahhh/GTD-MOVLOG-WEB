@@ -25,16 +25,16 @@ export default function MonitoringCheckpoint({ shipments }: MonitoringCheckpoint
 
     return (
         <DashboardLayout>
-            <Head title="Monitoring Checkpoint" />
+            <Head title="Checkpoint Monitoring" />
 
             <div className="mx-auto max-w-6xl px-4 py-8">
                 <div className="mb-6 flex items-center justify-between">
                     <div>
                         <h1 className="text-xl font-bold" style={{ color: "#06283A" }}>
-                            Monitoring Checkpoint
+                            Checkpoint Monitoring
                         </h1>
                         <p className="mt-1 text-sm text-slate-500">
-                            Pantau status perpindahan barang: MV &rarr; Tongkang &rarr; Pelabuhan &rarr; Site.
+                            Monitor cargo movement status: MV &rarr; Barge &rarr; Port &rarr; Site.
                         </p>
                     </div>
                     <SearchBar value={search} onChange={setSearch} />

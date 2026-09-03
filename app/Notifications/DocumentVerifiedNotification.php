@@ -28,11 +28,11 @@ class DocumentVerifiedNotification extends Notification
      */
     public function toDatabase(object $notifiable): array
     {
-        $docTypeName = $this->document->documentType?->name ?? $this->document->file_name ?? 'Dokumen';
+        $docTypeName = $this->document->documentType?->name ?? $this->document->file_name ?? 'Document';
 
         return [
             'type'          => 'document_verified',
-            'title'         => "{$docTypeName} untuk pengiriman #{$this->session->assignment_no} telah diverifikasi dan siap diunduh.",
+            'title'         => "{$docTypeName} for shipment #{$this->session->assignment_no} has been verified and is ready for download.",
             'shipment_id'   => (string) $this->session->id,
             'assignment_no' => (string) $this->session->assignment_no,
             'document_id'   => (string) $this->document->id,

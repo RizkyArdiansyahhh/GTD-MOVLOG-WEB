@@ -14,8 +14,8 @@ export const ExportSummary: React.FC<ExportSummaryProps> = ({
     onExport,
 }) => {
     const fields = [
-        { label: 'Laporan', value: reportType },
-        { label: 'Periode', value: periodLabel },
+        { label: 'Report', value: reportType },
+        { label: 'Period', value: periodLabel },
         { label: 'Format', value: formatLabel },
     ];
 
@@ -41,7 +41,7 @@ export const ExportSummary: React.FC<ExportSummaryProps> = ({
                     color: '#fff',
                     margin: 0,
                 }}>
-                    Ringkasan Export
+                    Export Summary
                 </h3>
                 <div style={{ width: 36, height: 3, background: 'rgba(255,255,255,0.4)', borderRadius: 2, marginTop: 8 }} />
             </div>
@@ -83,12 +83,12 @@ export const ExportSummary: React.FC<ExportSummaryProps> = ({
                 onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.88')}
                 onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
             >
-                EKSPOR LAPORAN SEKARANG
+                EXPORT REPORT NOW
             </button>
 
             {/* Hint */}
             <p style={{ textAlign: 'center', fontSize: 11, color: 'rgba(255,255,255,0.6)', marginTop: 12, marginBottom: 0 }}>
-                Waktu proses rata-rata ± 12 detik
+                Average processing time ± 12 seconds
             </p>
         </div>
     );

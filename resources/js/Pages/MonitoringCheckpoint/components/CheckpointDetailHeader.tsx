@@ -26,7 +26,7 @@ export default function CheckpointDetailHeader({
                 className="mb-4 flex items-center gap-1.5 text-sm font-medium text-slate-500 transition hover:text-slate-700"
             >
                 <ArrowLeft className="h-4 w-4" />
-                Kembali ke Monitoring
+                Back to Monitoring
             </button>
 
             <div className="flex items-start justify-between rounded-2xl border border-slate-200 bg-white p-6">

@@ -24,12 +24,12 @@ export const ExportProcessing: React.FC<ExportProcessingProps> = ({
 
     const progressText =
         progress < 30
-            ? 'Mengumpulkan data...'
+            ? 'Collecting data...'
             : progress < 60
-                ? 'Memproses data...'
+                ? 'Processing data...'
                 : progress < 90
-                    ? 'Menyusun berkas...'
-                    : 'Hampir selesai...';
+                    ? 'Compiling file...'
+                    : 'Almost done...';
 
     return (
         <div
@@ -75,10 +75,10 @@ export const ExportProcessing: React.FC<ExportProcessingProps> = ({
                     margin: 0,
                     marginBottom: 8,
                 }}>
-                    Laporan Sedang Diproses
+                    Report Processing
                 </h2>
                 <p style={{ fontSize: 13, color: '#6B7280', textAlign: 'center', margin: 0, marginBottom: 28, lineHeight: 1.6 }}>
-                    Mohon tunggu sebentar, kami sedang menyusun data logistik Anda.
+                    Please wait a moment, we are compiling your logistics data.
                 </p>
 
                 {/* Progress Bar */}
@@ -102,7 +102,7 @@ export const ExportProcessing: React.FC<ExportProcessingProps> = ({
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
                     <span style={{ fontSize: 12, color: '#6B7280' }}>{progressText}</span>
-                    <span style={{ fontSize: 12, color: '#6B7280' }}>± {secondsLeft} detik lagi</span>
+                    <span style={{ fontSize: 12, color: '#6B7280' }}>± {secondsLeft} seconds left</span>
                 </div>
 
                 {/* Summary Mini Card */}
@@ -116,8 +116,8 @@ export const ExportProcessing: React.FC<ExportProcessingProps> = ({
                     flexWrap: 'wrap',
                 }}>
                     {[
-                        { label: 'Jenis', value: reportType },
-                        { label: 'Periode', value: periodLabel },
+                        { label: 'Type', value: reportType },
+                        { label: 'Period', value: periodLabel },
                         { label: 'Format', value: formatLabel },
                     ].map(({ label, value }) => (
                         <div key={label}>
@@ -148,7 +148,7 @@ export const ExportProcessing: React.FC<ExportProcessingProps> = ({
                         <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
-                        Batalkan Export
+                        Cancel Export
                     </button>
                 </div>
             </div>
@@ -231,10 +231,10 @@ export const ExportSuccess: React.FC<ExportSuccessProps> = ({ result, periodLabe
                     margin: 0,
                     marginBottom: 8,
                 }}>
-                    Laporan Siap Diunduh
+                    Report Ready for Download
                 </h2>
                 <p style={{ fontSize: 13, color: '#6B7280', margin: 0, marginBottom: 28, lineHeight: 1.6 }}>
-                    Ekspor data untuk periode {periodLabel} siap diunduh.
+                    Export data for period {periodLabel} is ready for download.
                 </p>
 
                 {/* File Card */}
@@ -272,7 +272,7 @@ export const ExportSuccess: React.FC<ExportSuccessProps> = ({ result, periodLabe
                         <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 4v11" />
                         </svg>
-                        Unduh Sekarang
+                        Download Now
                     </a>
                 </div>
 
@@ -290,7 +290,7 @@ export const ExportSuccess: React.FC<ExportSuccessProps> = ({ result, periodLabe
                             textDecoration: 'underline',
                         }}
                     >
-                        Kembali ke Dashboard
+                        Back to Dashboard
                     </button>
                     <button
                         style={{
@@ -303,7 +303,7 @@ export const ExportSuccess: React.FC<ExportSuccessProps> = ({ result, periodLabe
                             textDecoration: 'underline',
                         }}
                     >
-                        Lihat Riwayat Laporan
+                        View Report History
                     </button>
                 </div>
             </div>

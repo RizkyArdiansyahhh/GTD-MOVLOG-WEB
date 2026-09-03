@@ -125,11 +125,11 @@ export function CertificateOfOriginStep() {
     const validate = (): boolean => {
         const next: Record<string, string> = {};
 
-        if (!data.documentDetail.number.trim()) next.documentNumber = 'Nomor COO/SKA wajib diisi.';
-        if (!data.shipper.name.trim()) next.shipperName = 'Nama eksportir wajib diisi.';
-        if (!data.consignee.name.trim()) next.consigneeName = 'Nama importir wajib diisi.';
-        if (!pdf) next.pdf = 'Dokumen PDF wajib diupload.';
-        if (!selectedCustomer?.id) next.general = 'Customer wajib dipilih terlebih dahulu.';
+        if (!data.documentDetail.number.trim()) next.documentNumber = 'COO number is required.';
+        if (!data.shipper.name.trim()) next.shipperName = 'Exporter name is required.';
+        if (!data.consignee.name.trim()) next.consigneeName = 'Importer name is required.';
+        if (!pdf) next.pdf = 'PDF document is required.';
+        if (!selectedCustomer?.id) next.general = 'Customer must be selected first.';
         if (!assignmentNoRef) next.general = 'Assignment Reference tidak ditemukan.';
 
         setErrors(next);
@@ -224,7 +224,7 @@ export function CertificateOfOriginStep() {
             console.error('Gagal menyimpan step Certificate of Origin:', error);
             setErrors((prev) => ({
                 ...prev,
-                general: error.response?.data?.message || 'Gagal menyimpan data ke server. Silakan coba lagi.',
+                general: error.response?.data?.message || 'Failed to save data to server. Please try again.',
             }));
         } finally {
             setIsSaving(false);
@@ -466,7 +466,7 @@ export function CertificateOfOriginStep() {
                                             onChange={(e) => updateItem({ packageUnitMeasurement: e.target.value })}
                                             style={selectStyle}
                                         >
-                                            <option value="">Pilih Satuan</option>
+                                            <option value="">Select Unit</option>
                                             {PACKAGE_UNITS.map((u) => (
                                                 <option key={u} value={u}>{u}</option>
                                             ))}

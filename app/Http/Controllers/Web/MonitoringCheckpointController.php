@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\Checkpoint;
+use App\Models\SessionCheckpoint;
 use App\Models\ShippingSession;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -29,7 +30,7 @@ class MonitoringCheckpointController extends Controller
             ->latest('updated_at')
             ->get();
 
-        $totalCheckpoints = \App\Models\Checkpoint::count();
+        $totalCheckpoints = Checkpoint::count();
 
         $shipments = $sessions->map(function (ShippingSession $session) use ($totalCheckpoints) {
             $lastCheckpointLog = $session->sessionCheckpoints()
@@ -69,10 +70,12 @@ class MonitoringCheckpointController extends Controller
             ->where('assignment_no', $assignmentNo)
             ->firstOrFail();
 
+        $this->authorize('view', $session);
+
         // Semua checkpoint master, urut tetap (MV -> Tongkang -> Pelabuhan -> Site).
         // Asumsi urutan mengikuti kolom `id` pada tabel checkpoints; sesuaikan
         // ke kolom `order`/`sequence` jika tabel checkpoints punya kolom urutan eksplisit.
-        $checkpointDefinitions = \App\Models\Checkpoint::query()
+        $checkpointDefinitions = Checkpoint::query()
             ->orderBy('id')
             ->get();
 
@@ -89,7 +92,7 @@ class MonitoringCheckpointController extends Controller
             ->keyBy('checkpoint_id');
 
         $steps = $checkpointDefinitions->values()->map(function ($checkpoint, $index) use ($sessionCheckpoints) {
-            /** @var \App\Models\SessionCheckpoint|null $sessionCheckpoint */
+            /** @var SessionCheckpoint|null $sessionCheckpoint */
             $sessionCheckpoint = $sessionCheckpoints->get($checkpoint->id);
             $latestReport = $sessionCheckpoint?->reports?->first();
 

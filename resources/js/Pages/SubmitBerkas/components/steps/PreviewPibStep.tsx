@@ -10,6 +10,7 @@ import {
     AlertTriangle,
     AlertCircle,
     ChevronLeft,
+    ShieldCheck,
     X,
 } from 'lucide-react';
 import { useWizard } from '../../hooks/useWizard';
@@ -138,7 +139,7 @@ function ConfirmSubmitModal({ open, onConfirm, onCancel, isSubmitting, warnings 
                     borderBottom: '1px solid #F1F5F9',
                 }}>
                     <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#06283A' }}>
-                        Konfirmasi Submit Berkas
+                        Confirm Document Submission
                     </h3>
                     <button
                         type="button"
@@ -152,8 +153,8 @@ function ConfirmSubmitModal({ open, onConfirm, onCancel, isSubmitting, warnings 
 
                 <div style={{ padding: '18px 22px' }}>
                     <p style={{ margin: 0, fontSize: 14, color: '#374151', lineHeight: 1.6 }}>
-                        Apakah Anda yakin ingin mengirimkan seluruh berkas penugasan ini untuk diverifikasi?
-                        Status dokumen akan berubah dari <strong>Draft</strong> menjadi <strong>Pending Verifikasi</strong>.
+                        Are you sure you want to submit all documents in this assignment for verification?
+                        Document status will change from <strong>Draft</strong> to <strong>Pending Verification</strong>.
                     </p>
 
                     {warnings.length > 0 && (
@@ -260,33 +261,41 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
     const consignee = bol?.data?.consignee ?? ci?.data?.consignee ?? null;
     const transport = bol?.data?.transportDetail ?? ci?.data?.transportDetail ?? null;
 
-    const isFob = ci?.data?.documentDetail.termOfShipment === 'FOB';
+    const getPartyValue = (party: any, field: 'name' | 'address' | 'taxId') => {
+        if (!party) return '';
+        if (typeof party === 'string') return field === 'name' ? party : '';
+        return party[field] ?? '';
+    };
+
+    const isFob = ci?.data?.documentDetail?.termOfShipment === 'FOB';
 
     const totalNetWeight = useMemo(() => {
-        if (!pl?.data?.cargoDetail?.length) return '';
-        const total = pl.data.cargoDetail.reduce((acc, item) => acc + (parseFloat(item.netWeight) || 0), 0);
+        if (!Array.isArray(pl?.data?.cargoDetail) || pl.data.cargoDetail.length === 0) return '';
+        const total = pl.data.cargoDetail.reduce((acc, item) => acc + (parseFloat(item?.netWeight) || 0), 0);
         return total === 0 ? '' : String(total);
     }, [pl?.data]);
 
     const cargoCountMismatch =
-        !!ci?.data?.cargoDetail?.length &&
-        !!pl?.data?.cargoDetail?.length &&
+        Array.isArray(ci?.data?.cargoDetail) &&
+        Array.isArray(pl?.data?.cargoDetail) &&
+        ci.data.cargoDetail.length > 0 &&
+        pl.data.cargoDetail.length > 0 &&
         ci.data.cargoDetail.length !== pl.data.cargoDetail.length;
 
     const mergedCargo: MergedCargoItem[] = useMemo(() => {
-        if (!ci?.data?.cargoDetail?.length) return [];
+        if (!Array.isArray(ci?.data?.cargoDetail) || !ci.data.cargoDetail.length) return [];
         return ci.data.cargoDetail.map((ciItem, index) => {
-            const plItem = pl?.data?.cargoDetail[index];
+            const plItem = Array.isArray(pl?.data?.cargoDetail) ? pl.data.cargoDetail[index] : undefined;
             return {
-                descriptionOfGoods: ciItem.descriptionOfGoods,
-                type: ciItem.type,
-                brand: ciItem.brand,
+                descriptionOfGoods: ciItem?.descriptionOfGoods || '',
+                type: ciItem?.type || '',
+                brand: ciItem?.brand || '',
                 netWeight: plItem?.netWeight ?? '',
-                quantityOfGoods: ciItem.quantityOfGoods,
-                goodsUnitMeasurement: ciItem.goodsUnitMeasurement,
-                quantityOfPackage: ciItem.quantityOfPackage,
-                packageUnitMeasurement: ciItem.packageUnitMeasurement,
-                price: ciItem.priceOfGoods ? `${ciItem.priceOfGoods} ${ciItem.currency}` : '',
+                quantityOfGoods: ciItem?.quantityOfGoods || '',
+                goodsUnitMeasurement: ciItem?.goodsUnitMeasurement || '',
+                quantityOfPackage: ciItem?.quantityOfPackage || '',
+                packageUnitMeasurement: ciItem?.packageUnitMeasurement || '',
+                price: ciItem?.priceOfGoods ? `${ciItem.priceOfGoods} ${ciItem?.currency || ''}` : '',
             };
         });
     }, [ci?.data, pl?.data]);
@@ -320,7 +329,7 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
                 }
             },
             onError: (errors: Record<string, any>) => {
-                let message = 'Gagal mengirim berkas. Silakan coba lagi.';
+                let message = 'Failed to submit documents. Please try again.';
                 if (typeof errors === 'string') {
                     message = errors;
                 } else if (errors && typeof errors === 'object') {
@@ -390,7 +399,7 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
                                         marginLeft: 2,
                                     }}
                                 >
-                                    (Ubah Step)
+                                    (Edit Step)
                                 </button>
                             </div>
                         ))}
@@ -416,7 +425,7 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
                             Ada step yang belum lengkap
                         </p>
                         <p style={{ margin: '4px 0 10px', fontSize: 13, color: '#7F1D1D' }}>
-                            Lengkapi step berikut sebelum submit berkas:
+                            Complete the following steps before submitting documents:
                         </p>
                         <ul style={{ margin: 0, padding: '0 0 0 18px', fontSize: 13, color: '#7F1D1D' }}>
                             {incompleteSteps.map((s) => (
@@ -448,9 +457,9 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
                 icon={<Users size={17} color="#06283A" />}
                 title="1. Shipper"
                 rows={[
-                    { label: 'Name', value: shipper?.name ?? '' },
-                    { label: 'Address', value: shipper?.address ?? '' },
-                    { label: 'Tax ID', value: shipper?.taxId ?? '' },
+                    { label: 'Name', value: getPartyValue(shipper, 'name') },
+                    { label: 'Address', value: getPartyValue(shipper, 'address') },
+                    { label: 'Tax ID', value: getPartyValue(shipper, 'taxId') },
                 ]}
             />
 
@@ -458,9 +467,9 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
                 icon={<Users size={17} color="#06283A" />}
                 title="2. Consignee"
                 rows={[
-                    { label: 'Name', value: consignee?.name ?? '' },
-                    { label: 'Address', value: consignee?.address ?? '' },
-                    { label: 'Tax ID', value: consignee?.taxId ?? '' },
+                    { label: 'Name', value: getPartyValue(consignee, 'name') },
+                    { label: 'Address', value: getPartyValue(consignee, 'address') },
+                    { label: 'Tax ID', value: getPartyValue(consignee, 'taxId') },
                 ]}
             />
 
@@ -468,7 +477,7 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
                 icon={<Ship size={17} color="#06283A" />}
                 title="3. Transport Detail"
                 rows={[
-                    { label: 'Shipp Name', value: transport?.shippName ?? '' },
+                    { label: 'Shipp Name', value: transport?.shippName ?? (transport as any)?.vessel_name ?? '' },
                     { label: 'Voyage', value: transport?.voyage ?? '' },
                     { label: 'Port of Loading', value: transport?.portOfLoading ?? '' },
                     { label: 'Port of Discharge', value: transport?.portOfDischarge ?? '' },
@@ -479,7 +488,7 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
                 icon={<FileText size={17} color="#06283A" />}
                 title="4. Commercial Invoice"
                 rows={[
-                    { label: 'Number', value: ci?.data?.documentDetail?.number ?? '' },
+                    { label: 'Number', value: ci?.data?.documentDetail?.number ?? (ci?.data as any)?.document_number ?? '' },
                     { label: 'Date', value: ci?.data?.documentDetail?.date ?? '' },
                     { label: 'Term of Shipment', value: ci?.data?.documentDetail?.termOfShipment ?? '' },
                 ]}
@@ -489,7 +498,7 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
                 icon={<FileText size={17} color="#06283A" />}
                 title="5. Bill of Lading"
                 rows={[
-                    { label: 'Number', value: bol?.data?.documentDetail?.number ?? '' },
+                    { label: 'Number', value: bol?.data?.documentDetail?.number ?? (bol?.data as any)?.document_number ?? '' },
                     { label: 'Date', value: bol?.data?.documentDetail?.date ?? '' },
                 ]}
             />
@@ -498,7 +507,7 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
                 icon={<FileText size={17} color="#06283A" />}
                 title="6. Packing List"
                 rows={[
-                    { label: 'Number', value: pl?.data?.documentDetail?.number ?? '' },
+                    { label: 'Number', value: pl?.data?.documentDetail?.number ?? (pl?.data as any)?.document_number ?? '' },
                     { label: 'Date', value: pl?.data?.documentDetail?.date ?? '' },
                 ]}
             />
@@ -507,40 +516,63 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
                 icon={<FileText size={17} color="#06283A" />}
                 title="7. Certificate of Origin (COO)"
                 rows={[
-                    { label: 'Number', value: coo?.data?.documentDetail?.number ?? '' },
+                    { label: 'Number', value: coo?.data?.documentDetail?.number ?? (coo?.data as any)?.document_number ?? '' },
                     { label: 'Date', value: coo?.data?.documentDetail?.date ?? '' },
                 ]}
             />
 
             <SummaryCard
+                icon={<ShieldCheck size={17} color="#06283A" />}
+                title="8. Insurance"
+                rows={[
+                    { label: 'Policy Number', value: insurance?.data?.documentDetail?.number ?? (insurance?.data as any)?.document_number ?? '' },
+                    { label: 'Date', value: insurance?.data?.documentDetail?.date ?? '' },
+                    {
+                        label: 'Amount Insured',
+                        value: insurance?.data?.insurance?.amountInsured
+                            ? insurance.data.insurance.amountInsured
+                            : ((insurance?.data as any)?.sum_insured ?? ''),
+                    },
+                    {
+                        label: 'CI Reference',
+                        value: insurance?.data?.documentReference?.commercialInvoiceNumber ?? '',
+                    },
+                    {
+                        label: 'B/L Reference',
+                        value: insurance?.data?.documentReference?.billOfLadingNumber ?? '',
+                    },
+                ]}
+            />
+
+            <SummaryCard
                 icon={<Calculator size={17} color="#06283A" />}
-                title="8. Nilai & Bobot"
+                title="9. Nilai & Bobot"
                 rows={[
                     {
                         label: 'Premi Insurance (CI)',
                         value:
                             isFob && ci?.data?.documentDetail?.insurance
-                                ? `${ci.data.documentDetail.insurance} ${ci.data.documentDetail.insuranceCurrency || ''}`
+                                ? `${ci.data.documentDetail.insurance} ${ci.data.documentDetail?.insuranceCurrency || ''}`
                                 : '',
                     },
                     {
                         label: 'Ocean Freight',
                         value:
                             isFob && ci?.data?.documentDetail?.oceanFreight
-                                ? `${ci.data.documentDetail.oceanFreight} ${ci.data.documentDetail.oceanFreightCurrency || ''}`
+                                ? `${ci.data.documentDetail.oceanFreight} ${ci.data.documentDetail?.oceanFreightCurrency || ''}`
                                 : '',
                     },
                     {
                         label: 'Total of Package',
                         value: ci?.data?.totalQuantity?.totalPackages
-                            ? `${ci.data.totalQuantity.totalPackages} ${ci.data.totalQuantity.totalPackagesUnit || ''}`
-                            : '',
+                            ? `${ci.data.totalQuantity.totalPackages} ${ci?.data?.totalQuantity?.totalPackagesUnit || ''}`
+                            : ((ci?.data as any)?.total_packages ?? ''),
                     },
                     {
                         label: 'Total Gross Weight',
                         value: bol?.data?.quantity?.totalGrossWeight
-                            ? `${bol.data.quantity.totalGrossWeight} ${bol.data.quantity.totalGrossWeightUnit || ''}`
-                            : '',
+                            ? `${bol.data.quantity.totalGrossWeight} ${bol?.data?.quantity?.totalGrossWeightUnit || ''}`
+                            : ((bol?.data as any)?.total_gross_weight ?? ''),
                     },
                     {
                         label: 'Total Net Weight',
@@ -549,7 +581,7 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
                     {
                         label: 'Total Volume',
                         value: bol?.data?.quantity?.totalVolume
-                            ? `${bol.data.quantity.totalVolume} ${bol.data.quantity.totalVolumeUnit || ''}`
+                            ? `${bol.data.quantity.totalVolume} ${bol?.data?.quantity?.totalVolumeUnit || ''}`
                             : '',
                     },
                 ]}
@@ -558,7 +590,7 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
             <div style={cardStyle}>
                 <div style={cardHeaderStyle}>
                     <Package size={17} color="#06283A" />
-                    <p style={cardTitleStyle}>9. Cargo Detail</p>
+                    <p style={cardTitleStyle}>10. Cargo Detail</p>
                 </div>
 
                 {cargoCountMismatch && (
@@ -681,7 +713,7 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
                         }}
                     >
                         <CheckCircle2 size={17} />
-                        Selesai Meninjau
+                        Done Reviewing
                     </button>
                 ) : (
                     <button
@@ -703,7 +735,7 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
                         }}
                     >
                         <CheckCircle2 size={17} />
-                        {isSubmitting ? 'Mengirim...' : 'Submit Berkas'}
+                        {isSubmitting ? 'Submitting...' : 'Submit Documents'}
                     </button>
                 )}
             </div>

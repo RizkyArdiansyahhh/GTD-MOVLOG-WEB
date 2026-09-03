@@ -1,12 +1,15 @@
 import { useState, useRef, useId } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
-import CustomerLayout from '@/Layouts/CustomerLayout';
+import DashboardLayout from '@/Layouts/DashboardLayout';
 import AvatarCropModal from '@/Components/AvatarCropModal';
 import {
     User,
     Mail,
     Phone,
     Building2,
+    ShieldCheck,
+    Calendar,
+    Hash,
     Lock,
     Shield,
     Camera,
@@ -22,6 +25,11 @@ import {
     Info,
 } from 'lucide-react';
 
+interface ProfileRole {
+    name: string;
+    label: string;
+}
+
 interface EditProfileProps {
     profile: {
         id: string;
@@ -30,13 +38,10 @@ interface EditProfileProps {
         phone: string | null;
         avatar: string | null;
         avatar_url: string | null;
-        customer: {
-            id: string;
-            company_name: string;
-            pic_name: string | null;
-            email: string | null;
-            phone: string | null;
-        } | null;
+        status: string;
+        status_label: string;
+        roles: ProfileRole[];
+        created_at: string;
     };
 }
 
@@ -98,9 +103,8 @@ export default function EditProfile({ profile }: EditProfileProps) {
     const newPassId = useId();
     const confirmPassId = useId();
 
-    // Company fallback name
-    const companyName = profile.customer?.company_name || 'PT Customer A';
-    const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(companyName)}&background=0F172A&color=F6C343&bold=true&size=128`;
+    const primaryRoleLabel = profile.roles[0]?.label || 'Internal Staff';
+    const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name || 'User')}&background=F6C343&color=1a1a1a&bold=true&size=128`;
 
     // Handle Initial File Selection & Validation
     const handleAvatarFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -160,7 +164,7 @@ export default function EditProfile({ profile }: EditProfileProps) {
     // Submit Profile
     const handleProfileSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        submitProfile('/customer/profil', {
+        submitProfile('/profil', {
             preserveScroll: true,
             onSuccess: () => {
                 setIsDeletingAvatar(false);
@@ -171,7 +175,7 @@ export default function EditProfile({ profile }: EditProfileProps) {
     // Submit Password
     const handlePasswordSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        submitPassword('/customer/profil/password', {
+        submitPassword('/profil/password', {
             preserveScroll: true,
             onSuccess: () => {
                 resetPasswordForm();
@@ -189,8 +193,8 @@ export default function EditProfile({ profile }: EditProfileProps) {
     const isMatching = passwordData.password_confirmation.length > 0 && pwd === passwordData.password_confirmation;
 
     return (
-        <CustomerLayout title="Edit Profile">
-            <Head title="Edit Profile - Customer Portal GTD MoveLog" />
+        <DashboardLayout>
+            <Head title="Edit Profile - GTD MoveLog" />
 
             {/* ── Image Cropper Modal ── */}
             <AvatarCropModal
@@ -209,14 +213,14 @@ export default function EditProfile({ profile }: EditProfileProps) {
                     <div>
                         <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 mb-1">
                             <Link
-                                href="/customer/dashboard"
+                                href="/"
                                 className="hover:text-slate-700 transition-colors flex items-center gap-1"
                             >
                                 <ArrowLeft size={13} strokeWidth={2} />
                                 <span>Dashboard</span>
                             </Link>
                             <span>/</span>
-                            <span className="text-slate-700">Pengaturan Akun</span>
+                            <span className="text-slate-700">Account Settings</span>
                             <span>/</span>
                             <span className="text-[#06283A] font-bold">Edit Profile</span>
                         </div>
@@ -273,9 +277,9 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                     </p>
                                 </div>
 
-                                <div className="mt-3.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-semibold bg-yellow-400/15 text-[#06283A] border border-yellow-400/30">
-                                    <Shield size={13} className="text-yellow-600" strokeWidth={2} />
-                                    <span>Akun Customer Terverifikasi</span>
+                                <div className="mt-3.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-yellow-400/20 text-gray-900 border border-yellow-400/40 shadow-xs">
+                                    <Shield size={13} className="text-yellow-700" strokeWidth={2.4} />
+                                    <span>{primaryRoleLabel}</span>
                                 </div>
 
                                 {/* Avatar Actions */}
@@ -320,48 +324,92 @@ export default function EditProfile({ profile }: EditProfileProps) {
                             </div>
                         </div>
 
-                        {/* Read-Only Company Information Card */}
-                        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6">
-                            <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
-                                <Building2 size={18} className="text-yellow-500 shrink-0" strokeWidth={2} />
+                        {/* Read-Only Internal Account & Authorization Information */}
+                        <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-5 sm:p-6">
+                            <div className="flex items-center gap-2.5 pb-3 border-b border-gray-100">
+                                <ShieldCheck size={18} className="text-yellow-600 shrink-0" strokeWidth={2.2} />
                                 <div>
-                                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                                        Data Perusahaan (Read-Only)
+                                    <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                                        Account Information & Permissions (Read-Only)
                                     </h3>
-                                    <p className="text-xs text-slate-600 font-medium">
-                                        Keterkaitan akun resmi dengan GTD
+                                    <p className="text-xs text-gray-600 font-medium">
+                                        Kredensial dan hak akses sistem internal
                                     </p>
                                 </div>
                             </div>
 
-                            <div className="mt-4 space-y-3">
+                            <div className="mt-4 space-y-3.5">
+                                {/* Role / Peran */}
                                 <div>
-                                    <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-                                        Nama Perusahaan
+                                    <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide flex items-center gap-1">
+                                        <Shield size={12} className="text-gray-400" />
+                                        Peran / Jabatan Sistem
                                     </span>
-                                    <p className="text-sm font-bold text-[#06283A] mt-0.5">
-                                        {companyName}
+                                    <div className="flex flex-wrap gap-1.5 mt-1">
+                                        {profile.roles.map((r) => (
+                                            <span
+                                                key={r.name}
+                                                className="px-2.5 py-0.5 rounded text-xs font-bold bg-gray-100 text-gray-800 border border-gray-200"
+                                            >
+                                                {r.label}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Account Status */}
+                                <div>
+                                    <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">
+                                        Account Status
+                                    </span>
+                                    <div className="mt-1 flex items-center gap-2">
+                                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                            {profile.status_label || 'Active'}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* ID Pengguna */}
+                                <div>
+                                    <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide flex items-center gap-1">
+                                        <Hash size={12} className="text-gray-400" />
+                                        System User ID
+                                    </span>
+                                    <p className="text-xs font-mono font-bold text-gray-800 mt-0.5 truncate bg-gray-50 px-2 py-1 rounded border border-gray-200/60">
+                                        {profile.id}
                                     </p>
                                 </div>
 
-                                {profile.customer?.pic_name && (
-                                    <div>
-                                        <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-                                            PIC Resmi Terdaftar
-                                        </span>
-                                        <p className="text-xs font-medium text-slate-700 mt-0.5">
-                                            {profile.customer.pic_name}
-                                        </p>
-                                    </div>
-                                )}
+                                {/* Tanggal Bergabung */}
+                                <div>
+                                    <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide flex items-center gap-1">
+                                        <Calendar size={12} className="text-gray-400" />
+                                        Terdaftar Sejak
+                                    </span>
+                                    <p className="text-xs font-semibold text-gray-700 mt-0.5">
+                                        {profile.created_at}
+                                    </p>
+                                </div>
+
+                                {/* Unit Kerja */}
+                                <div>
+                                    <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide flex items-center gap-1">
+                                        <Building2 size={12} className="text-gray-400" />
+                                        Unit Kerja / Organisasi
+                                    </span>
+                                    <p className="text-xs font-bold text-gray-900 mt-0.5">
+                                        PT Global Trans Djaya (Internal LMS)
+                                    </p>
+                                </div>
                             </div>
 
                             {/* Security Notice Alert */}
-                            <div className="mt-4 p-3 rounded-lg bg-slate-50 border border-slate-200/80 text-[11px] text-slate-600 leading-relaxed flex items-start gap-2">
-                                <Info size={15} className="text-slate-400 shrink-0 mt-0.5" strokeWidth={2} />
+                            <div className="mt-5 p-3 rounded-xl bg-gray-50 border border-gray-200/80 text-[11px] text-gray-600 leading-relaxed flex items-start gap-2">
+                                <Info size={15} className="text-gray-400 shrink-0 mt-0.5" strokeWidth={2} />
                                 <span>
-                                    Company field is locked for security. To update legal identity or company affiliation, please contact{' '}
-                                    <strong className="text-slate-800 font-semibold">Admin GTD</strong>.
+                                    Wewenang, peran penugasan, dan status akun dikelola oleh{' '}
+                                    <strong className="text-gray-800 font-semibold">Super Admin GTD</strong>. Hubungi Administrator jika terdapat penyesuaian wewenang atau mutasi tugas.
                                 </span>
                             </div>
                         </div>
@@ -697,6 +745,6 @@ export default function EditProfile({ profile }: EditProfileProps) {
                     </div>
                 </div>
             </div>
-        </CustomerLayout>
+        </DashboardLayout>
     );
 }

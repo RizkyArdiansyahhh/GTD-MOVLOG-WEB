@@ -16,8 +16,8 @@ export default function Checkpoint({ checkpoints = [], total_in_transit = 0 }: C
     const displayedCheckpoints = activeCheckpoints.length > 0 ? activeCheckpoints : checkpoints;
 
     return (
-        <CustomerLayout title="Monitoring Pos Checkpoint">
-            <Head title="Pos Checkpoint — GTD Customer Portal" />
+        <CustomerLayout title="Checkpoint Monitoring">
+            <Head title="Checkpoints — GTD Customer Portal" />
 
             <div className="space-y-6">
                 {/* ── Header ── */}
@@ -30,7 +30,7 @@ export default function Checkpoint({ checkpoints = [], total_in_transit = 0 }: C
                         <span>Buka Monitoring Kargo Lengkap</span>
                     </Link>
                     <h1 className="text-xl sm:text-2xl font-bold text-[#06283A] tracking-tight">
-                        Pos Checkpoint Transit
+                        Transit Checkpoints
                     </h1>
                     <p className="text-xs sm:text-sm text-slate-500 mt-1 font-normal">
                         Distribusi {total_in_transit} pengiriman kargo aktif yang sedang melintasi pos operasional GTD.
@@ -40,7 +40,7 @@ export default function Checkpoint({ checkpoints = [], total_in_transit = 0 }: C
                 {displayedCheckpoints.length === 0 ? (
                     <div className="p-12 rounded-xl bg-white border border-slate-200 text-center text-slate-400 text-xs shadow-sm">
                         <MapPin size={26} className="mx-auto mb-2 text-slate-300" />
-                        <p className="font-semibold text-slate-700 text-sm">Tidak ada armada di titik checkpoint</p>
+                        <p className="font-semibold text-slate-700 text-sm">No fleets at checkpoint locations</p>
                         <p className="text-xs text-slate-400 mt-1">Saat ini tidak ada armada aktif yang sedang berada di titik checkpoint transit.</p>
                     </div>
                 ) : (
@@ -59,7 +59,7 @@ export default function Checkpoint({ checkpoints = [], total_in_transit = 0 }: C
                                         <h3 className="font-bold text-[#06283A] text-xs sm:text-sm">{group.name}</h3>
                                     </div>
                                     <span className="px-2.5 py-0.5 rounded-md bg-blue-50 text-blue-800 border border-blue-200 text-[11px] font-semibold">
-                                        {group.active_fleets} Sesi
+                                        {group.active_fleets} Sessions
                                     </span>
                                 </div>
 
@@ -76,7 +76,7 @@ export default function Checkpoint({ checkpoints = [], total_in_transit = 0 }: C
                                                     </span>
                                                     <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-600">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
-                                                        <span>Dalam Perjalanan</span>
+                                                        <span>In Transit</span>
                                                     </span>
                                                 </div>
                                                 <p className="text-xs font-semibold text-slate-800 mt-1">{s.cargo_name}</p>
@@ -90,7 +90,7 @@ export default function Checkpoint({ checkpoints = [], total_in_transit = 0 }: C
                                                         href={`/customer/shipment/${s.id}`}
                                                         className="text-xs font-semibold text-slate-700 hover:text-slate-900 inline-flex items-center gap-1"
                                                     >
-                                                        <span>Detail Pengiriman</span>
+                                                        <span>Shipment Details</span>
                                                         <ArrowRight size={11} />
                                                     </Link>
                                                 </div>

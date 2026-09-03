@@ -13,8 +13,15 @@ interface RoleOption {
     label: string;
 }
 
+interface CompanyOption {
+    id: string;
+    name: string;
+    company_name?: string;
+}
+
 interface TambahAkunProps extends PageProps {
     availableRoles: RoleOption[];
+    companies: CompanyOption[];
 }
 
 // ─────────────────────────────────────────────
@@ -25,6 +32,7 @@ interface FormData {
     email: string;
     phone: string;
     role: string;
+    company_id: string;
     password: string;
     password_confirmation: string;
     status: string;
@@ -34,42 +42,104 @@ interface FormData {
 // Tambah Akun Page
 // ─────────────────────────────────────────────
 export default function TambahAkun() {
-    const { availableRoles, errors } = usePage<TambahAkunProps>().props;
+    const { availableRoles, companies = [], errors } = usePage<TambahAkunProps>().props;
 
     const [form, setForm] = useState<FormData>({
         name: '',
         email: '',
         phone: '',
         role: '',
+        company_id: '',
         password: '',
         password_confirmation: '',
         status: 'active',
     });
 
+    const [clientErrors, setClientErrors] = useState<Record<string, string>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [toast, setToast] = useState<ToastMessage | null>(null);
 
+    // Check if currently selected role is Customer
+    const isCustomerRole = (roleValue: string) => {
+        return roleValue.toLowerCase() === 'customer';
+    };
+
+    const isCustomer = isCustomerRole(form.role);
+
     const handleChange = (field: keyof FormData, value: string) => {
         setForm((prev) => ({ ...prev, [field]: value }));
+        if (clientErrors[field]) {
+            setClientErrors((prev) => {
+                const next = { ...prev };
+                delete next[field];
+                return next;
+            });
+        }
+    };
+
+    const handleRoleChange = (selectedRole: string) => {
+        const nextIsCustomer = isCustomerRole(selectedRole);
+        setForm((prev) => ({
+            ...prev,
+            role: selectedRole,
+            // Clear company if role is changed from Customer to another role
+            company_id: nextIsCustomer ? prev.company_id : '',
+        }));
+
+        setClientErrors((prev) => {
+            const next = { ...prev };
+            delete next.role;
+            if (!nextIsCustomer) {
+                delete next.company_id;
+            }
+            return next;
+        });
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Frontend validation: Company Name is required when role is Customer
+        if (isCustomer && !form.company_id) {
+            setClientErrors((prev) => ({
+                ...prev,
+                company_id: 'Company Name is required when the selected role is Customer.',
+            }));
+            setToast({
+                id: String(Date.now()),
+                type: 'error',
+                message: 'Company Name is required when the selected role is Customer.',
+            });
+            return;
+        }
+
         setIsSubmitting(true);
 
-        router.post('/kelola-akun/tambah', form as any, {
+        const payload = {
+            ...form,
+            company_id: isCustomer ? form.company_id : null,
+        };
+
+        router.post('/kelola-akun/tambah', payload as any, {
             preserveScroll: true,
             onSuccess: () => {
                 setIsSubmitting(false);
             },
-            onError: () => {
+            onError: (errs) => {
                 setIsSubmitting(false);
+                const firstErrorMessage =
+                    errs?.company_id ||
+                    errs?.customer_id ||
+                    errs?.role ||
+                    errs?.email ||
+                    errs?.password ||
+                    'Failed to create account. Please check the entered data.';
                 setToast({
                     id: String(Date.now()),
                     type: 'error',
-                    message: 'Gagal menambahkan akun. Silakan periksa kembali data yang diisi.',
+                    message: firstErrorMessage,
                 });
             },
         });
@@ -77,10 +147,11 @@ export default function TambahAkun() {
 
     // Validation errors from server
     const serverErrors = errors as Record<string, string>;
+    const companyError = clientErrors.company_id || serverErrors.company_id || serverErrors.customer_id;
 
     return (
         <DashboardLayout>
-            <Head title="Tambah Akun — Global Trans Djaya" />
+            <Head title="Add Account — Global Trans Djaya" />
 
             {/* Floating Toast Notification */}
             <ToastNotification toast={toast} onClose={() => setToast(null)} />
@@ -95,7 +166,7 @@ export default function TambahAkun() {
                     Kelola Akun
                 </Link>
                 <ChevronRight size={14} className="text-gray-400 shrink-0" />
-                <span className="font-medium text-gray-500">Tambah Akun</span>
+                <span className="font-medium text-gray-500">Add Account</span>
             </nav>
 
             {/* ── Page Title ── */}
@@ -218,45 +289,86 @@ export default function TambahAkun() {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
                                 {/* Role */}
-                                <div className="md:col-span-2">
+                                <div className={isCustomer ? "md:col-span-1" : "md:col-span-2"}>
                                     <label
                                         htmlFor="role"
                                         className="block text-sm font-medium mb-1.5"
                                         style={{ color: '#06283A' }}
                                     >
-                                        Role
+                                        Role <span className="text-red-500">*</span>
                                     </label>
                                     <select
                                         id="role"
                                         value={form.role}
-                                        onChange={(e) => handleChange('role', e.target.value)}
+                                        onChange={(e) => handleRoleChange(e.target.value)}
                                         className={`w-full rounded-xl px-4 text-sm text-gray-700 border outline-none cursor-pointer transition-all duration-150 focus:ring-2 focus:ring-amber-100 ${
-                                            serverErrors.role
+                                            serverErrors.role || clientErrors.role
                                                 ? 'border-red-300 focus:border-red-400'
                                                 : 'border-gray-200 focus:border-amber-300'
                                         }`}
                                         style={{ height: 44, backgroundColor: '#F8FAFC' }}
                                     >
-                                        <option value="">Pilih Role</option>
+                                        <option value="">Select Role</option>
                                         {availableRoles?.map((role) => (
                                             <option key={role.value} value={role.value}>
                                                 {role.label}
                                             </option>
                                         ))}
                                     </select>
-                                    {serverErrors.role && (
-                                        <p className="text-xs text-red-500 mt-1">{serverErrors.role}</p>
+                                    {(serverErrors.role || clientErrors.role) && (
+                                        <p className="text-xs text-red-500 mt-1">
+                                            {serverErrors.role || clientErrors.role}
+                                        </p>
                                     )}
                                 </div>
 
-                                {/* Password Sementara */}
+                                {/* Company Name (Dynamically displayed when Role is Customer) */}
+                                {isCustomer && (
+                                    <div className="md:col-span-1">
+                                        <label
+                                            htmlFor="company_id"
+                                            className="block text-sm font-medium mb-1.5"
+                                            style={{ color: '#06283A' }}
+                                        >
+                                            Company Name <span className="text-red-500">*</span>
+                                        </label>
+                                        <select
+                                            id="company_id"
+                                            value={form.company_id}
+                                            onChange={(e) => handleChange('company_id', e.target.value)}
+                                            className={`w-full rounded-xl px-4 text-sm text-gray-700 border outline-none cursor-pointer transition-all duration-150 focus:ring-2 focus:ring-amber-100 ${
+                                                companyError
+                                                    ? 'border-red-300 focus:border-red-400'
+                                                    : 'border-gray-200 focus:border-amber-300'
+                                            }`}
+                                            style={{ height: 44, backgroundColor: '#F8FAFC' }}
+                                        >
+                                            <option value="">Select Company</option>
+                                            {companies.map((company) => (
+                                                <option key={company.id} value={company.id}>
+                                                    {company.name || company.company_name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {companies.length === 0 && (
+                                            <p className="text-xs text-amber-600 mt-1">
+                                                No companies available. Please create a company in Submit Berkas first.
+                                            </p>
+                                        )}
+                                        {companyError && (
+                                            <p className="text-xs text-red-500 mt-1">{companyError}</p>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Temporary Password */}
                                 <div>
                                     <label
                                         htmlFor="password"
                                         className="block text-sm font-medium mb-1.5"
                                         style={{ color: '#06283A' }}
                                     >
-                                        Password Sementara <span className="text-red-500">*</span>
+                                        Temporary Password <span className="text-red-500">*</span>
                                     </label>
                                     <div className="relative">
                                         <input
@@ -264,7 +376,7 @@ export default function TambahAkun() {
                                             type={showPassword ? 'text' : 'password'}
                                             value={form.password}
                                             onChange={(e) => handleChange('password', e.target.value)}
-                                            placeholder="Min. 8 karakter"
+                                            placeholder="Min. 8 characters"
                                             className={`w-full rounded-xl px-4 pr-11 text-sm text-gray-700 placeholder-gray-400 border outline-none transition-all duration-150 focus:ring-2 focus:ring-amber-100 ${
                                                 serverErrors.password
                                                     ? 'border-red-300 focus:border-red-400'
@@ -286,14 +398,14 @@ export default function TambahAkun() {
                                     )}
                                 </div>
 
-                                {/* Konfirmasi Password */}
+                                {/* Confirm Password */}
                                 <div>
                                     <label
                                         htmlFor="password_confirmation"
                                         className="block text-sm font-medium mb-1.5"
                                         style={{ color: '#06283A' }}
                                     >
-                                        Konfirmasi Password <span className="text-red-500">*</span>
+                                        Confirm Password <span className="text-red-500">*</span>
                                     </label>
                                     <div className="relative">
                                         <input
@@ -301,7 +413,7 @@ export default function TambahAkun() {
                                             type={showConfirmPassword ? 'text' : 'password'}
                                             value={form.password_confirmation}
                                             onChange={(e) => handleChange('password_confirmation', e.target.value)}
-                                            placeholder="Ulangi password"
+                                            placeholder="Repeat password"
                                             className={`w-full rounded-xl px-4 pr-11 text-sm text-gray-700 placeholder-gray-400 border outline-none transition-all duration-150 focus:ring-2 focus:ring-amber-100 ${
                                                 serverErrors.password_confirmation
                                                     ? 'border-red-300 focus:border-red-400'
@@ -350,7 +462,7 @@ export default function TambahAkun() {
                                     }}
                                 >
                                     <Save size={16} strokeWidth={2.2} />
-                                    {isSubmitting ? 'Menyimpan...' : 'Save User'}
+                                    {isSubmitting ? 'Saving...' : 'Save User'}
                                 </button>
                             </div>
                         </div>

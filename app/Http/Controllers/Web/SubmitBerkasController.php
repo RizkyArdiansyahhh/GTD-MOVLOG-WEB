@@ -46,7 +46,7 @@ class SubmitBerkasController extends Controller
         $customer = Customer::create($validated);
 
         return response()->json([
-            'message'  => 'Customer berhasil ditambahkan',
+            'message'  => 'Customer added successfully',
             'customer' => $customer,
         ], 201);
     }
