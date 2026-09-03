@@ -28,12 +28,12 @@ export default function Laporan() {
     /* ── Processing State ─────────────────────────────── */
     if (exportStatus === 'processing') {
         return (
-            <DashboardLayout title="Laporan">
-                <Head title="Laporan" />
+            <DashboardLayout title="Reports">
+                <Head title="Reports" />
                 <div style={{ padding: 24, background: '#F5F7FA', minHeight: '100%' }}>
                     <ExportProcessing
                         progress={progress}
-                        reportType="Laporan Pengiriman"
+                        reportType="Shipment Report"
                         periodLabel={periodLabel}
                         formatLabel={formatLabel}
                         onCancel={handleCancel}
@@ -46,8 +46,8 @@ export default function Laporan() {
     /* ── Done State ───────────────────────────────────── */
     if (exportStatus === 'done' && exportResult) {
         return (
-            <DashboardLayout title="Laporan">
-                <Head title="Laporan" />
+            <DashboardLayout title="Reports">
+                <Head title="Reports" />
                 <div style={{ padding: 24, background: '#F5F7FA', minHeight: '100%' }}>
                     <ExportSuccess
                         result={exportResult}
@@ -61,8 +61,8 @@ export default function Laporan() {
 
     /* ── Idle State (Main Page) ───────────────────────── */
     return (
-        <DashboardLayout title="Laporan">
-            <Head title="Laporan" />
+        <DashboardLayout title="Reports">
+            <Head title="Reports" />
 
             <div
                 style={{
@@ -133,7 +133,7 @@ export default function Laporan() {
                         }}
                     >
                         <ExportSummary
-                            reportType="Laporan Pengiriman"
+                            reportType="Shipment Report"
                             periodLabel={periodLabel}
                             formatLabel={formatLabel}
                             onExport={handleExport}

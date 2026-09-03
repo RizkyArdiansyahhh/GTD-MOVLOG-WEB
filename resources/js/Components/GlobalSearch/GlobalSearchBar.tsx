@@ -316,7 +316,7 @@ export default function GlobalSearchBar() {
                         <div>
                             <div className="flex items-center justify-between mb-2">
                                 <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
-                                    Pencarian Terakhir
+                                    Recent Searches
                                 </span>
                                 <button
                                     type="button"
@@ -375,7 +375,7 @@ export default function GlobalSearchBar() {
             return (
                 <div className="py-12 flex flex-col items-center justify-center text-center">
                     <Loader2 size={20} className="animate-spin text-gray-400 mb-2" />
-                    <p className="text-xs text-gray-500 font-medium">Mencari &quot;{trimmed}&quot;...</p>
+                    <p className="text-xs text-gray-500 font-medium">Searching for &quot;{trimmed}&quot;...</p>
                 </div>
             );
         }
@@ -467,10 +467,10 @@ export default function GlobalSearchBar() {
         return (
             <div className="py-10 px-6 text-center">
                 <p className="text-sm font-semibold text-gray-800">
-                    Tidak ada hasil untuk &ldquo;{trimmed}&rdquo;
+                    No results found for &ldquo;{trimmed}&rdquo;
                 </p>
                 <p className="text-xs text-gray-500 mt-1 max-w-sm mx-auto leading-relaxed">
-                    Coba gunakan nama unit, ID tracking, sesi, checkpoint, dokumen, atau nama pengguna.
+                    Try searching by unit name, tracking ID, session, checkpoint, document, or user name.
                 </p>
             </div>
         );
@@ -559,7 +559,7 @@ export default function GlobalSearchBar() {
                                 <ArrowRight size={12} />
                             </button>
                         ) : (
-                            <span className="text-[11px] text-gray-400">Pusat Pencarian Global</span>
+                            <span className="text-[11px] text-gray-400">Global Search</span>
                         )}
 
                         <div className="flex items-center gap-3 text-[11px] text-gray-400">
@@ -605,7 +605,7 @@ export default function GlobalSearchBar() {
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
                                 onKeyDown={handleKeyDown}
-                                placeholder="Cari tracking, sesi, dokumen..."
+                                placeholder="Search tracking, sessions, documents..."
                                 className="flex-1 bg-transparent text-sm text-gray-900 placeholder-gray-400 outline-none"
                             />
                             {query && (

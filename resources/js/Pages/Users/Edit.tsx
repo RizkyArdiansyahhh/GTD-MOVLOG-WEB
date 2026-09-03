@@ -83,7 +83,7 @@ export default function Edit({ user }: EditUserProps) {
                         Edit User
                     </h1>
                     <p className="text-sm text-gray-500 mt-1">
-                        Perbarui informasi pengguna dan hak akses sistem untuk <strong>{user.name}</strong>.
+                        Update user information and system access permissions for <strong>{user.name}</strong>.
                     </p>
                 </div>
 
@@ -195,8 +195,8 @@ export default function Edit({ user }: EditUserProps) {
                                             : 'border-gray-200 focus:border-[#F5B800] focus:ring-[#F5B800]/20'
                                     }`}
                                 >
-                                    <option value="active">Aktif</option>
-                                    <option value="inactive">Tidak Aktif</option>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
                                     <option value="pending">Pending Verification</option>
                                 </select>
                                 {errors.status && (
@@ -210,7 +210,7 @@ export default function Edit({ user }: EditUserProps) {
                                     Password <span className="text-gray-400 font-normal">(optional)</span>
                                 </label>
                                 <p className="text-[11px] text-gray-400 mb-1.5">
-                                    Biarkan kosong jika tidak ingin mengubah password.
+                                    Leave blank if you do not wish to change the password.
                                 </p>
                                 <input
                                     type="password"
@@ -234,7 +234,7 @@ export default function Edit({ user }: EditUserProps) {
                                     Confirm Password <span className="text-gray-400 font-normal">(optional)</span>
                                 </label>
                                 <p className="text-[11px] text-gray-400 mb-1.5">
-                                    Ulangi password baru yang Anda masukkan.
+                                    Repeat the new password entered above.
                                 </p>
                                 <input
                                     type="password"
@@ -277,7 +277,7 @@ export default function Edit({ user }: EditUserProps) {
                             }}
                         >
                             {processing ? (
-                                <span>Menyimpan...</span>
+                                <span>Saving...</span>
                             ) : (
                                 <>
                                     <CheckCircle2 size={16} />

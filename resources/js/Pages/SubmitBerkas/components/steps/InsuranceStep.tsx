@@ -109,12 +109,12 @@ export function InsuranceStep() {
     const validate = (): boolean => {
         const next: Record<string, string> = {};
 
-        if (!data.documentDetail?.number?.trim()) next.documentNumber = 'Nomor sertifikat/polis asuransi wajib diisi.';
-        if (!data.documentReference.commercialInvoiceNumber.trim()) next.ciNumber = 'Nomor Commercial Invoice wajib diisi.';
-        if (!data.documentReference.billOfLadingNumber.trim()) next.bolNumber = 'Nomor Bill of Lading wajib diisi.';
-        if (!data.insurance.amountInsured.trim()) next.amountInsured = 'Nilai pertanggungan wajib diisi.';
-        if (!pdf) next.pdf = 'Dokumen PDF wajib diupload.';
-        if (!selectedCustomer?.id) next.general = 'Customer wajib dipilih terlebih dahulu.';
+        if (!data.documentDetail?.number?.trim()) next.documentNumber = 'Insurance policy/certificate number is required.';
+        if (!data.documentReference.commercialInvoiceNumber.trim()) next.ciNumber = 'Commercial Invoice number is required.';
+        if (!data.documentReference.billOfLadingNumber.trim()) next.bolNumber = 'Bill of Lading number is required.';
+        if (!data.insurance.amountInsured.trim()) next.amountInsured = 'Insured amount is required.';
+        if (!pdf) next.pdf = 'PDF document is required.';
+        if (!selectedCustomer?.id) next.general = 'Customer must be selected first.';
         if (!assignmentNoRef) next.general = 'Assignment Reference tidak ditemukan.';
 
         setErrors(next);
@@ -135,7 +135,7 @@ export function InsuranceStep() {
                 (bolNum && data.documentReference.billOfLadingNumber && data.documentReference.billOfLadingNumber !== bolNum) ||
                 (contractNum && data.documentReference.shipmentContractNumber && data.documentReference.shipmentContractNumber !== contractNum)
             ) {
-                warnings.docRefChanged = 'Nomor referensi dokumen berbeda dari Commercial Invoice atau Bill of Lading.';
+                warnings.docRefChanged = 'Document reference numbers differ from Commercial Invoice or Bill of Lading.';
                 changed.push('Document Reference');
             }
 
@@ -176,14 +176,19 @@ export function InsuranceStep() {
         setShowChangedModal(false);
         setIsSaving(true);
         try {
-            await axios.post('/submit-berkas/step', {
-                assignment_no_ref: assignmentNoRef,
-                customer_id: selectedCustomer?.id,
-                document_type_id: DOCUMENT_TYPE_ID_INSURANCE,
-                document_data: data,
-                file_name: pdf?.name ?? null,
-                file_path: pdf?.url ?? null,
-            });
+            const formData = new FormData();
+      formData.append('assignment_no_ref', assignmentNoRef);
+      formData.append('customer_id', String(selectedCustomer?.id));
+      formData.append('document_type_id', '5');
+      formData.append('document_data', JSON.stringify(data));
+      const fName = pdf?.name ?? null;
+      if (fName) formData.append('file_name', fName);
+      const fPath = pdf?.url ?? null;
+      if (fPath) formData.append('file_path', fPath);
+      if (pdf?.file) formData.append('pdf', pdf.file);
+      await axios.post('/submit-berkas/step', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
 
             saveStepData('insurance', data, pdf);
             goNext();
@@ -191,7 +196,7 @@ export function InsuranceStep() {
             console.error('Gagal menyimpan step Insurance:', error);
             setErrors((prev) => ({
                 ...prev,
-                general: error.response?.data?.message || 'Gagal menyimpan data ke server. Silakan coba lagi.',
+                general: error.response?.data?.message || 'Failed to save data to server. Please try again.',
             }));
         } finally {
             setIsSaving(false);

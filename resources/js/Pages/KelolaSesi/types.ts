@@ -118,9 +118,9 @@ export interface WorkSession {
 }
 
 export const STAGE_LABELS: Record<StageType, string> = {
-    kapal: 'Kapal',
-    tongkang: 'Tongkang',
-    pelabuhan: 'Pelabuhan',
+    kapal: 'Vessel',
+    tongkang: 'Barge',
+    pelabuhan: 'Port',
     site: 'Site',
 };
 

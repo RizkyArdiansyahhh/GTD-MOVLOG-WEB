@@ -39,7 +39,7 @@ class DocumentSubmissionService
         // Normalisasi path agar tidak ada leading slash '/'
         $filePath = !empty($data['file_path'])
             ? ltrim($data['file_path'], '/')
-            : ('documents/' . $data['assignment_no_ref'] . '/' . $fileName);
+            : ('pdf_dokumen/' . $data['assignment_no_ref'] . '/' . $fileName);
 
         return DB::transaction(function () use ($data, $fileName, $filePath, $uploadedBy) {
             return Document::updateOrCreate(
@@ -101,7 +101,7 @@ class DocumentSubmissionService
                 return [
                     'assignment_no_ref' => $doc->assignment_no_ref,
                     'customer_id'       => $doc->customer_id,
-                    'customer_name'     => $doc->customer?->company_name ?? 'Customer Tidak Diketahui',
+                    'customer_name'     => $doc->customer?->company_name ?? 'Unknown Customer',
                     'customer_pic'      => $doc->customer?->pic_name ?? '-',
                     'total_documents'   => (int) $doc->total_documents,
                     'status'            => $doc->dominant_status ?? 'DRAFT',
@@ -163,7 +163,7 @@ class DocumentSubmissionService
 
         if ($nonDraft->isNotEmpty()) {
             throw ValidationException::withMessages([
-                'assignment_no_ref' => 'Sebagian dokumen sudah pernah disubmit sebelumnya.',
+                'assignment_no_ref' => 'Some documents have already been submitted previously.',
             ]);
         }
     }
@@ -178,7 +178,7 @@ class DocumentSubmissionService
 
         if ($existingCustomerId && $existingCustomerId !== $customerId) {
             throw ValidationException::withMessages([
-                'customer_id' => 'Customer tidak sesuai dengan assignment yang sedang berjalan.',
+                'customer_id' => 'Customer does not match the active assignment.',
             ]);
         }
     }

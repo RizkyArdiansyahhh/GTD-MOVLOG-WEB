@@ -4,7 +4,7 @@
 
 export type UserRole = string;
 
-export type UserStatus = 'Aktif' | 'Tidak Aktif';
+export type UserStatus = 'Active' | 'Inactive' | 'Aktif' | 'Tidak Aktif';
 
 export interface KelolaAkunUser {
     id: string;

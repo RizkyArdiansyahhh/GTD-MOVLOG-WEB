@@ -46,7 +46,7 @@ class SubmitBerkasController extends Controller
         $customer = Customer::create($validated);
 
         return response()->json([
-            'message'  => 'Customer berhasil ditambahkan',
+            'message'  => 'Customer added successfully',
             'customer' => $customer,
         ], 201);
     }
@@ -72,7 +72,7 @@ class SubmitBerkasController extends Controller
         // Simpan file fisik jika diunggah langsung
         if ($request->hasFile('pdf')) {
             $file = $request->file('pdf');
-            $path = $file->store('documents/' . $data['assignment_no_ref'], 'public');
+            $path = $file->store('pdf_dokumen/' . $data['assignment_no_ref'], 'public');
             
             $data['file_name'] = $file->getClientOriginalName();
             $data['file_path'] = $path;
@@ -103,7 +103,8 @@ class SubmitBerkasController extends Controller
     {
         $this->documentSubmissionService->submitFinal($assignmentNoRef);
         return redirect()
-            ->route('submit-berkas.index');
+            ->route('submit-berkas.index')
+            ->with('success', "Seluruh berkas assignment {$assignmentNoRef} berhasil disimpan.");
     }
 
     /**

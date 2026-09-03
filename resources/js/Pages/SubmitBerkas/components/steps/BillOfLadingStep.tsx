@@ -81,10 +81,10 @@ export function BillOfLadingStep() {
 
   const validate = (): boolean => {
     const next: Record<string, string> = {};
-    if (!data.documentDetail.number.trim()) next.documentNumber = 'Nomor dokumen wajib diisi.';
-    if (!data.shipper.name.trim()) next.shipperName = 'Nama shipper wajib diisi.';
-    if (!data.consignee.name.trim()) next.consigneeName = 'Nama consignee wajib diisi.';
-    if (!pdf) next.pdf = 'Dokumen PDF wajib diupload.';
+    if (!data.documentDetail.number.trim()) next.documentNumber = 'Document number is required.';
+    if (!data.shipper.name.trim()) next.shipperName = 'Shipper name is required.';
+    if (!data.consignee.name.trim()) next.consigneeName = 'Consignee name is required.';
+    if (!pdf) next.pdf = 'PDF document is required.';
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -99,19 +99,24 @@ export function BillOfLadingStep() {
     if (!assignmentNoRef || !selectedCustomer?.id) {
       setErrors((prev) => ({
         ...prev,
-        general: 'Data customer atau nomor assignment belum tersedia. Silakan pilih customer terlebih dahulu.',
+        general: 'Customer data or assignment number is not available. Please select a customer first.',
       }));
       return;
     }
     setIsSaving(true);
     try {
-      await axios.post('/submit-berkas/step', {
-        assignment_no_ref: assignmentNoRef,
-        customer_id: selectedCustomer?.id,
-        document_type_id: '1',
-        document_data: data,
-        file_name: pdf?.name ?? 'Bill_of_Lading.pdf',
-        file_path: pdf?.url ?? null,
+      const formData = new FormData();
+      formData.append('assignment_no_ref', assignmentNoRef);
+      formData.append('customer_id', String(selectedCustomer?.id));
+      formData.append('document_type_id', '1');
+      formData.append('document_data', JSON.stringify(data));
+      const fName = pdf?.name ?? 'Bill_of_Lading.pdf';
+      if (fName) formData.append('file_name', fName);
+      const fPath = pdf?.url ?? null;
+      if (fPath) formData.append('file_path', fPath);
+      if (pdf?.file) formData.append('pdf', pdf.file);
+      await axios.post('/submit-berkas/step', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
 
       saveStepData('billOfLading', data, pdf);

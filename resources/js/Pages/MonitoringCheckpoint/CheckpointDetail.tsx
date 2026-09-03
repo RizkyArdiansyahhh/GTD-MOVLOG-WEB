@@ -6,24 +6,21 @@ import CheckpointStepTimeline from "./components/CheckpointStepTimeline";
 import type { CheckpointDetailPageProps } from "./types/MonitoringCheckpoint";
 
 /**
- * Halaman detail penuh 1 shipment (bukan drawer/overlay).
+ * Halaman detail penuh 1 shipment (Monitoring Checkpoint).
  * Route: GET /monitoring-checkpoint/{assignmentNo}
- *
- * Menampilkan:
- * - Header dengan assignment_no sebagai identifier utama
- * - Vertical timeline 4 step checkpoint (atas ke bawah)
  */
 export default function CheckpointDetail({ shipment }: CheckpointDetailPageProps) {
     const currentStep = shipment.steps.find((step) => step.checkpointId === shipment.currentCheckpointId);
 
     return (
         <DashboardLayout>
-            <Head title={`Checkpoint - ${shipment.assignmentNo}`} />
+            <Head title={`Detail Checkpoint - ${shipment.assignmentNo}`} />
 
-            <div className="mx-auto max-w-4xl px-4 py-8">
+            <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
                 <CheckpointDetailHeader
                     assignmentNo={shipment.assignmentNo}
                     customerName={shipment.customerName}
+                    cargoName={shipment.cargoName}
                     currentCheckpointLabel={currentStep?.title ?? null}
                 />
 

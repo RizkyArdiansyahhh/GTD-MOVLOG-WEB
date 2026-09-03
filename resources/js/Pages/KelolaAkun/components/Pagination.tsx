@@ -45,8 +45,8 @@ export default function Pagination({
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 px-1">
             {/* Info */}
             <p className="text-sm text-gray-400 text-center sm:text-left">
-                Menampilkan <span className="font-semibold text-gray-600">{from}–{to}</span> dari{' '}
-                <span className="font-semibold text-gray-600">{totalItems}</span> pengguna
+                Showing <span className="font-semibold text-gray-600">{from}–{to}</span> of{' '}
+                <span className="font-semibold text-gray-600">{totalItems}</span> users
             </p>
 
             {/* Page Controls */}
@@ -60,7 +60,7 @@ export default function Pagination({
                     style={{ height: 36 }}
                 >
                     <ChevronLeft size={16} strokeWidth={2} />
-                    Sebelumnya
+                    Previous
                 </button>
 
                 {/* Page Numbers */}
@@ -103,7 +103,7 @@ export default function Pagination({
                     className="flex items-center gap-1 rounded-lg px-3 text-sm font-medium transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100 text-gray-600"
                     style={{ height: 36 }}
                 >
-                    Berikutnya
+                    Next
                     <ChevronRight size={16} strokeWidth={2} />
                 </button>
             </div>

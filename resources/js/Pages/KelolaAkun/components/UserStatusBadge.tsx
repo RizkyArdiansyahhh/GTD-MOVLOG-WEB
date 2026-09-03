@@ -5,7 +5,7 @@ interface UserStatusBadgeProps {
 }
 
 export default function UserStatusBadge({ status }: UserStatusBadgeProps) {
-    const isActive = status === 'Aktif';
+    const isActive = status === 'Active' || status === 'Aktif' || String(status).toLowerCase() === 'active';
 
     return (
         <span

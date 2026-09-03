@@ -25,13 +25,12 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
 
     const getGreeting = () => {
         const hour = new Date().getHours();
-        if (hour < 11) return 'Selamat Pagi';
-        if (hour < 15) return 'Selamat Siang';
-        if (hour < 18) return 'Selamat Sore';
-        return 'Selamat Malam';
+        if (hour < 12) return 'Good Morning';
+        if (hour < 17) return 'Good Afternoon';
+        return 'Good Evening';
     };
 
-    const formattedDate = new Date().toLocaleDateString('id-ID', {
+    const formattedDate = new Date().toLocaleDateString('en-US', {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
@@ -75,7 +74,7 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
                         </span>
                     </h1>
                     <p className="hidden md:block text-[11px] text-gray-400 font-medium leading-none mt-0.5 truncate">
-                        Ringkasan aktivitas & sistem logistik GTD
+                        GTD Activity & Logistics Summary
                     </p>
                 </div>
             </div>
@@ -151,7 +150,7 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
                                 className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-gray-700 hover:text-gray-900 hover:bg-gray-100/80 rounded-xl transition-colors cursor-pointer mb-0.5"
                             >
                                 <UserRound size={16} className="text-gray-400 shrink-0" strokeWidth={1.8} />
-                                <span>Edit Profil</span>
+                                <span>Edit Profile</span>
                             </Link>
 
                             <div className="my-1 border-t border-gray-100" />
@@ -165,7 +164,7 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
                                 className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-gray-700 hover:text-gray-900 hover:bg-gray-100/80 rounded-xl transition-colors cursor-pointer"
                             >
                                 <LogOut size={16} className="text-gray-400 shrink-0" strokeWidth={1.8} />
-                                <span>Keluar Sistem (Logout)</span>
+                                <span>Sign Out</span>
                             </Link>
                         </div>
                     )}

@@ -20,8 +20,8 @@ const SHADOW: Record<ToastItem['type'], string> = {
     error: '0 8px 24px rgba(220, 38, 38, 0.28)',
 };
 const TITLE: Record<ToastItem['type'], string> = {
-    success: 'Berhasil',
-    error: 'Gagal',
+    success: 'Success',
+    error: 'Error',
 };
 
 // ── Single toast card ─────────────────────────────────────────────────────

@@ -1,5 +1,9 @@
 export type ShippingStatus =
   | 'Menunggu'
+    | 'Pending'
+    | 'In Transit'
+    | 'Delivered'
+    | 'Cancelled'
   | 'Dalam Perjalanan'
   | 'Sampai Checkpoint'
   | 'Sampai Tujuan'

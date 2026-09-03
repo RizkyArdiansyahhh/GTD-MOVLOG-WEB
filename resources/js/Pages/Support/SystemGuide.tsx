@@ -19,82 +19,82 @@ interface RoleSop {
 const sopData: RoleSop[] = [
     {
         roleId: 'field-worker',
-        roleName: 'Staf Lapangan / Worker',
-        description: 'Prosedur standar pengoperasian sesi kerja dan pembaruan status checkpoint di area kargo/pelabuhan.',
+        roleName: 'Field Worker',
+        description: 'Standard operating procedure for managing work sessions and updating checkpoint statuses in cargo and port areas.',
         steps: [
             {
                 number: '01',
-                title: 'Absensi & Inisiasi Sesi Pekerja',
-                description: 'Memulai sesi tugas harian sebelum melakukan pemeriksaan kargo.',
+                title: 'Attendance & Worker Session Initiation',
+                description: 'Initiating daily assignment sessions prior to cargo inspection.',
                 details: [
-                    'Buka menu Worker Sessions dari navigasi utama.',
-                    'Pilih unit tugas dan konfirmasi lokasi awal keberadaan.',
-                    'Klik "Mulai Sesi Pekerja" untuk mencatat timestamp awal kerja secara otomatis.',
+                    'Open the Worker Sessions menu from the main navigation.',
+                    'Select the assigned unit and confirm your initial location.',
+                    'Click "Start Worker Session" to automatically record work commencement timestamp.',
                 ],
             },
             {
                 number: '02',
-                title: 'Pemeriksaan Kondisi Fisik Kargo & Checkpoint',
-                description: 'Melakukan verifikasi fisik kontainer atau unit kendaraan di lapangan.',
+                title: 'Cargo Physical Inspection & Checkpoint',
+                description: 'Conducting physical verification of containers or vehicle units on-site.',
                 details: [
-                    'Buka modul Checkpoint Monitoring pada sistem.',
-                    'Pastikan status segel, nomor seri kontainer, dan kargo sesuai manifest.',
-                    'Perbarui status ke "Lolos Checkpoint" apabila seluruh kondisi memenuhi syarat.',
+                    'Open the Checkpoint Monitoring module in the system.',
+                    'Verify seal status, container serial numbers, and cargo against the manifest.',
+                    'Update status to "Passed Checkpoint" once all requirements are met.',
                 ],
             },
             {
                 number: '03',
-                title: 'Pencatatan Kendala Lapangan (Jika Ada)',
-                description: 'Melaporkan secara langsung apabila ditemukan ketidaksesuaian barang atau kendala fisik.',
+                title: 'Field Issue Logging (If Applicable)',
+                description: 'Reporting immediately if any cargo discrepancies or physical impediments are detected.',
                 details: [
-                    'Pilih menu Tambah Catatan Kendala pada checkpoint terkait.',
-                    'Tuliskan uraian kendala fisik secara singkat dan jelas.',
-                    'Sistem akan otomatis mengirimkan notifikasi alert kepada Supervisor bertugas.',
+                    'Select "Add Issue Note" on the relevant checkpoint.',
+                    'Provide a brief and clear description of the physical issue.',
+                    'The system will automatically dispatch an alert notification to the Supervisor on duty.',
                 ],
             },
             {
                 number: '04',
-                title: 'Finalisasi Sesi Kerja',
-                description: 'Menutup sesi tugas setelah seluruh unit kargo diselesaikan.',
+                title: 'Work Session Finalization',
+                description: 'Closing the assignment session after all cargo units have been completed.',
                 details: [
-                    'Pastikan seluruh checkpoint pada sesi terkait berstatus Selesai.',
-                    'Klik tombol "Selesaikan Sesi" di bagian atas halaman detail sesi.',
+                    'Ensure all checkpoints for the respective session are marked as Completed.',
+                    'Click "Complete Session" at the top of the session detail page.',
                 ],
             },
         ],
     },
     {
         roleId: 'staff-admin',
-        roleName: 'Staf Administrasi & Dokumen',
-        description: 'Prosedur entri data kargo, pengunggahan berkas pabean/PIB, dan kelengkapan lampiran.',
+        roleName: 'Administrative & Document Staff',
+        description: 'Procedures for cargo data entry, customs/PIB document uploads, and attachment compliance.',
         steps: [
             {
                 number: '01',
-                title: 'Inisiasi Pengiriman & Registrasi Pelanggan',
-                description: 'Mendaftarkan data pelanggan dan referensi pengiriman baru.',
+                title: 'Shipment Initiation & Customer Registration',
+                description: 'Registering customer details and new shipment references.',
                 details: [
-                    'Akses modul Submit Documents pada sidebar.',
-                    'Pilih nama pelanggan terdaftar atau tambahkan profil pelanggan baru.',
-                    'Masukkan nomor kontrak/ref pengiriman utama sebagai pengenal transaksi.',
+                    'Access the Submit Documents module from the sidebar.',
+                    'Select a registered customer or add a new customer profile.',
+                    'Enter the master contract/shipment reference number as the transaction identifier.',
                 ],
             },
             {
                 number: '02',
-                title: 'Pengunggahan Berkas Utama (PIB / Manifest / Bill of Lading)',
-                description: 'Mengunggah berkas pendukung resmi dalam format PDF standar.',
+                title: 'Main Document Uploads (PIB / Manifest / Bill of Lading)',
+                description: 'Uploading official supporting documents in standard PDF format.',
                 details: [
-                    'Pilih tahapan dokumen yang akan diunggah pada Wizard Submit Berkas.',
-                    'Pastikan ukuran berkas tidak melebihi 10MB per dokumen.',
-                    'Periksa kembali kecocokan nomor dokumen sebelum menekan tombol Simpan.',
+                    'Select the document step to upload in the Submit Documents Wizard.',
+                    'Ensure file size does not exceed 10MB per document.',
+                    'Double-check document numbers for accuracy before clicking Save.',
                 ],
             },
             {
                 number: '03',
-                title: 'Pengiriman Berkas ke Antrean Verifikasi',
-                description: 'Mengajukan dokumen lengkap kepada Supervisor untuk diperiksa.',
+                title: 'Submitting Documents to Verification Queue',
+                description: 'Submitting complete documents to the Supervisor for review.',
                 details: [
-                    'Setelah seluruh dokumen tahap wajib terisi, periksa ringkasan berkas.',
-                    'Klik "Finalisasi & Ajukan Verifikasi". Status berkas berubah menjadi Pending Verification.',
+                    'Once all required documents are uploaded, review the document summary.',
+                    'Click "Finalize & Submit Verification". The document status changes to Pending Verification.',
                 ],
             },
         ],
@@ -102,43 +102,43 @@ const sopData: RoleSop[] = [
     {
         roleId: 'supervisor',
         roleName: 'Supervisor',
-        description: 'Prosedur pemeriksaan akurasi dokumen, persetujuan (approval), dan penerbitan laporan.',
+        description: 'Procedures for document accuracy inspection, approval, and report generation.',
         steps: [
             {
                 number: '01',
-                title: 'Pemeriksaan Antrean Dokumen Masuk',
-                description: 'Memantau daftar pengajuan berkas dari staf administrasi.',
+                title: 'Incoming Document Queue Review',
+                description: 'Monitoring document submissions from administrative staff.',
                 details: [
-                    'Buka modul Verify Documents dari navigasi sidebar.',
-                    'Filter daftar dokumen berdasarkan status Pending Verification.',
-                    'Klik pada baris nomor pengajuan untuk membuka lembar pemeriksaan berkas.',
+                    'Open the Verify Documents module from sidebar navigation.',
+                    'Filter documents by Pending Verification status.',
+                    'Click on the submission row to open the document review sheet.',
                 ],
             },
             {
                 number: '02',
-                title: 'Validasi & Uji Kesesuaian Data',
-                description: 'Membandingkan isi dokumen fisik/digital dengan parameter sistem.',
+                title: 'Data Validation & Discrepancy Testing',
+                description: 'Comparing physical/digital document contents against system parameters.',
                 details: [
-                    'Buka pratinjau dokumen menggunakan PDF Viewer terintegrasi.',
-                    'Cocokkan jumlah barang, nilai pabean, dan identitas pengirim.',
+                    'Open document preview using the integrated PDF Viewer.',
+                    'Cross-verify cargo quantities, customs values, and shipper identities.',
                 ],
             },
             {
                 number: '03',
-                title: 'Eksekusi Persetujuan atau Penolakan Dokumen',
-                description: 'Menentukan keputusan hasil pemeriksaan berkas.',
+                title: 'Execute Document Approval or Rejection',
+                description: 'Determining the outcome of document review.',
                 details: [
-                    'Klik "Verifikasi & Setujui" jika seluruh dokumen telah valid.',
-                    'Jika terdapat kekeliruan, pilih "Tolak / Minta Revisi" dan wajib mengisikan alasan penolakan secara spesifik.',
+                    'Click "Verify & Approve" if all documents are valid.',
+                    'If errors are found, select "Reject / Request Revision" and specify clear revision notes.',
                 ],
             },
             {
                 number: '04',
-                title: 'Generasi Laporan Operasional',
-                description: 'Mengunduh laporan rekapitulasi berkas dan kargo.',
+                title: 'Operational Report Generation',
+                description: 'Downloading consolidated documents and cargo reports.',
                 details: [
-                    'Akses modul Reports.',
-                    'Tentukan rentang tanggal laporan yang diinginkan dan pilih format ekspor (PDF / Excel).',
+                    'Access the Reports module.',
+                    'Select the desired reporting date range and export format (PDF / Excel).',
                 ],
             },
         ],
@@ -146,25 +146,25 @@ const sopData: RoleSop[] = [
     {
         roleId: 'super-admin',
         roleName: 'Super Admin',
-        description: 'Prosedur tata kelola akun pengguna, penetapan peran (role), dan konfigurasi hak akses.',
+        description: 'Procedures for user account administration, role assignment, and access control configuration.',
         steps: [
             {
                 number: '01',
-                title: 'Manajemen Akun Pengguna Baru',
-                description: 'Mendaftarkan personel operasional ke dalam sistem GTD.',
+                title: 'New User Account Management',
+                description: 'Registering operational personnel into the GTD system.',
                 details: [
-                    'Akses modul Account Management.',
-                    'Klik "Tambah Akun Pengguna Baru".',
-                    'Isikan NIK/NIP, Nama Lengkap, Alamat Email, dan tentukan Role (Staf, Supervisor, Worker).',
+                    'Access the Account Management module.',
+                    'Click "Add New User".',
+                    'Fill in Employee ID, Full Name, Email Address, and assign a Role (Staff, Supervisor, Worker).',
                 ],
             },
             {
                 number: '02',
-                title: 'Pengaturan Status & Pembekuan Akses',
-                description: 'Mengatur status aktif/nonaktif akun staf.',
+                title: 'Status Configuration & Access Suspension',
+                description: 'Managing active/inactive status of staff accounts.',
                 details: [
-                    'Gunakan tombol sakelar status aktif pada tabel akun pengguna.',
-                    'Akun yang dinonaktifkan secara otomatis tidak dapat melakukan autentikasi login.',
+                    'Use the status toggle switch in the user accounts table.',
+                    'Deactivated accounts are immediately prevented from authenticating or logging in.',
                 ],
             },
         ],
@@ -187,10 +187,10 @@ export default function SystemGuide() {
                         Standard Operating Procedure (SOP)
                     </span>
                     <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                        Panduan Resmi Pengoperasian Sistem GTD
+                        GTD Official System Operating Guide
                     </h1>
                     <p className="text-sm text-slate-500 max-w-xl mx-auto leading-relaxed">
-                        Dokumentasi langkah demi langkah alur kerja operasional logistik berdasarkan peranan tugas pengguna.
+                        Step-by-step documentation of operational logistics workflows tailored by user role.
                     </p>
                 </div>
 
@@ -216,7 +216,7 @@ export default function SystemGuide() {
                 <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-xs space-y-6">
                     <div className="border-b border-slate-100 pb-5">
                         <span className="text-[10px] font-bold uppercase tracking-widest text-amber-600">
-                            Modul Operational Guide
+                            Operational Guide Module
                         </span>
                         <h2 className="text-xl font-extrabold text-slate-900 mt-1">{currentSop.roleName}</h2>
                         <p className="text-xs text-slate-500 mt-1 leading-relaxed">{currentSop.description}</p>
@@ -259,10 +259,10 @@ export default function SystemGuide() {
                 {/* -- Clean Summary Note Footer -- */}
                 <div className="p-6 rounded-3xl bg-slate-100/80 border border-slate-200/80 text-center space-y-2">
                     <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                        Kepatuhan Standar Mutu Operasional GTD
+                        GTD Operational Quality Standard Compliance
                     </h4>
                     <p className="text-xs text-slate-600 max-w-2xl mx-auto leading-relaxed">
-                        Seluruh proses wajib dilaksanakan sesuai tahapan di atas guna menjamin integritas data audit logistik, akurasi pabean, dan keamanan kargo secara menyeluruh.
+                        All operations must adhere strictly to the procedures above to ensure logistics audit integrity, customs accuracy, and end-to-end cargo security.
                     </p>
                 </div>
             </div>

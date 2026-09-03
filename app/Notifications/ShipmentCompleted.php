@@ -26,11 +26,11 @@ class ShipmentCompleted extends Notification
      */
     public function toDatabase(object $notifiable): array
     {
-        $destination = $this->session->destination ?: 'titik tujuan';
+        $destination = $this->session->destination ?: 'destination';
 
         return [
             'type'          => 'shipment_completed',
-            'title'         => "Pengiriman #{$this->session->assignment_no} telah selesai dan diterima di {$destination}.",
+            'title'         => "Shipment #{$this->session->assignment_no} has been completed and received at {$destination}.",
             'shipment_id'   => (string) $this->session->id,
             'assignment_no' => (string) $this->session->assignment_no,
             'destination'   => (string) $destination,

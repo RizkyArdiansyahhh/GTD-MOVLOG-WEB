@@ -35,6 +35,7 @@ class SaveDocumentStepRequest extends FormRequest
             'document_data'     => ['required', 'array'],
             'file_name'         => ['nullable', 'string'],
             'file_path'         => ['nullable', 'string'],
+            'pdf'               => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
         ];
     }
 }

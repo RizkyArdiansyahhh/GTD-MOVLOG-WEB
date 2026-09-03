@@ -28,7 +28,7 @@ interface CustomerLayoutProps {
 
 const navLinks = [
     { href: '/customer/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/customer/monitoring-barang', label: 'Monitoring Barang', icon: PackageSearch },
+    { href: '/customer/monitoring-barang', label: 'Cargo Monitoring', icon: PackageSearch },
     { href: '/customer/checkpoints', label: 'Checkpoint', icon: MapPin },
 ];
 
@@ -306,7 +306,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
                                                     Belum ada notifikasi
                                                 </p>
                                                 <p className="text-[11px] text-slate-400 mt-0.5">
-                                                    Pembaruan kargo dan dokumen Anda akan muncul di sini.
+                                                    Your cargo and document updates will appear here.
                                                 </p>
                                             </div>
                                         ) : (
@@ -416,7 +416,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
                                         className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-[#06283A] hover:bg-slate-100 rounded-lg transition-colors cursor-pointer mb-0.5"
                                     >
                                         <UserRound size={15} className="text-slate-500 shrink-0" strokeWidth={1.8} />
-                                        <span>Edit Profil</span>
+                                        <span>Edit Profile</span>
                                     </Link>
 
                                     {/* Logout Button */}
@@ -427,7 +427,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
                                         className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                                     >
                                         <LogOut size={14} strokeWidth={1.8} />
-                                        <span>Keluar (Logout)</span>
+                                        <span>Sign Out</span>
                                     </Link>
                                 </div>
                             )}

@@ -1,6 +1,6 @@
 import { Search, RotateCcw } from 'lucide-react';
 
-const statusOptions = ['Semua Status', 'Aktif', 'Tidak Aktif'];
+const statusOptions = ['All Statuses', 'Active', 'Inactive'];
 
 interface UserFiltersProps {
     search: string;
@@ -47,7 +47,7 @@ export default function UserFilters({
                         value={search}
                         onChange={(e) => onSearchChange(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        placeholder="Cari pengguna..."
+                        placeholder="Search users..."
                         className="flex-1 bg-transparent text-sm text-gray-700 placeholder-gray-400 outline-none"
                     />
                 </div>

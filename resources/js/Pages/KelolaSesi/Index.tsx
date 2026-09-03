@@ -49,19 +49,34 @@ export default function KelolaSesiIndex({ sessions, fieldWorkers }: KelolaSesiIn
 
     return (
         <DashboardLayout>
-            <Head title="Kelola Sesi Pekerja - GTD Logistics" />
+            <Head title="Worker Sessions - GTD Logistics" />
 
             <div className="max-w-7xl mx-auto space-y-6">
                 {/* ── Outer Page Title ── */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight text-[#06283A]">
-                            Kelola Sesi
+                            Worker Sessions
                         </h1>
                         <p className="text-xs text-slate-500 mt-1">
                             Pusat monitoring progress pekerjaan logistik yang dibuat otomatis setelah verifikasi berkas lengkap.
                         </p>
                     </div>
+
+                    {/* Primary Action Button */}
+                    <Link
+                        href="/sesi-pekerja/tambah"
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-all duration-150 shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        style={{
+                            backgroundColor: '#F5B800',
+                            color: '#06283A',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#E0A800')}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#F5B800')}
+                    >
+                        <Plus size={18} strokeWidth={2.5} />
+                        <span>Buat Sesi Baru</span>
+                    </Link>
                 </div>
 
                 {/* ── Flash Message ── */}
@@ -82,7 +97,7 @@ export default function KelolaSesiIndex({ sessions, fieldWorkers }: KelolaSesiIn
                             type="text"
                             value={searchQuery}
                             onChange={handleSearchChange}
-                            placeholder="Cari ID Sesi atau Nama Unit..."
+                            placeholder="Search Session ID or Unit Name..."
                             className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-[#E2E8F0] rounded-xl text-[#06283A] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#F5B800] focus:border-transparent transition-all"
                         />
                     </div>

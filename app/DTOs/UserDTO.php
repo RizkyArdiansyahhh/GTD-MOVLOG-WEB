@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\DTOs;
 
-use App\Enums\UserRole;
 use App\Enums\UserStatus;
 use Spatie\LaravelData\Attributes\Validation\Email;
 use Spatie\LaravelData\Attributes\Validation\Max;
@@ -28,12 +27,16 @@ class UserDTO extends Data
         public readonly string $email,
 
         #[Min(8), Max(255)]
-        public readonly string|null|Optional $password = null,
+        public readonly string|null|Optional $password,
 
         public readonly UserStatus $status,
 
-        public readonly string|null $role = null,
+        public readonly ?string $role = null,
 
         public readonly string|null|Optional $customer_id = null,
+
+        public readonly string|null|Optional $company_id = null,
+
+        public readonly string|null|Optional $phone = null,
     ) {}
 }

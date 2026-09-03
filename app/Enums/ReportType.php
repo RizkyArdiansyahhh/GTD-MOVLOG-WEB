@@ -15,11 +15,11 @@ enum ReportType: string
     public function label(): string
     {
         return match ($this) {
-            self::Daily => 'Laporan Harian',
+            self::Daily => 'Daily Report',
             self::Incident => 'Insiden / Kendala',
             self::Movement => 'Pergerakan Muatan',
             self::Checkpoint => 'Pos Checkpoint',
-            self::Final => 'Laporan Akhir (Final)',
+            self::Final => 'Final Report',
         };
     }
 

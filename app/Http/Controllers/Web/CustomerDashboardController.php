@@ -4,14 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Web;
 
-use App\Enums\DocumentStatus;
-use App\Enums\SessionCheckpointStatus;
-use App\Enums\ShippingSessionStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Checkpoint;
 use App\Models\Customer;
-use App\Models\Document;
-use App\Models\SessionCheckpoint;
 use App\Models\ShippingSession;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -46,6 +41,7 @@ class CustomerDashboardController extends Controller
 
         $completed = $session->sessionCheckpoints->filter(function ($sc) {
             $statusVal = is_object($sc->status) ? ($sc->status->value ?? (string) $sc->status) : (string) $sc->status;
+
             return in_array(strtoupper($statusVal), ['COMPLETED', 'SELESAI'], true);
         })->count();
 
@@ -60,6 +56,7 @@ class CustomerDashboardController extends Controller
         $total = $session->sessionCheckpoints->count();
         $completedOrSkipped = $session->sessionCheckpoints->filter(function ($sc) {
             $statusVal = is_object($sc->status) ? ($sc->status->value ?? (string) $sc->status) : (string) $sc->status;
+
             return in_array(strtoupper($statusVal), ['COMPLETED', 'SKIPPED', 'SELESAI', 'DILEWATI'], true);
         })->count();
 
@@ -77,6 +74,7 @@ class CustomerDashboardController extends Controller
         if (is_object($status)) {
             return strtoupper($status->value ?? (string) $status);
         }
+
         return strtoupper((string) $status);
     }
 
@@ -109,10 +107,10 @@ class CustomerDashboardController extends Controller
             ->sum('total_quantity');
 
         $stats = [
-            'total_shipments'     => $totalShipments,
-            'active_shipments'    => $activeShipments,
-            'in_transit'          => $inTransit,
-            'completed_last_7d'   => $completedLast7d,
+            'total_shipments' => $totalShipments,
+            'active_shipments' => $activeShipments,
+            'in_transit' => $inTransit,
+            'completed_last_7d' => $completedLast7d,
             'total_cargo_tonnage' => $totalCargoTonnage,
         ];
 
@@ -130,20 +128,20 @@ class CustomerDashboardController extends Controller
 
         $recentShipments = $sessions->map(function ($s) {
             return [
-                'id'                 => (string) $s->id,
-                'assignment_no'      => (string) $s->assignment_no,
-                'cargo_name'         => (string) $s->cargo_name,
-                'origin'             => (string) ($s->origin ?? '-'),
-                'destination'        => (string) ($s->destination ?? '-'),
-                'status'             => $this->normalizeStatus($s->status),
-                'quantity'           => (float) ($s->total_quantity ?? 0),
-                'unit'               => (string) ($s->unit ?? 'MT'),
+                'id' => (string) $s->id,
+                'assignment_no' => (string) $s->assignment_no,
+                'cargo_name' => (string) $s->cargo_name,
+                'origin' => (string) ($s->origin ?? '-'),
+                'destination' => (string) ($s->destination ?? '-'),
+                'status' => $this->normalizeStatus($s->status),
+                'quantity' => (float) ($s->total_quantity ?? 0),
+                'unit' => (string) ($s->unit ?? 'MT'),
                 'current_checkpoint' => $s->currentCheckpoint?->name ?? 'Belum ditentukan',
-                'progress_percent'   => $this->calculateProgress($s),
-                'eta'                => $this->estimateEta($s),
-                'units'              => $s->units->map(fn ($u) => [
+                'progress_percent' => $this->calculateProgress($s),
+                'eta' => $this->estimateEta($s),
+                'units' => $s->units->map(fn ($u) => [
                     'name' => (string) $u->unit_name,
-                    'qty'  => (int) $u->quantity,
+                    'qty' => (int) $u->quantity,
                 ])->values()->toArray(),
             ];
         })->toArray();
@@ -157,26 +155,26 @@ class CustomerDashboardController extends Controller
             ->get()
             ->map(function ($cp) {
                 return [
-                    'id'            => (int) $cp->id,
-                    'name'          => (string) $cp->name,
-                    'sequence'      => (int) $cp->sequence,
+                    'id' => (int) $cp->id,
+                    'name' => (string) $cp->name,
+                    'sequence' => (int) $cp->sequence,
                     'active_fleets' => (int) $cp->shippingSessions->count(),
-                    'shipments'     => $cp->shippingSessions->take(3)->map(fn ($ss) => [
-                        'id'            => (string) $ss->id,
+                    'shipments' => $cp->shippingSessions->take(3)->map(fn ($ss) => [
+                        'id' => (string) $ss->id,
                         'assignment_no' => (string) $ss->assignment_no,
-                        'cargo_name'    => (string) $ss->cargo_name,
+                        'cargo_name' => (string) $ss->cargo_name,
                     ])->values()->toArray(),
                 ];
             })->toArray();
 
         return Inertia::render('Customer/Dashboard', [
             'customer' => [
-                'id'           => (string) $customer->id,
+                'id' => (string) $customer->id,
                 'company_name' => (string) $customer->company_name,
-                'pic_name'     => $customer->pic_name,
+                'pic_name' => $customer->pic_name,
             ],
-            'stats'            => $stats,
-            'recentShipments'  => $recentShipments,
+            'stats' => $stats,
+            'recentShipments' => $recentShipments,
             'checkpointGroups' => $checkpointGroups,
         ]);
     }
@@ -210,7 +208,7 @@ class CustomerDashboardController extends Controller
 
         // Search Filter
         if ($request->filled('search')) {
-            $search = '%' . trim((string) $request->search) . '%';
+            $search = '%'.trim((string) $request->search).'%';
             $query->where(function ($q) use ($search) {
                 $q->where('assignment_no', 'ILIKE', $search)
                     ->orWhere('cargo_name', 'ILIKE', $search)
@@ -223,28 +221,28 @@ class CustomerDashboardController extends Controller
 
         $paginated->through(function ($s) {
             return [
-                'id'                 => (string) $s->id,
-                'assignment_no'      => (string) $s->assignment_no,
-                'cargo_name'         => (string) $s->cargo_name,
-                'origin'             => (string) ($s->origin ?? '-'),
-                'destination'        => (string) ($s->destination ?? '-'),
-                'status'             => $this->normalizeStatus($s->status),
-                'quantity'           => (float) ($s->total_quantity ?? 0),
-                'unit'               => (string) ($s->unit ?? 'MT'),
+                'id' => (string) $s->id,
+                'assignment_no' => (string) $s->assignment_no,
+                'cargo_name' => (string) $s->cargo_name,
+                'origin' => (string) ($s->origin ?? '-'),
+                'destination' => (string) ($s->destination ?? '-'),
+                'status' => $this->normalizeStatus($s->status),
+                'quantity' => (float) ($s->total_quantity ?? 0),
+                'unit' => (string) ($s->unit ?? 'MT'),
                 'current_checkpoint' => $s->currentCheckpoint?->name ?? 'Belum terdeteksi',
-                'progress_percent'   => $this->calculateProgress($s),
-                'eta'                => $this->estimateEta($s),
-                'created_at'         => $s->created_at ? $s->created_at->format('d M Y') : '-',
-                'units'              => $s->units->map(fn ($u) => [
+                'progress_percent' => $this->calculateProgress($s),
+                'eta' => $this->estimateEta($s),
+                'created_at' => $s->created_at ? $s->created_at->format('d M Y') : '-',
+                'units' => $s->units->map(fn ($u) => [
                     'name' => (string) $u->unit_name,
-                    'qty'  => (int) $u->quantity,
+                    'qty' => (int) $u->quantity,
                 ])->values()->toArray(),
             ];
         });
 
         return Inertia::render('Customer/MonitoringBarang', [
             'shipments' => $paginated,
-            'filters'   => [
+            'filters' => [
                 'search' => (string) ($request->search ?? ''),
                 'status' => (string) ($request->status ?? 'all'),
             ],
@@ -266,19 +264,19 @@ class CustomerDashboardController extends Controller
             ->get()
             ->map(function ($cp) {
                 return [
-                    'id'            => (int) $cp->id,
-                    'name'          => (string) $cp->name,
-                    'sequence'      => (int) $cp->sequence,
+                    'id' => (int) $cp->id,
+                    'name' => (string) $cp->name,
+                    'sequence' => (int) $cp->sequence,
                     'active_fleets' => (int) $cp->shippingSessions->count(),
-                    'shipments'     => $cp->shippingSessions->map(fn ($ss) => [
-                        'id'             => (string) $ss->id,
-                        'assignment_no'  => (string) $ss->assignment_no,
-                        'cargo_name'     => (string) $ss->cargo_name,
+                    'shipments' => $cp->shippingSessions->map(fn ($ss) => [
+                        'id' => (string) $ss->id,
+                        'assignment_no' => (string) $ss->assignment_no,
+                        'cargo_name' => (string) $ss->cargo_name,
                         'total_quantity' => (float) $ss->total_quantity,
-                        'unit'           => (string) $ss->unit,
-                        'origin'         => (string) ($ss->origin ?? '-'),
-                        'destination'    => (string) ($ss->destination ?? '-'),
-                        'status_label'   => 'Dalam Perjalanan',
+                        'unit' => (string) $ss->unit,
+                        'origin' => (string) ($ss->origin ?? '-'),
+                        'destination' => (string) ($ss->destination ?? '-'),
+                        'status_label' => 'Dalam Perjalanan',
                     ])->values()->toArray(),
                 ];
             })->toArray();
@@ -288,7 +286,7 @@ class CustomerDashboardController extends Controller
             ->count();
 
         return Inertia::render('Customer/Checkpoint', [
-            'checkpoints'      => $checkpointGroups,
+            'checkpoints' => $checkpointGroups,
             'total_in_transit' => $totalInTransit,
         ]);
     }
@@ -316,17 +314,18 @@ class CustomerDashboardController extends Controller
         // Dokumen: HANYA yang VERIFIED / APPROVED
         $verifiedDocs = $session->documents->filter(function ($doc) {
             $statusVal = is_object($doc->status) ? ($doc->status->value ?? (string) $doc->status) : (string) $doc->status;
+
             return in_array(strtoupper((string) $statusVal), ['VERIFIED', 'APPROVED'], true);
         })->map(function ($doc) {
             return [
-                'id'                 => (string) $doc->id,
-                'file_name'          => (string) $doc->file_name,
-                'file_path'          => (string) $doc->file_path,
-                'document_type'      => (string) ($doc->documentType?->name ?? 'Dokumen'),
+                'id' => (string) $doc->id,
+                'file_name' => (string) $doc->file_name,
+                'file_path' => (string) $doc->file_path,
+                'document_type' => (string) ($doc->documentType?->name ?? 'Dokumen'),
                 'document_type_code' => (string) ($doc->documentType?->name ?? 'DOC'),
-                'verified_at'        => $doc->verified_at ? $doc->verified_at->format('d M Y H:i') : '-',
-                'verified_by'        => (string) ($doc->verifiedBy?->name ?? 'Supervisor GTD'),
-                'remarks'            => $doc->remarks,
+                'verified_at' => $doc->verified_at ? $doc->verified_at->format('d M Y H:i') : '-',
+                'verified_by' => (string) ($doc->verifiedBy?->name ?? 'Supervisor GTD'),
+                'remarks' => $doc->remarks,
             ];
         })->values()->toArray();
 
@@ -336,11 +335,11 @@ class CustomerDashboardController extends Controller
         $timeline = $sortedCheckpoints->map(function ($sc) {
             return [
                 'checkpoint_name' => (string) ($sc->checkpoint?->name ?? 'Pos Operasional'),
-                'sequence'        => (int) ($sc->checkpoint?->sequence ?? 0),
-                'status'          => $this->normalizeStatus($sc->status),
-                'actual_start'    => $sc->actual_start ? $sc->actual_start->format('d M Y H:i') : null,
-                'actual_finish'   => $sc->actual_finish ? $sc->actual_finish->format('d M Y H:i') : null,
-                'pic_name'        => $sc->picUser?->name,
+                'sequence' => (int) ($sc->checkpoint?->sequence ?? 0),
+                'status' => $this->normalizeStatus($sc->status),
+                'actual_start' => $sc->actual_start ? $sc->actual_start->format('d M Y H:i') : null,
+                'actual_finish' => $sc->actual_finish ? $sc->actual_finish->format('d M Y H:i') : null,
+                'pic_name' => $sc->picUser?->name,
             ];
         })->values()->toArray();
 
@@ -348,32 +347,32 @@ class CustomerDashboardController extends Controller
         $units = $session->units->map(function ($u) {
             return [
                 'unit_name' => (string) $u->unit_name,
-                'quantity'  => (int) $u->quantity,
-                'notes'     => $u->notes,
+                'quantity' => (int) $u->quantity,
+                'notes' => $u->notes,
             ];
         })->values()->toArray();
 
         // Shipment Payload
         $shipmentPayload = [
-            'id'                 => (string) $session->id,
-            'assignment_no'      => (string) $session->assignment_no,
-            'cargo_name'         => (string) $session->cargo_name,
-            'total_quantity'     => (float) $session->total_quantity,
-            'unit'               => (string) ($session->unit ?? 'MT'),
-            'origin'             => (string) ($session->origin ?? '-'),
-            'destination'        => (string) ($session->destination ?? '-'),
-            'status'             => $this->normalizeStatus($session->status),
-            'notes'              => $session->notes,
-            'created_at'         => $session->created_at ? $session->created_at->format('d M Y') : '-',
-            'progress_percent'   => $this->calculateProgress($session),
-            'eta'                => $this->estimateEta($session),
+            'id' => (string) $session->id,
+            'assignment_no' => (string) $session->assignment_no,
+            'cargo_name' => (string) $session->cargo_name,
+            'total_quantity' => (float) $session->total_quantity,
+            'unit' => (string) ($session->unit ?? 'MT'),
+            'origin' => (string) ($session->origin ?? '-'),
+            'destination' => (string) ($session->destination ?? '-'),
+            'status' => $this->normalizeStatus($session->status),
+            'notes' => $session->notes,
+            'created_at' => $session->created_at ? $session->created_at->format('d M Y') : '-',
+            'progress_percent' => $this->calculateProgress($session),
+            'eta' => $this->estimateEta($session),
             'current_checkpoint' => $session->currentCheckpoint?->name ?? 'Pos Operasional GTD',
         ];
 
         return Inertia::render('Customer/DetailShipment', [
-            'shipment'  => $shipmentPayload,
-            'units'     => $units,
-            'timeline'  => $timeline,
+            'shipment' => $shipmentPayload,
+            'units' => $units,
+            'timeline' => $timeline,
             'documents' => $verifiedDocs,
         ]);
     }

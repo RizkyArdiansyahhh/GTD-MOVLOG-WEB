@@ -13,9 +13,9 @@ enum SyncStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::SYNCED => 'Tersinkronisasi',
-            self::PENDING => 'Menunggu Sinkronisasi',
-            self::FAILED => 'Gagal Sinkron',
+            self::SYNCED => 'Synced',
+            self::PENDING => 'Pending Sync',
+            self::FAILED => 'Sync Failed',
         };
     }
 

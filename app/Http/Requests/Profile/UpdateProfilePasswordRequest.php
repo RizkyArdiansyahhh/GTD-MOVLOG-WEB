@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests\Customer;
+namespace App\Http\Requests\Profile;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
 
 /**
- * Update Customer Password Request
+ * Update Profile Password Request
  *
  * Validates verification of current password and enforces complexity rules on new password.
  */
-class UpdateCustomerPasswordRequest extends FormRequest
+class UpdateProfilePasswordRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return $this->user()?->hasRole('customer') ?? false;
+        return $this->user() !== null;
     }
 
     /**

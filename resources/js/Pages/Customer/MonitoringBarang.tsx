@@ -57,7 +57,7 @@ export default function MonitoringBarang({ shipments, filters }: MonitoringBaran
             return (
                 <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600">
                     <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
-                    <span>Dalam Perjalanan</span>
+                    <span>In Transit</span>
                 </span>
             );
         }
@@ -65,7 +65,7 @@ export default function MonitoringBarang({ shipments, filters }: MonitoringBaran
             return (
                 <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
-                    <span>Terkirim</span>
+                    <span>Delivered</span>
                 </span>
             );
         }
@@ -73,30 +73,30 @@ export default function MonitoringBarang({ shipments, filters }: MonitoringBaran
             return (
                 <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600">
                     <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
-                    <span>Dibatalkan</span>
+                    <span>Cancelled</span>
                 </span>
             );
         }
         return (
             <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500">
                 <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                <span>Persiapan Muat</span>
+                <span>Loading Preparation</span>
             </span>
         );
     };
 
     return (
-        <CustomerLayout title="Monitoring Barang">
-            <Head title="Monitoring Barang — GTD Customer Portal" />
+        <CustomerLayout title="Cargo Monitoring">
+            <Head title="Cargo Monitoring — GTD Customer Portal" />
 
             <div className="space-y-6">
                 {/* ── Page Header ── */}
                 <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6">
                     <h1 className="text-xl sm:text-2xl font-bold text-[#06283A] tracking-tight">
-                        Monitoring Barang &amp; Armada Kargo
+                        Cargo &amp; Fleet Monitoring
                     </h1>
                     <p className="text-xs sm:text-sm text-slate-500 mt-1 font-normal">
-                        Pantau rute transit, muatan tonase, status tahapan, dan estimasi waktu tiba (ETA) seluruh kargo Anda.
+                        Monitor transit routes, tonnage, stage statuses, and estimated arrival times (ETA) for all your cargo.
                     </p>
                 </div>
 
@@ -112,7 +112,7 @@ export default function MonitoringBarang({ shipments, filters }: MonitoringBaran
                                 type="text"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                placeholder="Cari No. Assignment, Nama Kargo, Kota Asal / Tujuan..."
+                                placeholder="Search Assignment No., Cargo Name, Origin / Destination..."
                                 className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400 bg-slate-50/70 focus:bg-white transition-all font-medium"
                             />
                         </div>
@@ -122,10 +122,10 @@ export default function MonitoringBarang({ shipments, filters }: MonitoringBaran
                             onChange={(e) => handleStatusChange(e.target.value)}
                             className="px-3.5 py-2 rounded-lg border border-slate-200 text-xs text-slate-800 font-semibold focus:outline-none focus:ring-1 focus:ring-slate-400 bg-slate-50/70 focus:bg-white transition-all cursor-pointer"
                         >
-                            <option value="all">Semua Status</option>
-                            <option value="in_progress">Dalam Perjalanan</option>
-                            <option value="completed">Terkirim</option>
-                            <option value="draft">Persiapan Muat</option>
+                            <option value="all">All Statuses</option>
+                            <option value="in_progress">In Transit</option>
+                            <option value="completed">Delivered</option>
+                            <option value="draft">Loading Preparation</option>
                         </select>
 
                         {(search || status !== 'all') && (
@@ -148,13 +148,13 @@ export default function MonitoringBarang({ shipments, filters }: MonitoringBaran
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-slate-50/80 border-b border-slate-200 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
-                                    <th className="py-3.5 px-5">No. Assignment</th>
-                                    <th className="py-3.5 px-4">Kargo &amp; Muatan</th>
-                                    <th className="py-3.5 px-4">Rute Transit (Asal ➔ Tujuan)</th>
-                                    <th className="py-3.5 px-4">Posisi Checkpoint</th>
-                                    <th className="py-3.5 px-4">Estimasi Tiba (ETA)</th>
+                                    <th className="py-3.5 px-5">Assignment No.</th>
+                                    <th className="py-3.5 px-4">Cargo &amp; Items</th>
+                                    <th className="py-3.5 px-4">Transit Route (Origin ➔ Destination)</th>
+                                    <th className="py-3.5 px-4">Checkpoint Location</th>
+                                    <th className="py-3.5 px-4">Estimated Arrival (ETA)</th>
                                     <th className="py-3.5 px-4">Status</th>
-                                    <th className="py-3.5 px-5 text-right">Aksi</th>
+                                    <th className="py-3.5 px-5 text-right">Action</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 text-xs font-normal">
@@ -162,8 +162,8 @@ export default function MonitoringBarang({ shipments, filters }: MonitoringBaran
                                     <tr>
                                         <td colSpan={7} className="py-14 text-center text-slate-400">
                                             <PackageSearch size={28} className="mx-auto mb-2 text-slate-300" />
-                                            <p className="font-bold text-slate-700 text-xs">Tidak ada pengiriman kargo ditemukan</p>
-                                            <p className="text-[11px] text-slate-400 mt-0.5">Coba sesuaikan kata kunci pencarian atau filter status.</p>
+                                            <p className="font-bold text-slate-700 text-xs">No cargo shipments found</p>
+                                            <p className="text-[11px] text-slate-400 mt-0.5">Try adjusting your search keywords or status filter.</p>
                                         </td>
                                     </tr>
                                 ) : (
@@ -194,7 +194,7 @@ export default function MonitoringBarang({ shipments, filters }: MonitoringBaran
                                                         </span>
                                                     ) : (
                                                         <span>
-                                                            {Number(item.quantity).toLocaleString('id-ID')} {item.unit}
+                                                            {Number(item.quantity).toLocaleString('en-US')} {item.unit}
                                                         </span>
                                                     )}
                                                 </div>
@@ -251,9 +251,9 @@ export default function MonitoringBarang({ shipments, filters }: MonitoringBaran
                     {shipments.last_page > 1 && (
                         <div className="p-4 border-t border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
                             <div>
-                                Menampilkan <span className="font-semibold text-slate-800">{shipments.from ?? 0}</span> -{' '}
-                                <span className="font-semibold text-slate-800">{shipments.to ?? 0}</span> dari{' '}
-                                <span className="font-semibold text-slate-800">{shipments.total}</span> total sesi
+                                Showing <span className="font-semibold text-slate-800">{shipments.from ?? 0}</span> -{' '}
+                                <span className="font-semibold text-slate-800">{shipments.to ?? 0}</span> of{' '}
+                                <span className="font-semibold text-slate-800">{shipments.total}</span> total sessions
                             </div>
                             <div className="flex items-center gap-1 flex-wrap">
                                 {shipments.links.map((link, idx) => (

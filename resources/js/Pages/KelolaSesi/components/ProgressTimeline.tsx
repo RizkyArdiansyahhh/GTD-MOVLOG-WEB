@@ -1,7 +1,7 @@
 import type { LogisticsStage, SessionStage } from '../types';
 import { Check } from 'lucide-react';
 
-const DEFAULT_STAGES = ['Kapal', 'Tongkang', 'Pelabuhan', 'Site'];
+const DEFAULT_STAGES = ['Vessel', 'Barge', 'Port', 'Site'];
 
 interface ProgressTimelineProps {
     stages?: SessionStage[];
@@ -49,7 +49,7 @@ export default function ProgressTimeline({ stages, currentStage }: ProgressTimel
                                             ? '#F5B800'
                                             : '#CBD5E1',
                                     }}
-                                    title={`${label}: ${isCompleted ? 'Selesai' : isCurrent ? 'Berlangsung' : 'Mendatang'}`}
+                                    title={`${label}: ${isCompleted ? 'Completed' : isCurrent ? 'In Progress' : 'Upcoming'}`}
                                 >
                                     {isCompleted ? (
                                         <Check size={9} strokeWidth={3.5} className="text-white" />
@@ -127,7 +127,7 @@ export default function ProgressTimeline({ stages, currentStage }: ProgressTimel
                                         ? '#F5B800'
                                         : '#CBD5E1',
                                 }}
-                                title={`${stage}: ${isCompleted ? 'Selesai' : isCurrent ? 'Berlangsung' : 'Mendatang'}`}
+                                title={`${stage}: ${isCompleted ? 'Completed' : isCurrent ? 'In Progress' : 'Upcoming'}`}
                             >
                                 {isCompleted ? (
                                     <Check size={9} strokeWidth={3.5} className="text-white" />

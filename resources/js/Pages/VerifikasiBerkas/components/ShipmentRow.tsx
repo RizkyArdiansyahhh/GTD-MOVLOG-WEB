@@ -63,7 +63,7 @@ export default function ShipmentRow({
                     </span>
                     {shipment.hasWarnings && (
                         <span
-                            title="Ketidaksesuaian data terdeteksi antar dokumen"
+                            title="Data mismatch detected across documents"
                             className="shipment-row__warning-icon"
                         >
                             <AlertTriangle size={13} strokeWidth={2.2} />
@@ -94,17 +94,17 @@ export default function ShipmentRow({
 
                         let color = 'var(--text-muted, #94a3b8)';
                         let fontWeight = 400;
-                        let statusLabel = 'Belum diunggah';
+                        let statusLabel = 'Not uploaded';
 
                         if (doc) {
                             if (doc.status === 'Approved') {
                                 color = 'var(--text-success, #16a34a)';
                                 fontWeight = 600;
-                                statusLabel = 'Disetujui';
+                                statusLabel = 'Approved';
                             } else if (doc.status === 'Rejected') {
                                 color = 'var(--text-danger, #dc2626)';
                                 fontWeight = 600;
-                                statusLabel = 'Ditolak';
+                                statusLabel = 'Rejected';
                             } else {
                                 color = 'var(--text-muted, #94a3b8)';
                                 fontWeight = 400;

@@ -27,6 +27,7 @@ export function PdfUploadCard({ file, onFileSelect, onRemove, error, readOnly = 
       name: selected.name,
       sizeLabel: formatBytes(selected.size),
       url: URL.createObjectURL(selected),
+      file: selected,
     });
   };
 
@@ -48,7 +49,7 @@ export function PdfUploadCard({ file, onFileSelect, onRemove, error, readOnly = 
             }}
           >
             <FileText size={24} color="#94A3B8" />
-            <p style={{ fontSize: 13, margin: 0 }}>Tidak ada dokumen PDF terlampir.</p>
+            <p style={{ fontSize: 13, margin: 0 }}>No attached PDF document.</p>
           </div>
         ) : (
           <div
@@ -70,7 +71,7 @@ export function PdfUploadCard({ file, onFileSelect, onRemove, error, readOnly = 
           >
             <Upload size={26} color="#B7791F" />
             <p style={{ fontSize: 13, fontWeight: 600, color: '#06283A', margin: 0 }}>Upload PDF</p>
-            <p style={{ fontSize: 12, color: '#94A3B8', margin: 0 }}>Drag & drop atau pilih file</p>
+            <p style={{ fontSize: 12, color: '#94A3B8', margin: 0 }}>Drag & drop or select file</p>
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
@@ -150,7 +151,7 @@ export function PdfUploadCard({ file, onFileSelect, onRemove, error, readOnly = 
               }}
             >
               <Eye size={13} />
-              Buka PDF
+              Lihat PDF
             </a>
           )}
           {!readOnly && (
@@ -186,7 +187,7 @@ function FormSectionShell({ children }: { children: React.ReactNode }) {
   return (
     <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #E5E7EB', padding: 20 }}>
       <p style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, fontSize: 15, color: '#06283A', margin: 0, marginBottom: 16 }}>
-        Upload Dokumen
+        Upload Document
       </p>
       {children}
     </div>

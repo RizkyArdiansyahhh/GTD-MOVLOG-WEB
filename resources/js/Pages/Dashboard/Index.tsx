@@ -19,7 +19,7 @@ export default function Index({ stats }: DashboardProps) {
 
     const statCards = [
         {
-            label: 'Total Akun User',
+            label: 'Total User Accounts',
             value: stats?.total_users ?? 12,
             icon: Users,
             color: 'bg-blue-50 text-blue-600',
@@ -31,13 +31,13 @@ export default function Index({ stats }: DashboardProps) {
             color: 'bg-amber-50 text-amber-600',
         },
         {
-            label: 'Driver Aktif',
+            label: 'Active Drivers',
             value: stats?.active_drivers ?? 24,
             icon: Truck,
             color: 'bg-emerald-50 text-emerald-600',
         },
         {
-            label: 'Pengiriman Pending',
+            label: 'Pending Shipments',
             value: stats?.pending_deliveries ?? 5,
             icon: Clock,
             color: 'bg-purple-50 text-purple-600',
@@ -60,7 +60,7 @@ export default function Index({ stats }: DashboardProps) {
                 <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-bold text-[#06283A]">
-                            Selamat Datang, {auth.user?.name ?? 'User'} 👋
+                            Welcome, {auth.user?.name ?? 'User'} 👋
                         </h1>
                         <p className="text-sm text-slate-500 mt-1">
                             Sistem Informasi Monitoring Operational Logistics (GTD-MOVLOG)
@@ -68,7 +68,7 @@ export default function Index({ stats }: DashboardProps) {
                     </div>
                     <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-200/60 self-start md:self-auto">
                         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span>Sistem Berjalan Normal</span>
+                        <span>System Operating Normally</span>
                     </div>
                 </div>
 
@@ -102,7 +102,7 @@ export default function Index({ stats }: DashboardProps) {
                     {/* Ringkasan Activity */}
                     <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
                         <div className="flex items-center justify-between mb-4">
-                            <h2 className="font-semibold text-[#06283A]">Aktivitas Pengiriman Terkini</h2>
+                            <h2 className="font-semibold text-[#06283A]">Recent Shipment Activity</h2>
                         </div>
                         <div className="space-y-3">
                             <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs">
@@ -138,15 +138,15 @@ export default function Index({ stats }: DashboardProps) {
                     {/* Quick Access */}
                     <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col justify-between">
                         <div>
-                            <h2 className="font-semibold text-[#06283A] mb-4">Navigasi Cepat</h2>
+                            <h2 className="font-semibold text-[#06283A] mb-4">Quick Navigation</h2>
                             <div className="grid grid-cols-2 gap-3">
                                 <a
                                     href="/monitoring-barang"
                                     className="p-4 rounded-xl border border-slate-200/80 hover:border-[#F6C343] hover:bg-amber-50/30 transition-all flex items-center justify-between group"
                                 >
                                     <div>
-                                        <p className="text-xs font-semibold text-[#06283A] group-hover:text-amber-700">Monitoring Barang</p>
-                                        <p className="text-[11px] text-slate-400 mt-0.5">Pantau status barang</p>
+                                        <p className="text-xs font-semibold text-[#06283A] group-hover:text-amber-700">Cargo Monitoring</p>
+                                        <p className="text-[11px] text-slate-400 mt-0.5">Track cargo status</p>
                                     </div>
                                     <ArrowUpRight size={16} className="text-slate-400 group-hover:text-amber-600" />
                                 </a>
@@ -155,8 +155,8 @@ export default function Index({ stats }: DashboardProps) {
                                     className="p-4 rounded-xl border border-slate-200/80 hover:border-[#F6C343] hover:bg-amber-50/30 transition-all flex items-center justify-between group"
                                 >
                                     <div>
-                                        <p className="text-xs font-semibold text-[#06283A] group-hover:text-amber-700">Laporan</p>
-                                        <p className="text-[11px] text-slate-400 mt-0.5">Unduh data laporan</p>
+                                        <p className="text-xs font-semibold text-[#06283A] group-hover:text-amber-700">Reports</p>
+                                        <p className="text-[11px] text-slate-400 mt-0.5">Download report data</p>
                                     </div>
                                     <ArrowUpRight size={16} className="text-slate-400 group-hover:text-amber-600" />
                                 </a>

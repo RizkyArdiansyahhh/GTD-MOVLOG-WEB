@@ -19,7 +19,7 @@ export default function FieldWorkerSelect({
     value,
     onChange,
     disabled = false,
-    placeholder = 'Pilih Petugas Penanggung Jawab...',
+    placeholder = 'Select Person in Charge (PIC)...',
 }: FieldWorkerSelectProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -85,13 +85,13 @@ export default function FieldWorkerSelect({
                         disabled={true}
                         className="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm text-slate-400 cursor-not-allowed flex items-center justify-between opacity-75"
                     >
-                        <span className="truncate italic">Belum ada Petugas Lapangan yang tersedia.</span>
+                        <span className="truncate italic">No Field Workers available.</span>
                         <ChevronDown size={18} className="text-slate-400 shrink-0 ml-2" />
                     </button>
                 </div>
                 <div className="flex items-center gap-1.5 text-xs text-amber-600 font-medium bg-amber-50 border border-amber-200/60 p-2.5 rounded-xl">
                     <AlertCircle size={15} className="shrink-0 text-amber-600" />
-                    <span>Belum ada Petugas Lapangan yang tersedia.</span>
+                    <span>No Field Workers available.</span>
                 </div>
             </div>
         );
@@ -144,7 +144,7 @@ export default function FieldWorkerSelect({
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Cari nama petugas..."
+                            placeholder="Search officer name..."
                             className="w-full py-1.5 pr-2 bg-transparent text-xs text-[#06283A] placeholder:text-slate-400 focus:outline-none"
                         />
                     </div>
@@ -153,7 +153,7 @@ export default function FieldWorkerSelect({
                     <div className="max-h-60 overflow-y-auto divide-y divide-slate-50">
                         {filteredWorkers.length === 0 ? (
                             <div className="p-4 text-center text-xs text-slate-400">
-                                Tidak ada petugas yang sesuai dengan &quot;{searchQuery}&quot;
+                                No officers match &quot;{searchQuery}&quot;
                             </div>
                         ) : (
                             filteredWorkers.map((worker) => {

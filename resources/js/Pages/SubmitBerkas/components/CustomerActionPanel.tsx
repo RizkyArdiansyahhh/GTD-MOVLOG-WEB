@@ -62,22 +62,22 @@ export function CustomerActionPanel({
                         <Users size={18} />
                     </div>
                     <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#06283A' }}>
-                        Mulai Penugasan
+                        Start Assignment
                     </h3>
                 </div>
                 <p style={{ margin: '6px 0 0', fontSize: 12, color: '#64748B', lineHeight: 1.5 }}>
-                    Pilih customer yang menjadi pemilik dokumen untuk memulai proses input berkas pengiriman.
+                    Select the customer owning the documents to begin submitting shipping files.
                 </p>
             </div>
 
             {/* Search Input Customer */}
             <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 6 }}>
-                    Cari Customer Terdaftar
+                    Search Registered Customers
                 </label>
                 <input
                     type="text"
-                    placeholder="Ketik nama perusahaan..."
+                    placeholder="Type company name..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     style={{
@@ -103,7 +103,7 @@ export function CustomerActionPanel({
             }}>
                 {filteredCustomers.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '16px 0', fontSize: 12, color: '#94A3B8' }}>
-                        Customer tidak ditemukan
+                        No customers found
                     </div>
                 ) : (
                     filteredCustomers.map((cust) => {
@@ -142,7 +142,7 @@ export function CustomerActionPanel({
                 )}
             </div>
 
-            {/* Tombol Tambah Customer Baru */}
+            {/* Tombol Add New Customer */}
             <button
                 type="button"
                 onClick={onOpenCreateModal}
@@ -164,7 +164,7 @@ export function CustomerActionPanel({
                 }}
             >
                 <Plus size={14} />
-                Tambah Customer Baru
+                Add New Customer
             </button>
 
             {/* Summary Customer yang Terpilih */}
@@ -179,7 +179,7 @@ export function CustomerActionPanel({
                     gap: 6
                 }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>
-                        Customer Terpilih:
+                        Selected Customer:
                     </div>
                     <div style={{ fontSize: 13, fontWeight: 700, color: '#06283A' }}>
                         {selectedCustomer.companyName}
@@ -192,7 +192,7 @@ export function CustomerActionPanel({
                 </div>
             )}
 
-            {/* Tombol CTA Utama: Mulai Submit Berkas */}
+            {/* Tombol CTA Utama: Start Document Submission */}
             <button
                 type="button"
                 onClick={onStartWizard}
@@ -218,11 +218,11 @@ export function CustomerActionPanel({
                 }}
             >
                 {isLoading ? (
-                    'Menyiapkan Assignment...'
+                    'Preparing Assignment...'
                 ) : (
                     <>
                         <Sparkles size={16} color="#FCD34D" />
-                        Mulai Submit Berkas
+                        Start Document Submission
                         <ArrowRight size={15} />
                     </>
                 )}

@@ -114,7 +114,7 @@ class SessionCheckpointService extends BaseService
     ): void {
         if ($sessionCheckpoint->status === SessionCheckpointStatus::COMPLETED) {
             throw new BusinessException(
-                'Tahap checkpoint yang sudah selesai tidak bisa diubah PIC-nya.'
+                'Completed checkpoint stages cannot have their PIC changed.'
             );
         }
 
