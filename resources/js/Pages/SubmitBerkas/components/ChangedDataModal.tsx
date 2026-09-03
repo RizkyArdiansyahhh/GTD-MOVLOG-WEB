@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertCircle, AlertTriangle, X } from 'lucide-react';
+import { AlertCircle, X } from 'lucide-react';
 
 export interface ChangedDataModalProps {
   sections: string[];
@@ -23,80 +23,93 @@ export function ChangedDataModal({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'rgba(0, 0, 0, 0.45)',
-        backdropFilter: 'blur(3px)',
+        background: 'rgba(15, 23, 42, 0.45)',
+        backdropFilter: 'blur(4px)',
         padding: 16,
       }}
     >
       <div
         style={{
-          background: '#fff',
-          borderRadius: 16,
-          boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+          background: '#ffffff',
+          borderRadius: 12,
+          border: '1px solid #E5E7EB',
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05)',
           width: '100%',
-          maxWidth: 440,
+          maxWidth: 420,
           overflow: 'hidden',
         }}
       >
         <div
           style={{
-            background: 'linear-gradient(135deg, #FEF3C7, #FDE68A)',
-            borderBottom: '1px solid #FCD34D',
-            padding: '20px 24px 16px',
+            padding: '20px 20px 16px',
             display: 'flex',
             alignItems: 'flex-start',
-            justifyContent: 'space-between',
             gap: 12,
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div
+          <div
+            style={{
+              width: 38,
+              height: 38,
+              borderRadius: 8,
+              background: '#FEE2E2',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            <AlertCircle size={20} color="#DC2626" />
+          </div>
+
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h3
               style={{
-                width: 44,
-                height: 44,
-                borderRadius: 12,
-                background: '#F59E0B',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
+                margin: 0,
+                fontSize: 15,
+                fontWeight: 600,
+                color: '#111827',
+                lineHeight: 1.3,
               }}
             >
-              <AlertTriangle size={22} color="#fff" />
-            </div>
-            <div>
-              <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#92400E' }}>
-                Data Changes Detected!
-              </p>
-              <p style={{ margin: '3px 0 0', fontSize: 12, color: '#B45309' }}>
-                Data berikut berbeda dari {sourceLabel}
-              </p>
-            </div>
+              Data Changes Detected
+            </h3>
+            <p style={{ margin: '4px 0 0', fontSize: 12.5, color: '#6B7280', lineHeight: 1.4 }}>
+              Data differs from {sourceLabel}
+            </p>
           </div>
+
           <button
             type="button"
             onClick={onClose}
             style={{
-              background: 'none',
+              background: 'transparent',
               border: 'none',
               cursor: 'pointer',
               padding: 4,
               borderRadius: 6,
-              color: '#92400E',
+              color: '#9CA3AF',
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'center',
               flexShrink: 0,
             }}
+            aria-label="Tutup"
           >
             <X size={18} />
           </button>
         </div>
 
-        <div style={{ padding: '20px 24px' }}>
-          <p style={{ margin: '0 0 14px', fontSize: 13, color: '#374151', lineHeight: 1.6 }}>
-            Perubahan terdeteksi di section berikut. Pastikan perubahan ini{' '}
-            <strong>disengaja</strong> agar tidak terjadi perbedaan data antara
-            dokumen ini dan {sourceLabel}.
+        <div style={{ padding: '0 20px 20px' }}>
+          <p
+            style={{
+              margin: '0 0 12px',
+              fontSize: 13,
+              color: '#4B5563',
+              lineHeight: 1.5,
+            }}
+          >
+            Perubahan terdeteksi di bagian berikut. Pastikan perbedaan ini disengaja agar tidak terjadi selisih data.
           </p>
 
           <ul
@@ -106,7 +119,7 @@ export function ChangedDataModal({
               padding: 0,
               display: 'flex',
               flexDirection: 'column',
-              gap: 8,
+              gap: 6,
             }}
           >
             {sections.map((section) => (
@@ -115,15 +128,23 @@ export function ChangedDataModal({
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 10,
-                  padding: '9px 14px',
+                  gap: 8,
+                  padding: '8px 12px',
                   background: '#FEF2F2',
-                  border: '1px solid #FECACA',
-                  borderRadius: 8,
+                  border: '1px solid #FEE2E2',
+                  borderRadius: 6,
                 }}
               >
-                <AlertCircle size={14} color="#DC2626" style={{ flexShrink: 0 }} />
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#DC2626' }}>
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: '50%',
+                    background: '#DC2626',
+                    flexShrink: 0,
+                  }}
+                />
+                <span style={{ fontSize: 12.5, fontWeight: 500, color: '#991B1B' }}>
                   {section}
                 </span>
               </li>
@@ -136,13 +157,13 @@ export function ChangedDataModal({
               onClick={onClose}
               style={{
                 flex: 1,
-                padding: '11px 0',
-                borderRadius: 10,
+                padding: '9px 12px',
+                borderRadius: 8,
                 border: '1px solid #D1D5DB',
-                background: '#fff',
+                background: '#FFFFFF',
                 color: '#374151',
-                fontSize: 13.5,
-                fontWeight: 600,
+                fontSize: 13,
+                fontWeight: 500,
                 cursor: 'pointer',
               }}
             >
@@ -154,15 +175,14 @@ export function ChangedDataModal({
                 onClick={onConfirm}
                 style={{
                   flex: 1.2,
-                  padding: '11px 0',
-                  borderRadius: 10,
-                  border: 'none',
-                  background: 'linear-gradient(135deg, #EF4444, #DC2626)',
-                  color: '#fff',
-                  fontSize: 13.5,
-                  fontWeight: 700,
+                  padding: '9px 12px',
+                  borderRadius: 8,
+                  border: '1px solid #DC2626',
+                  background: '#DC2626',
+                  color: '#FFFFFF',
+                  fontSize: 13,
+                  fontWeight: 500,
                   cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(220,38,38,0.3)',
                 }}
               >
                 Save Anyway & Continue
