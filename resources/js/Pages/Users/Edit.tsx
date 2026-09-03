@@ -4,6 +4,15 @@ import { ChevronRight, ArrowLeft, Shield, User as UserIcon, Lock, CheckCircle2 }
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import type { PageProps } from '@/types';
 
+// ─────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────
+interface CompanyOption {
+    id: string;
+    name: string;
+    company_name?: string;
+}
+
 interface UserEditData {
     id: string;
     name: string;
@@ -11,11 +20,17 @@ interface UserEditData {
     role: string;
     status: string;
     phone?: string | null;
+    customer_id?: string | null;
 }
 
 interface EditUserProps extends PageProps {
     user: UserEditData;
+    companies: CompanyOption[];
 }
+
+// ─────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────
 
 /**
  * Map Spatie role names or display labels to enum value.
@@ -31,7 +46,7 @@ function normalizeRole(role: string): string {
 }
 
 /**
- * Map status string or enum to normalized status value ('active' | 'inactive' | 'pending').
+ * Map status string or enum to normalized status value.
  */
 function normalizeStatus(status: string): string {
     const s = status.toLowerCase();
@@ -41,18 +56,41 @@ function normalizeStatus(status: string): string {
     return s;
 }
 
-export default function Edit({ user }: EditUserProps) {
-    const initialRole = normalizeRole(user.role || 'staff');
+/** Returns true if the given role value is Customer. */
+function isCustomerRole(roleValue: string): boolean {
+    return roleValue.toLowerCase() === 'customer';
+}
+
+// ─────────────────────────────────────────────
+// Component
+// ─────────────────────────────────────────────
+export default function Edit({ user, companies = [] }: EditUserProps) {
+    const initialRole   = normalizeRole(user.role || 'staff');
     const initialStatus = normalizeStatus(user.status || 'active');
 
     const { data, setData, put, processing, errors } = useForm({
-        name: user.name || '',
-        email: user.email || '',
-        role: initialRole,
-        status: initialStatus,
-        password: '',
+        name:                 user.name || '',
+        email:                user.email || '',
+        phone:                user.phone || '',
+        role:                 initialRole,
+        status:               initialStatus,
+        customer_id:          user.customer_id || '',
+        password:             '',
         password_confirmation: '',
     });
+
+    // Derived flag: is the currently selected role "customer"?
+    const isCustomer = isCustomerRole(data.role);
+
+    // When the role dropdown changes, clear customer_id if switching away from Customer
+    const handleRoleChange = (selectedRole: string) => {
+        const nextIsCustomer = isCustomerRole(selectedRole);
+        setData((prev) => ({
+            ...prev,
+            role:        selectedRole,
+            customer_id: nextIsCustomer ? prev.customer_id : '',
+        }));
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -60,6 +98,9 @@ export default function Edit({ user }: EditUserProps) {
             preserveScroll: true,
         });
     };
+
+    // Compound error for company field (backend returns either company_id or customer_id)
+    const companyError = errors.customer_id || (errors as Record<string, string>).company_id;
 
     return (
         <DashboardLayout>
@@ -123,7 +164,7 @@ export default function Edit({ user }: EditUserProps) {
                                 )}
                             </div>
 
-                            {/* Email Address */}
+                            {/* Email */}
                             <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1.5">
                                     Email Address <span className="text-red-500">*</span>
@@ -132,7 +173,7 @@ export default function Edit({ user }: EditUserProps) {
                                     type="email"
                                     value={data.email}
                                     onChange={(e) => setData('email', e.target.value)}
-                                    placeholder="nama@perusahaan.com"
+                                    placeholder="contoh@email.com"
                                     className={`w-full rounded-xl border px-3.5 py-2.5 text-sm transition-all focus:outline-none focus:ring-2 ${
                                         errors.email
                                             ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
@@ -143,27 +184,48 @@ export default function Edit({ user }: EditUserProps) {
                                     <p className="mt-1 text-xs text-red-500 font-medium">{errors.email}</p>
                                 )}
                             </div>
+
+                            {/* Phone */}
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                                    Phone Number
+                                </label>
+                                <input
+                                    type="tel"
+                                    value={data.phone}
+                                    onChange={(e) => setData('phone', e.target.value)}
+                                    placeholder="08xxxxxxxxxx"
+                                    className={`w-full rounded-xl border px-3.5 py-2.5 text-sm transition-all focus:outline-none focus:ring-2 ${
+                                        errors.phone
+                                            ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
+                                            : 'border-gray-200 focus:border-[#F5B800] focus:ring-[#F5B800]/20'
+                                    }`}
+                                />
+                                {errors.phone && (
+                                    <p className="mt-1 text-xs text-red-500 font-medium">{errors.phone}</p>
+                                )}
+                            </div>
                         </div>
                     </div>
 
-                    {/* ── Section 2: System Access ── */}
-                    <div className="space-y-4 pt-2">
+                    {/* ── Section 2: Access & Role ── */}
+                    <div className="space-y-4">
                         <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
                             <Shield size={18} className="text-[#06283A]" />
                             <h2 className="text-base font-bold" style={{ color: '#06283A' }}>
-                                System Access
+                                Access & Role
                             </h2>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             {/* Role */}
-                            <div>
+                            <div className={isCustomer ? '' : 'sm:col-span-2'}>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1.5">
                                     Role <span className="text-red-500">*</span>
                                 </label>
                                 <select
                                     value={data.role}
-                                    onChange={(e) => setData('role', e.target.value)}
+                                    onChange={(e) => handleRoleChange(e.target.value)}
                                     className={`w-full rounded-xl border px-3.5 py-2.5 text-sm bg-white transition-all focus:outline-none focus:ring-2 ${
                                         errors.role
                                             ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
@@ -180,6 +242,40 @@ export default function Edit({ user }: EditUserProps) {
                                     <p className="mt-1 text-xs text-red-500 font-medium">{errors.role}</p>
                                 )}
                             </div>
+
+                            {/* Company Name — shown only when role is Customer */}
+                            {isCustomer && (
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                                        Company Name <span className="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        id="customer_id"
+                                        value={data.customer_id}
+                                        onChange={(e) => setData('customer_id', e.target.value)}
+                                        className={`w-full rounded-xl border px-3.5 py-2.5 text-sm bg-white transition-all focus:outline-none focus:ring-2 ${
+                                            companyError
+                                                ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
+                                                : 'border-gray-200 focus:border-[#F5B800] focus:ring-[#F5B800]/20'
+                                        }`}
+                                    >
+                                        <option value="">Select Company</option>
+                                        {companies.map((company) => (
+                                            <option key={company.id} value={company.id}>
+                                                {company.name || company.company_name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {companies.length === 0 && (
+                                        <p className="text-xs text-amber-600 mt-1">
+                                            No companies available. Please create a company in Submit Berkas first.
+                                        </p>
+                                    )}
+                                    {companyError && (
+                                        <p className="mt-1 text-xs text-red-500 font-medium">{companyError}</p>
+                                    )}
+                                </div>
+                            )}
 
                             {/* Status */}
                             <div>
@@ -203,7 +299,19 @@ export default function Edit({ user }: EditUserProps) {
                                     <p className="mt-1 text-xs text-red-500 font-medium">{errors.status}</p>
                                 )}
                             </div>
+                        </div>
+                    </div>
 
+                    {/* ── Section 3: Password ── */}
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
+                            <Lock size={18} className="text-[#06283A]" />
+                            <h2 className="text-base font-bold" style={{ color: '#06283A' }}>
+                                Password
+                            </h2>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             {/* Password (Optional) */}
                             <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">

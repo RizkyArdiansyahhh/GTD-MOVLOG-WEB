@@ -8,6 +8,7 @@ use App\DTOs\UserDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
+use App\Models\Customer;
 use App\Services\UserService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
@@ -93,15 +94,31 @@ class UserController extends Controller
 
         Gate::authorize('update', $userData);
 
+        // Load customer relation so we can pass customer_id to the frontend
+        $userData->loadMissing('customer');
+
+        $companies = Customer::orderBy('company_name', 'asc')
+            ->get(['id', 'company_name'])
+            ->unique('company_name')
+            ->values()
+            ->map(fn (Customer $customer) => [
+                'id'           => (string) $customer->id,
+                'name'         => $customer->company_name,
+                'company_name' => $customer->company_name,
+            ])
+            ->all();
+
         return Inertia::render('Users/Edit', [
             'user' => [
-                'id'     => (string) $userData->id,
-                'name'   => $userData->name,
-                'email'  => $userData->email,
-                'role'   => $userData->roles->first()?->name ?? 'staff',
-                'status' => $userData->status->value,
-                'phone'  => $userData->phone,
+                'id'          => (string) $userData->id,
+                'name'        => $userData->name,
+                'email'       => $userData->email,
+                'role'        => $userData->roles->first()?->name ?? 'staff',
+                'status'      => $userData->status->value,
+                'phone'       => $userData->phone,
+                'customer_id' => $userData->customer_id,
             ],
+            'companies' => $companies,
         ]);
     }
 

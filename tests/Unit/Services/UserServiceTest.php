@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\UserService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 use Mockery;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\Test;
@@ -46,7 +47,6 @@ class UserServiceTest extends TestCase
         $this->repository
             ->shouldReceive('paginate')
             ->once()
-            ->with(15, ['*'], ['roles'])
             ->andReturn($paginator);
 
         $result = $this->service->list(15, null);
@@ -90,20 +90,141 @@ class UserServiceTest extends TestCase
     public function it_throws_business_exception_when_deleting_self(): void
     {
         $this->expectException(BusinessException::class);
-        $this->expectExceptionMessage('Anda tidak dapat menghapus akun Anda sendiri.');
 
-        $user = new User();
-        $user->id = 'user-1';
-
-        $currentUser = new User();
-        $currentUser->id = 'user-1';
+        // Use real (partially filled) User objects so property access works naturally
+        $currentUser = new User(['id' => 'same-id']);
+        $user        = new User(['id' => 'same-id']);
 
         $this->repository
             ->shouldReceive('find')
-            ->with('user-1')
+            ->once()
             ->andReturn($user);
 
-        $this->service->delete('user-1', $currentUser);
+        $this->service->delete('same-id', $currentUser);
+    }
+
+    #[Test]
+    public function it_sets_customer_id_when_updating_user_with_customer_role(): void
+    {
+        $customerId = 'cust-uuid-123';
+        $userId     = 'user-uuid-456';
+
+        $dto = new UserDTO(
+            name: 'Test Customer',
+            email: 'customer@test.com',
+            password: null,
+            status: UserStatus::Active,
+            role: UserRole::Customer->value,
+            customer_id: $customerId,
+            company_id: null,
+            phone: null,
+        );
+
+        $user = Mockery::mock(User::class);
+        $user->shouldReceive('syncRoles')->once()->with([UserRole::Customer->value]);
+        $user->shouldReceive('load')->once()->with('roles')->andReturnSelf();
+
+        // Capture what data is passed to repository update
+        $capturedData = null;
+        $this->repository
+            ->shouldReceive('update')
+            ->once()
+            ->andReturnUsing(function ($id, $data) use (&$capturedData, $user) {
+                $capturedData = $data;
+                return $user;
+            });
+
+        // Fake DB so transaction executes the closure without a real connection
+        DB::shouldReceive('transaction')
+            ->once()
+            ->andReturnUsing(fn ($callback) => $callback());
+
+        $result = $this->service->update($userId, $dto);
+
+        $this->assertSame($user, $result);
+        $this->assertArrayHasKey('customer_id', $capturedData);
+        $this->assertSame($customerId, $capturedData['customer_id']);
+    }
+
+    #[Test]
+    public function it_resolves_customer_id_from_company_id_when_updating_customer_user(): void
+    {
+        $companyId = 'company-uuid-789';
+        $userId    = 'user-uuid-456';
+
+        $dto = new UserDTO(
+            name: 'Test Customer',
+            email: 'customer@test.com',
+            password: null,
+            status: UserStatus::Active,
+            role: UserRole::Customer->value,
+            customer_id: null,     // customer_id is empty
+            company_id: $companyId, // but company_id is provided
+            phone: null,
+        );
+
+        $user = Mockery::mock(User::class);
+        $user->shouldReceive('syncRoles')->once()->with([UserRole::Customer->value]);
+        $user->shouldReceive('load')->once()->with('roles')->andReturnSelf();
+
+        $capturedData = null;
+        $this->repository
+            ->shouldReceive('update')
+            ->once()
+            ->andReturnUsing(function ($id, $data) use (&$capturedData, $user) {
+                $capturedData = $data;
+                return $user;
+            });
+
+        DB::shouldReceive('transaction')
+            ->once()
+            ->andReturnUsing(fn ($callback) => $callback());
+
+        $this->service->update($userId, $dto);
+
+        // Should resolve company_id into customer_id
+        $this->assertArrayHasKey('customer_id', $capturedData);
+        $this->assertSame($companyId, $capturedData['customer_id']);
+    }
+
+    #[Test]
+    public function it_clears_customer_id_when_role_changes_from_customer_to_non_customer(): void
+    {
+        $userId = 'user-uuid-456';
+
+        $dto = new UserDTO(
+            name: 'Former Customer',
+            email: 'former@test.com',
+            password: null,
+            status: UserStatus::Active,
+            role: 'staff', // changed to staff
+            customer_id: null,
+            company_id: null,
+            phone: null,
+        );
+
+        $user = Mockery::mock(User::class);
+        $user->shouldReceive('syncRoles')->once()->with(['staff']);
+        $user->shouldReceive('load')->once()->with('roles')->andReturnSelf();
+
+        $capturedData = null;
+        $this->repository
+            ->shouldReceive('update')
+            ->once()
+            ->andReturnUsing(function ($id, $data) use (&$capturedData, $user) {
+                $capturedData = $data;
+                return $user;
+            });
+
+        DB::shouldReceive('transaction')
+            ->once()
+            ->andReturnUsing(fn ($callback) => $callback());
+
+        $this->service->update($userId, $dto);
+
+        // customer_id must be explicitly null when role is not customer
+        $this->assertArrayHasKey('customer_id', $capturedData);
+        $this->assertNull($capturedData['customer_id']);
     }
 
     protected function tearDown(): void

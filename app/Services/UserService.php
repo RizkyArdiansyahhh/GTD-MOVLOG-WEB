@@ -102,13 +102,29 @@ class UserService extends BaseService
     {
         return DB::transaction(function () use ($id, $dto): User {
             $data = [
-                'name' => $dto->name,
-                'email' => $dto->email,
+                'name'   => $dto->name,
+                'email'  => $dto->email,
                 'status' => $dto->status->value,
             ];
 
-            if ($dto->customer_id !== null && ! ($dto->customer_id instanceof Optional)) {
-                $data['customer_id'] = $dto->customer_id;
+            // Resolve customer ID from either customer_id or company_id (same as create())
+            $isCustomer = in_array(strtolower((string) $dto->role), [
+                UserRole::Customer->value,
+                'customer',
+            ], true);
+
+            if ($isCustomer) {
+                // Resolve customer_id; fall back to company_id if needed
+                $customerId = ! ($dto->customer_id instanceof Optional) && $dto->customer_id
+                    ? $dto->customer_id
+                    : null;
+                if (! $customerId && ! ($dto->company_id instanceof Optional) && $dto->company_id) {
+                    $customerId = $dto->company_id;
+                }
+                $data['customer_id'] = $customerId;
+            } else {
+                // Explicitly clear customer_id when role is not Customer
+                $data['customer_id'] = null;
             }
 
             if (is_string($dto->password) && $dto->password !== '') {
