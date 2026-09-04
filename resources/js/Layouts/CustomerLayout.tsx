@@ -51,11 +51,16 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
     const dropdownRef = useRef<HTMLDivElement>(null);
     const notifDropdownRef = useRef<HTMLDivElement>(null);
 
+    const [imageError, setImageError] = useState(false);
     const user = auth?.user;
-    const companyName = user?.customer?.company_name ?? user?.name ?? 'PT Customer A';
-    const avatarSrc =
-        user?.avatar_url ||
-        `https://ui-avatars.com/api/?name=${encodeURIComponent(companyName)}&background=0F172A&color=F6C343&bold=true&size=100`;
+    const companyName = user?.customer?.company_name ?? user?.name ?? 'Customer';
+
+    const getInitials = (name?: string) => {
+        if (!name) return 'C';
+        const parts = name.trim().split(/\s+/);
+        if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+    };
 
     // Sync notification props when updated
     useEffect(() => {
@@ -382,17 +387,24 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
                                 }}
                                 className="flex items-center gap-2.5 p-1 rounded-full hover:bg-slate-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 cursor-pointer group"
                             >
-                                <img
-                                    src={avatarSrc}
-                                    alt={user?.name ?? 'Customer'}
-                                    className="w-9 h-9 rounded-full object-cover ring-2 ring-slate-200 group-hover:ring-yellow-400 transition-all duration-150"
-                                />
+                                {user?.avatar_url && !imageError ? (
+                                    <img
+                                        src={user.avatar_url}
+                                        alt={user?.name ?? 'Customer'}
+                                        onError={() => setImageError(true)}
+                                        className="w-9 h-9 rounded-full object-cover ring-2 ring-slate-200 group-hover:ring-yellow-400 transition-all duration-150"
+                                    />
+                                ) : (
+                                    <div className="w-9 h-9 rounded-full bg-slate-900 text-[#F6C343] font-bold flex items-center justify-center text-xs ring-2 ring-slate-200 group-hover:ring-yellow-400 transition-all duration-150 shadow-sm">
+                                        {getInitials(companyName)}
+                                    </div>
+                                )}
                                 <div className="hidden xl:flex flex-col text-left leading-tight">
                                     <span className="text-xs font-bold text-slate-800 truncate max-w-[140px]">
                                         {companyName}
                                     </span>
                                     <span className="text-[10px] text-slate-400 font-semibold truncate">
-                                        {user?.customer?.pic_name || user?.name || 'Hendra Wijaya'}
+                                        {user?.customer?.pic_name || user?.name || 'Customer Staff'}
                                     </span>
                                 </div>
                                 <ChevronDown size={14} className="text-slate-400 group-hover:text-slate-600 transition-colors" />

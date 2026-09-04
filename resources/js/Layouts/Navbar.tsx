@@ -15,13 +15,19 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
+    const [imageError, setImageError] = useState(false);
     const user = auth?.user;
     const rawRole = user?.roles?.[0] ?? 'User';
     const formattedRole = typeof rawRole === 'string'
         ? rawRole.replace('-', ' ').replace(/\b\w/g, (c) => c.toUpperCase())
         : 'User';
 
-    const avatarUrl = user?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=F6C343&color=1a1a1a&bold=true&size=128`;
+    const getInitials = (name?: string) => {
+        if (!name) return 'U';
+        const parts = name.trim().split(/\s+/);
+        if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+    };
 
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -113,11 +119,18 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
                         aria-label="User profile menu"
                         aria-expanded={dropdownOpen}
                     >
-                        <img
-                            src={avatarUrl}
-                            alt={user?.name || 'User'}
-                            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover ring-2 ring-amber-300 group-hover:ring-amber-400 transition-all duration-150"
-                        />
+                        {user?.avatar_url && !imageError ? (
+                            <img
+                                src={user.avatar_url}
+                                alt={user?.name || 'User'}
+                                onError={() => setImageError(true)}
+                                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover ring-2 ring-amber-300 group-hover:ring-amber-400 transition-all duration-150"
+                            />
+                        ) : (
+                            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-amber-400 text-[#06283A] font-bold flex items-center justify-center text-xs ring-2 ring-amber-300 group-hover:ring-amber-400 transition-all duration-150 shadow-sm">
+                                {getInitials(user?.name)}
+                            </div>
+                        )}
                         <div className="hidden sm:block text-left leading-tight">
                             <p className="text-xs font-bold text-gray-800 truncate max-w-[130px]">
                                 {user?.name}

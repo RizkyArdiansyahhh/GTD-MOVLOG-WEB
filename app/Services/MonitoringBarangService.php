@@ -110,6 +110,32 @@ class MonitoringBarangService
                 ];
             }
 
+            // Fallback jika data dokumen berbentuk flat (seperti pada data seeder / legacy payload)
+            if (empty($cargos)) {
+                $rawTitle = $ciData['title'] ?? $plData['title'] ?? $bolData['title'] ?? null;
+                $cleanTitle = $rawTitle ? preg_replace('/^(Commercial Invoice|Packing List|Bill of Lading)\s+/i', '', (string) $rawTitle) : null;
+                $fallbackGoods = $cleanTitle ?: ($ciData['descriptionOfGoods'] ?? null);
+
+                if ($fallbackGoods) {
+                    $namesList[] = $fallbackGoods;
+                    $fallbackQty = $plData['total_packages'] ?? ($ciData['total_packages'] ?? '1 Unit');
+                    $fallbackWeight = $plData['total_gross_weight'] ?? ($bolData['total_gross_weight'] ?? '-');
+
+                    $cargos[] = [
+                        'id'                 => '1',
+                        'descriptionOfGoods' => $fallbackGoods,
+                        'type'               => 'Heavy Equipment / Cargo',
+                        'brand'              => '-',
+                        'quantity'           => $fallbackQty,
+                        'unit'               => 'Unit',
+                        'netWeight'          => '-',
+                        'grossWeight'        => $fallbackWeight,
+                        'price'              => $ciData['total_amount'] ?? '-',
+                        'hsCode'             => '-',
+                    ];
+                }
+            }
+
             $uniqueNames  = array_values(array_unique($namesList));
             $uniqueTypes  = array_values(array_unique($typesList));
             $uniqueBrands = array_values(array_unique($brandsList));
@@ -117,7 +143,7 @@ class MonitoringBarangService
 
             // Format ringkasan
             $itemName     = !empty($uniqueNames) ? implode(', ', $uniqueNames) : ('Kargo ' . $assignmentRef);
-            $itemType     = !empty($uniqueTypes) ? implode(', ', $uniqueTypes) : '-';
+            $itemType     = !empty($uniqueTypes) ? implode(', ', $uniqueTypes) : 'Heavy Equipment';
             $manufacturer = !empty($uniqueBrands) ? implode(', ', $uniqueBrands) : '-';
             $itemCode     = !empty($uniqueCodes) ? implode(', ', $uniqueCodes) : '-';
 
@@ -129,16 +155,30 @@ class MonitoringBarangService
 
             $origin = !empty($transport['portOfLoading']) 
                 ? $transport['portOfLoading'] 
-                : '-';
+                : (!empty($bolData['port_of_loading']) ? $bolData['port_of_loading'] : '-');
 
             $destination = !empty($transport['portOfDischarge']) 
                 ? $transport['portOfDischarge'] 
-                : '-';
+                : (!empty($bolData['port_of_discharge']) ? $bolData['port_of_discharge'] : '-');
+
+            // Fallback parsing rute dari judul Bill of Lading (misal: "Bill of Lading Tanjung Priok - Balikpapan")
+            if (($origin === '-' || $destination === '-') && !empty($bolData['title'])) {
+                if (preg_match('/Bill of Lading\s+(.+?)\s*-\s*(.+)/i', (string) $bolData['title'], $matches)) {
+                    if ($origin === '-') {
+                        $origin = trim($matches[1]);
+                    }
+                    if ($destination === '-') {
+                        $destination = trim($matches[2]);
+                    }
+                }
+            }
 
             // 3. Ekstraksi No Kontrak (Dari CI / PL / BL)
             $contractId = $ciData['documentDetail']['shipmentContractNumber']
                 ?? $plData['documentDetail']['shipmentContractNumber']
                 ?? $bolData['documentDetail']['number']
+                ?? $ciData['document_number']
+                ?? $bolData['document_number']
                 ?? '-';
 
             // 4. Ekstraksi Berat Keseluruhan (Dari Bill of Lading / Packing List)
@@ -153,9 +193,13 @@ class MonitoringBarangService
                 if ($sumNet > 0) {
                     $totalWeight = $sumNet . ' kg';
                 }
+            } elseif (!empty($plData['total_gross_weight'])) {
+                $totalWeight = (string) $plData['total_gross_weight'];
+            } elseif (!empty($bolData['total_gross_weight'])) {
+                $totalWeight = (string) $bolData['total_gross_weight'];
             }
 
-            // 5. Normalisasi Status
+            // 5. Normalisasi Status Dokumen
             $statuses = $docs->map(function ($doc) {
                 if ($doc->status instanceof DocumentStatus) {
                     return $doc->status->value;
@@ -163,14 +207,52 @@ class MonitoringBarangService
                 return (string) $doc->status;
             });
 
-            $status = match (true) {
-                $statuses->contains(DocumentStatus::VERIFIED->value) => 'In Transit',
-                $statuses->contains(DocumentStatus::REJECTED->value) => 'Cancelled',
-                $statuses->contains(DocumentStatus::PENDING->value)  => 'Pending',
-                default                                              => 'Pending',
-            };
+            // 6. Ambil Data Sesi Pengiriman Aktual & Checkpoints (Single Source of Truth)
+            $shippingSession = \App\Models\ShippingSession::where('assignment_no', $assignmentRef)
+                ->with([
+                    'sessionCheckpoints' => function ($q) {
+                        $q->with([
+                            'checkpoint',
+                            'picUser:id,name',
+                            'reports' => function ($rq) {
+                                $rq->with(['photos', 'createdBy:id,name'])->latest('event_at');
+                            },
+                        ]);
+                    },
+                    'currentCheckpoint:id,name',
+                ])
+                ->first();
 
-            // 6. Dokumen Lampiran
+            // Tentukan status shipment secara akurat
+            if ($shippingSession) {
+                $rawSessionStatus = is_object($shippingSession->status) ? ($shippingSession->status->value ?? (string) $shippingSession->status) : (string) $shippingSession->status;
+                $status = match (strtolower($rawSessionStatus)) {
+                    'delivered', 'completed' => 'Delivered',
+                    'in_transit', 'in_progress' => 'In Transit',
+                    'pending' => 'Pending',
+                    'cancelled' => 'Cancelled',
+                    default => ucfirst($rawSessionStatus),
+                };
+                if ($shippingSession->origin && $origin === '-') {
+                    $origin = $shippingSession->origin;
+                }
+                if ($shippingSession->destination && $destination === '-') {
+                    $destination = $shippingSession->destination;
+                }
+                if ($shippingSession->cargo_name && $itemName === ('Kargo ' . $assignmentRef)) {
+                    $itemName = $shippingSession->cargo_name;
+                }
+            } else {
+                // Sesi belum dibuat karena berkas masih dalam proses verifikasi
+                $status = match (true) {
+                    $statuses->contains(DocumentStatus::REJECTED->value) => 'Cancelled',
+                    $statuses->contains(DocumentStatus::PENDING->value)  => 'Pending',
+                    $statuses->every(fn ($s) => $s === DocumentStatus::VERIFIED->value) => 'In Transit',
+                    default => 'Pending',
+                };
+            }
+
+            // 7. Dokumen Lampiran
             $documentItems = $docs->map(function ($doc) {
                 $rawStatus = $doc->status instanceof DocumentStatus ? $doc->status->value : (string) $doc->status;
                 $statusLabel = match ($rawStatus) {
@@ -194,6 +276,98 @@ class MonitoringBarangService
             $formattedDate = $firstDoc?->created_at ? $firstDoc->created_at->format('d M Y') : date('d M Y');
             $formattedTime = $firstDoc?->created_at ? $firstDoc->created_at->format('H:i') : '00:00';
 
+            $masterCheckpoints = \App\Models\Checkpoint::orderBy('sequence', 'asc')->get();
+
+            $checkpointsList = [];
+            $activitiesList = [];
+            $completedCount = 0;
+            $totalCount = $masterCheckpoints->count() > 0 ? $masterCheckpoints->count() : 4;
+            $currentCheckpointName = $origin !== '-' ? $origin : 'Pelabuhan Asal';
+
+            if ($shippingSession) {
+                $sessionCheckpointsByKey = $shippingSession->sessionCheckpoints->keyBy('checkpoint_id');
+                $currentCheckpointName = $shippingSession->currentCheckpoint?->name ?? ($origin !== '-' ? $origin : 'Pelabuhan Asal');
+
+                foreach ($masterCheckpoints as $mcp) {
+                    $sc = $sessionCheckpointsByKey->get($mcp->id);
+                    $rawStatus = $sc ? (is_object($sc->status) ? ($sc->status->value ?? (string) $sc->status) : (string) $sc->status) : 'pending';
+                    $statusUpper = strtoupper($rawStatus);
+
+                    $nodeStatus = match ($statusUpper) {
+                        'COMPLETED', 'SELESAI' => 'completed',
+                        'IN_PROGRESS', 'AKTIF' => 'current',
+                        default => 'pending',
+                    };
+
+                    if ($nodeStatus === 'completed') {
+                        $completedCount++;
+                    }
+
+                    $latestReport = $sc?->reports?->first();
+                    $dateStr = $sc?->actual_finish?->format('d M Y')
+                        ?? $sc?->actual_start?->format('d M Y')
+                        ?? $latestReport?->event_at?->format('d M Y');
+
+                    $timeStr = $sc?->actual_finish?->format('H:i')
+                        ?? $sc?->actual_start?->format('H:i')
+                        ?? $latestReport?->event_at?->format('H:i');
+
+                    $notes = null;
+                    if ($nodeStatus === 'completed') {
+                        $notes = 'Tahap selesai' . ($sc?->picUser ? ' (PIC: ' . $sc->picUser->name . ')' : '');
+                    } elseif ($nodeStatus === 'current') {
+                        $notes = 'Sedang berlangsung' . ($sc?->picUser ? ' (PIC: ' . $sc->picUser->name . ')' : '');
+                    } else {
+                        $notes = $sc?->picUser ? 'Ditugaskan ke ' . $sc->picUser->name : 'Menunggu giliran tahap';
+                    }
+
+                    $checkpointsList[] = [
+                        'id'     => 'cp-' . $mcp->id,
+                        'name'   => $mcp->name,
+                        'status' => $nodeStatus,
+                        'date'   => $dateStr,
+                        'time'   => $timeStr,
+                        'notes'  => $notes,
+                    ];
+
+                    // Tambahkan event aktivitas jika ada report
+                    if ($latestReport) {
+                        $activitiesList[] = [
+                            'id'    => 'act-rep-' . $latestReport->id,
+                            'time'  => $latestReport->event_at ? $latestReport->event_at->format('H:i') : ($timeStr ?? '00:00'),
+                            'date'  => $latestReport->event_at ? $latestReport->event_at->format('d M Y') : ($dateStr ?? $formattedDate),
+                            'title' => 'Laporan ' . $mcp->name . ($latestReport->status === \App\Enums\ReportStatus::COMPLETED ? ' selesai' : ' diperbarui'),
+                            'user'  => $latestReport->createdBy?->name ?? ($sc?->picUser?->name ?? 'Field Worker'),
+                            'role'  => 'Field Worker',
+                        ];
+                    }
+                }
+            } else {
+                // Sesi pengiriman belum dibuat (menunggu supervisor approve dokumen)
+                foreach ($masterCheckpoints as $idx => $mcp) {
+                    $checkpointsList[] = [
+                        'id'     => 'cp-' . $mcp->id,
+                        'name'   => $mcp->name,
+                        'status' => 'pending',
+                        'date'   => null,
+                        'time'   => null,
+                        'notes'  => $idx === 0 ? 'Menunggu verifikasi berkas oleh Supervisor' : 'Menunggu giliran tahap',
+                    ];
+                }
+            }
+
+            // Event Dokumen
+            $activitiesList[] = [
+                'id'    => 'act-doc-' . $assignmentRef,
+                'time'  => $formattedTime,
+                'date'  => $formattedDate,
+                'title' => $status === 'In Transit'
+                    ? 'Dokumen disetujui & sesi pengiriman aktif'
+                    : ('Dokumen diajukan (' . $docs->count() . ' berkas)'),
+                'user'  => $uploader?->name ?? 'Staff Operations',
+                'role'  => 'Operations Staff',
+            ];
+
             return [
                 'id'                   => $assignmentRef,
                 'contractId'           => $contractId,
@@ -210,44 +384,21 @@ class MonitoringBarangService
                 'lastUpdate'           => $firstDoc?->updated_at?->toISOString() ?? now()->toISOString(),
                 'estimatedArrival'     => '-',
                 'createdBy'            => $uploader?->name ?? 'Staff',
-                'currentCheckpoint'    => $origin,
-                'totalCheckpoints'     => 4,
-                'completedCheckpoints' => $status === 'In Transit' ? 1 : 0,
+                'currentCheckpoint'    => $currentCheckpointName,
+                'totalCheckpoints'     => $totalCount,
+                'completedCheckpoints' => $completedCount,
                 'itemCode'             => $itemCode,
-                'currentLocation'      => $origin,
+                'currentLocation'      => $currentCheckpointName,
                 'totalWeight'          => $totalWeight,
                 'model'                => $itemType,
                 'manufacturer'         => $manufacturer,
                 'finalDestination'     => $destination,
                 'cargos'               => $cargos,
-                'checkpoints'          => [
-                    [
-                        'id' => 'cp1',
-                        'name' => 'Pemuatan di ' . $origin,
-                        'status' => $status === 'In Transit' ? 'completed' : 'pending',
-                        'date' => $formattedDate,
-                        'time' => $formattedTime,
-                        'notes' => $status === 'In Transit' ? 'Documents verified & cargo ready for departure' : 'Awaiting document verification',
-                    ],
-                    ['id' => 'cp2', 'name' => 'Transit Transport', 'status' => $status === 'In Transit' ? 'current' : 'pending'],
-                    ['id' => 'cp3', 'name' => 'Cargo Handling at ' . $destination, 'status' => 'pending'],
-                    ['id' => 'cp4', 'name' => 'Delivery to Final Destination', 'status' => 'pending'],
-                ],
+                'checkpoints'          => $checkpointsList,
                 'documents'            => $documentItems,
                 'reports'              => [],
                 'photos'               => [],
-                'activities'           => [
-                    [
-                        'id'    => 'act-' . $assignmentRef,
-                        'time'  => $formattedTime,
-                        'date'  => $formattedDate,
-                        'title' => $status === 'In Transit' 
-                            ? 'Documents approved & shipment active' 
-                            : ('Documents submitted (' . $docs->count() . ' documents)'),
-                        'user'  => $uploader?->name ?? 'Staff',
-                        'role'  => 'Operations Staff',
-                    ],
-                ],
+                'activities'           => $activitiesList,
             ];
         })->values();
     }

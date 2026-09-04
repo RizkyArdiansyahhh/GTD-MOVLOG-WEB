@@ -20,6 +20,8 @@ class DocumentSeeder extends Seeder
         $session1 = ShippingSession::where('assignment_no', 'TRK-2024-001')->first();
         $session2 = ShippingSession::where('assignment_no', 'SES-2048')->first();
         $session3 = ShippingSession::where('assignment_no', 'TRK-2024-002')->first();
+        $session4 = ShippingSession::where('assignment_no', 'TRK-2024-003')->first();
+        $session5 = ShippingSession::where('assignment_no', 'TRK-2024-004')->first();
 
         $typeInvoice = DocumentType::where('name', 'Commercial Invoice')->first();
         $typeBL = DocumentType::where('name', 'Bill of Lading')->first();
@@ -28,6 +30,7 @@ class DocumentSeeder extends Seeder
         $typeCOO = DocumentType::where('name', 'Certificate of Origin (COO)')->first();
 
         $docs = [
+            // Session 1: TRK-2024-001
             [
                 'shipping_session_id' => $session1?->id,
                 'document_type_id'    => $typeInvoice?->id,
@@ -41,9 +44,11 @@ class DocumentSeeder extends Seeder
                 ],
                 'file_name'           => 'INV-2026-014_Commercial_Invoice.pdf',
                 'file_path'           => 'documents/INV-2026-014.pdf',
-                'status'              => 'PENDING',
+                'status'              => 'VERIFIED',
                 'uploaded_by'         => $staff?->id,
-                'remarks'             => 'Menunggu verifikasi nilai invoice dan stempel bea cukai',
+                'verified_by'         => $supervisor?->id,
+                'verified_at'         => now()->subDays(2),
+                'remarks'             => 'Invoice diverifikasi dan disetujui',
             ],
             [
                 'shipping_session_id' => $session1?->id,
@@ -81,6 +86,7 @@ class DocumentSeeder extends Seeder
                 'verified_at'         => now()->subDays(2),
                 'remarks'             => 'Jumlah koli dan tonase sesuai manifest',
             ],
+            // Session 2: SES-2048
             [
                 'shipping_session_id' => $session2?->id,
                 'document_type_id'    => $typeInsurance?->id,
@@ -93,10 +99,13 @@ class DocumentSeeder extends Seeder
                 ],
                 'file_name'           => 'INS-2026-003_Insurance_Policy.pdf',
                 'file_path'           => 'documents/INS-2026-003.pdf',
-                'status'              => 'PENDING',
+                'status'              => 'VERIFIED',
                 'uploaded_by'         => $staff?->id,
-                'remarks'             => 'Menunggu konfirmasi klausul cover risiko perairan dangkal',
+                'verified_by'         => $supervisor?->id,
+                'verified_at'         => now()->subDays(1),
+                'remarks'             => 'Polis asuransi disetujui',
             ],
+            // Session 3: TRK-2024-002
             [
                 'shipping_session_id' => $session3?->id,
                 'document_type_id'    => $typeCOO?->id,
@@ -108,9 +117,50 @@ class DocumentSeeder extends Seeder
                 ],
                 'file_name'           => 'COO-2026-009_Origin_Certificate.pdf',
                 'file_path'           => 'documents/COO-2026-009.pdf',
-                'status'              => 'PENDING',
+                'status'              => 'VERIFIED',
                 'uploaded_by'         => $staff?->id,
-                'remarks'             => 'Pemeriksaan form sertifikat asal',
+                'verified_by'         => $supervisor?->id,
+                'verified_at'         => now()->subDays(1),
+                'remarks'             => 'Sertifikat asal diverifikasi',
+            ],
+            // Session 4: TRK-2024-003
+            [
+                'shipping_session_id' => $session4?->id,
+                'document_type_id'    => $typeBL?->id,
+                'document_data'       => [
+                    'document_number'    => 'BL-2026-015',
+                    'title'              => 'Bill of Lading Balikpapan - Muara Wahau',
+                    'carrier'            => 'Kariangau Sea Transport',
+                    'vessel_name'        => 'LCT Borneo Express 02',
+                    'shipment_reference' => 'TRK-2024-003',
+                ],
+                'file_name'           => 'BL-2026-015_Bill_of_Lading.pdf',
+                'file_path'           => 'documents/BL-2026-015.pdf',
+                'status'              => 'VERIFIED',
+                'uploaded_by'         => $staff?->id,
+                'verified_by'         => $supervisor?->id,
+                'verified_at'         => now()->subDays(4),
+                'remarks'             => 'Pengiriman telah selesai dan diterima di site',
+            ],
+            // Session 5: TRK-2024-004
+            [
+                'shipping_session_id' => $session5?->id,
+                'document_type_id'    => $typeInvoice?->id,
+                'document_data'       => [
+                    'document_number'    => 'INV-2026-088',
+                    'title'              => 'Commercial Invoice Generator Set Cummins 1500 kVA',
+                    'total_amount'       => 'USD 190,000',
+                    'shipper'            => 'PT Trans Cargo Indonesia',
+                    'consignee'          => 'PT Vale Indonesia',
+                    'shipment_reference' => 'TRK-2024-004',
+                ],
+                'file_name'           => 'INV-2026-088_Commercial_Invoice.pdf',
+                'file_path'           => 'documents/INV-2026-088.pdf',
+                'status'              => 'VERIFIED',
+                'uploaded_by'         => $staff?->id,
+                'verified_by'         => $supervisor?->id,
+                'verified_at'         => now()->subDays(1),
+                'remarks'             => 'Invoice generator terverifikasi',
             ],
         ];
 

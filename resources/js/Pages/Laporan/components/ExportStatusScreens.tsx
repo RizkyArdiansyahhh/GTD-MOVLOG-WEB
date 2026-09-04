@@ -254,6 +254,7 @@ export const ExportSuccess: React.FC<ExportSuccessProps> = ({ result, periodLabe
                     <p style={{ fontSize: 12, color: '#6B7280', margin: 0 }}>{result.fileSize}</p>
                     <a
                         href={result.downloadUrl}
+                        download={result.fileName}
                         style={{
                             marginTop: 4,
                             display: 'inline-flex',

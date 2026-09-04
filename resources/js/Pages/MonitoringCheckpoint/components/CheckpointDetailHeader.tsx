@@ -1,73 +1,85 @@
 import React from "react";
 import { router } from "@inertiajs/react";
-import { ArrowLeft, Building2, Package, Hash } from "lucide-react";
-import CheckpointStatusBadge from "./CheckpointStatusBadge";
+import { ArrowLeft } from "lucide-react";
 
 interface CheckpointDetailHeaderProps {
     assignmentNo: string;
     customerName: string;
     currentCheckpointLabel: string | null;
     cargoName?: string;
+    completedSteps?: number;
+    totalSteps?: number;
+    progressPercentage?: number;
 }
 
 /**
- * Header halaman CheckpointDetail.tsx dengan gaya visual modern bertema GTD.
+ * Header halaman CheckpointDetail — clean, minimal, luxury.
+ * Tidak ada icon berlebihan. Hanya teks & progress bar.
  */
 export default function CheckpointDetailHeader({
     assignmentNo,
     customerName,
-    currentCheckpointLabel,
     cargoName,
+    completedSteps = 0,
+    totalSteps = 4,
+    progressPercentage = 0,
 }: CheckpointDetailHeaderProps) {
     return (
-        <div className="mb-6 space-y-4">
-            {/* Tombol Kembali */}
-            <div>
-                <button
-                    type="button"
-                    onClick={() => router.visit("/monitoring-checkpoint")}
-                    className="group inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-600 shadow-xs transition-all hover:border-slate-300 hover:bg-slate-50 hover:text-[#06283A]"
-                >
-                    <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
-                    Kembali ke Monitoring
-                </button>
-            </div>
+        <div className="space-y-3">
+            {/* Back button */}
+            <button
+                type="button"
+                onClick={() => router.visit("/monitoring-checkpoint")}
+                className="group inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 transition hover:text-[#06283A] cursor-pointer"
+            >
+                <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
+                Kembali ke Monitoring
+            </button>
 
-            {/* Hero Card */}
-            <div className="relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs sm:p-7">
-                <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                            <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600">
-                                <Hash className="h-3 w-3 text-slate-400" />
-                                No. Assignment
-                            </span>
-                        </div>
-
-                        <h1 className="text-2xl font-bold tracking-tight text-[#06283A] sm:text-3xl">
+            {/* Hero card */}
+            <div className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-2xs">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    {/* Left */}
+                    <div>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                            Nomor Penugasan
+                        </p>
+                        <h1 className="mt-1 text-xl font-bold tracking-tight text-[#06283A]">
                             {assignmentNo}
                         </h1>
-
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1 text-xs text-slate-600">
-                            <div className="flex items-center gap-1.5">
-                                <Building2 className="h-3.5 w-3.5 text-slate-400" />
-                                <span className="font-medium text-slate-700">{customerName}</span>
-                            </div>
-
+                        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-slate-500">
+                            <span className="font-medium text-slate-700">{customerName}</span>
                             {cargoName && (
-                                <div className="flex items-center gap-1.5 border-l border-slate-200 pl-4">
-                                    <Package className="h-3.5 w-3.5 text-slate-400" />
-                                    <span className="font-medium text-slate-700">{cargoName}</span>
-                                </div>
+                                <>
+                                    <span className="text-slate-300">·</span>
+                                    <span>{cargoName}</span>
+                                </>
                             )}
                         </div>
                     </div>
 
-                    <div className="flex flex-col items-start sm:items-end gap-2">
-                        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                            Status Saat Ini
-                        </span>
-                        <CheckpointStatusBadge label={currentCheckpointLabel} />
+                    {/* Right: progress */}
+                    <div className="flex items-center gap-6 border-t border-slate-100 pt-4 sm:border-t-0 sm:pt-0">
+                        <div className="flex flex-col gap-1.5">
+                            <div className="flex items-center justify-between gap-4">
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                                    Progres
+                                </span>
+                                <span className="text-xs font-bold text-[#06283A]">
+                                    {completedSteps}/{totalSteps} Tahap
+                                </span>
+                            </div>
+                            <div className="h-1.5 w-40 overflow-hidden rounded-full bg-slate-100">
+                                <div
+                                    className="h-full rounded-full transition-all duration-500"
+                                    style={{
+                                        width: `${progressPercentage}%`,
+                                        backgroundColor:
+                                            progressPercentage >= 100 ? "#06283A" : "#B7791F",
+                                    }}
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

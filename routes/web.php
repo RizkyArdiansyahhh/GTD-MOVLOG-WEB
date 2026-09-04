@@ -18,6 +18,7 @@ use App\Http\Controllers\Web\SubmitBerkasController;
 use App\Http\Controllers\Web\SupportController;
 use App\Http\Controllers\Web\UserController;
 use App\Http\Controllers\Web\VerifikasiBerkasController;
+use App\Enums\ShippingSessionStatus;
 use App\Models\Checkpoint;
 use App\Models\ShippingSession;
 use App\Models\User;
@@ -72,7 +73,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'total_users' => User::count(),
             'total_shipments' => ShippingSession::count(),
             'active_drivers' => User::whereHas('roles', fn ($q) => $q->where('name', 'field-worker'))->count(),
-            'pending_deliveries' => ShippingSession::whereIn('status', ['in_transitS', 'pending'])->count(),
+            'pending_deliveries' => ShippingSession::whereIn('status', [ShippingSessionStatus::IN_TRANSIT->value, ShippingSessionStatus::PENDING->value])->count(),
         ];
 
         return Inertia::render('Dashboard/Index', [
@@ -118,10 +119,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role:super-admin|staff')->group(function () {
         Route::get('sesi-pekerja', [SesiPekerjaController::class, 'index'])
             ->name('sesi-pekerja');
-        Route::get('sesi-pekerja/tambah', [SesiPekerjaController::class, 'create'])
-            ->name('sesi-pekerja.create');
-        Route::post('sesi-pekerja', [SesiPekerjaController::class, 'store'])
-            ->name('sesi-pekerja.store');
 
         // Master Template Laporan
         Route::resource('template-laporan', ReportTemplateController::class)->except(['show']);
@@ -129,10 +126,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Aliases for kelola-sesi
         Route::get('kelola-sesi', [SesiPekerjaController::class, 'index'])
             ->name('kelola-sesi');
-        Route::get('kelola-sesi/create', [SesiPekerjaController::class, 'create'])
-            ->name('kelola-sesi.create');
-        Route::post('kelola-sesi', [SesiPekerjaController::class, 'store'])
-            ->name('kelola-sesi.store');
     });
 
     // --- Supervisor Routes --------------------------------------------
@@ -212,6 +205,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Laporan & Reports
         Route::get('laporan', [LaporanController::class, 'index'])
             ->name('laporan.index');
+        Route::get('laporan/export', [LaporanController::class, 'export'])
+            ->name('laporan.export');
         Route::get('reports', [LaporanController::class, 'index'])
             ->name('reports.index');
         Route::get('report', [LaporanController::class, 'index'])

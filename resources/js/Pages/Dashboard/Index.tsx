@@ -10,39 +10,75 @@ interface DashboardStats {
     pending_deliveries?: number;
 }
 
-interface DashboardProps extends PageProps {
-    stats?: DashboardStats;
+interface RecentSession {
+    id: string | number;
+    assignment_no?: string;
+    cargo_name?: string;
+    origin?: string | null;
+    destination?: string | null;
+    status?: string;
+    created_at?: string;
+    customer?: { id: string | number; company_name: string } | null;
+    current_checkpoint?: { id: number; name: string } | null;
 }
 
-export default function Index({ stats }: DashboardProps) {
+interface DashboardProps extends PageProps {
+    stats?: DashboardStats;
+    recentSessions?: RecentSession[];
+}
+
+export default function Index({ stats, recentSessions = [] }: DashboardProps) {
     const { auth } = usePage<PageProps>().props;
 
     const statCards = [
         {
             label: 'Total User Accounts',
-            value: stats?.total_users ?? 12,
+            value: stats?.total_users ?? 0,
             icon: Users,
             color: 'bg-blue-50 text-blue-600',
         },
         {
             label: 'Total Shipments',
-            value: stats?.total_shipments ?? 148,
+            value: stats?.total_shipments ?? 0,
             icon: Package,
             color: 'bg-amber-50 text-amber-600',
         },
         {
             label: 'Active Drivers',
-            value: stats?.active_drivers ?? 24,
+            value: stats?.active_drivers ?? 0,
             icon: Truck,
             color: 'bg-emerald-50 text-emerald-600',
         },
         {
             label: 'Pending Shipments',
-            value: stats?.pending_deliveries ?? 5,
+            value: stats?.pending_deliveries ?? 0,
             icon: Clock,
             color: 'bg-purple-50 text-purple-600',
         },
     ];
+
+    const getStatusBadge = (status?: string) => {
+        const s = (status || '').toLowerCase();
+        if (s === 'delivered' || s === 'completed' || s === 'selesai') {
+            return (
+                <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 font-medium border border-emerald-100">
+                    Selesai
+                </span>
+            );
+        }
+        if (s === 'in_transit' || s === 'in_progress') {
+            return (
+                <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 font-medium border border-blue-100">
+                    Dalam Perjalanan
+                </span>
+            );
+        }
+        return (
+            <span className="px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 font-medium border border-amber-100">
+                {status || 'Pending'}
+            </span>
+        );
+    };
 
     return (
         <DashboardLayout title="Dashboard">
@@ -104,35 +140,32 @@ export default function Index({ stats }: DashboardProps) {
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="font-semibold text-[#06283A]">Recent Shipment Activity</h2>
                         </div>
-                        <div className="space-y-3">
-                            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs">
-                                <div>
-                                    <p className="font-semibold text-slate-800">Sesi #SESS-2026-0801</p>
-                                    <p className="text-slate-500 mt-0.5">Surabaya → Jakarta</p>
-                                </div>
-                                <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 font-medium border border-emerald-100">
-                                    Selesai
-                                </span>
+                        {recentSessions.length > 0 ? (
+                            <div className="space-y-3">
+                                {recentSessions.map((session) => (
+                                    <div
+                                        key={session.id}
+                                        className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs"
+                                    >
+                                        <div>
+                                            <p className="font-semibold text-slate-800">
+                                                {session.assignment_no ? `Sesi #${session.assignment_no}` : `Sesi #${session.id}`}
+                                                {session.cargo_name ? ` • ${session.cargo_name}` : ''}
+                                            </p>
+                                            <p className="text-slate-500 mt-0.5">
+                                                {session.origin || '-'} → {session.destination || '-'}
+                                                {session.current_checkpoint?.name ? ` • ${session.current_checkpoint.name}` : ''}
+                                            </p>
+                                        </div>
+                                        <div>{getStatusBadge(session.status)}</div>
+                                    </div>
+                                ))}
                             </div>
-                            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs">
-                                <div>
-                                    <p className="font-semibold text-slate-800">Sesi #SESS-2026-0802</p>
-                                    <p className="text-slate-500 mt-0.5">Bandung → Semarang</p>
-                                </div>
-                                <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 font-medium border border-blue-100">
-                                    Dalam Perjalanan
-                                </span>
+                        ) : (
+                            <div className="p-6 text-center text-xs text-slate-400 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                                Belum ada aktivitas sesi pengiriman terbaru.
                             </div>
-                            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs">
-                                <div>
-                                    <p className="font-semibold text-slate-800">Sesi #SESS-2026-0803</p>
-                                    <p className="text-slate-500 mt-0.5">Medan → Pekanbaru</p>
-                                </div>
-                                <span className="px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 font-medium border border-amber-100">
-                                    Pending
-                                </span>
-                            </div>
-                        </div>
+                        )}
                     </div>
 
                     {/* Quick Access */}

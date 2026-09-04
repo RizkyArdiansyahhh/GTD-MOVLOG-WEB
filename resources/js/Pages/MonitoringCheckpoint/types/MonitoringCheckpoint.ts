@@ -35,6 +35,14 @@ export interface CheckpointReportPhoto {
     takenAt: string | null; // ISO timestamp
 }
 
+export interface ReportFormFieldValue {
+    id: string;
+    fieldKey: string;
+    label: string;
+    value: string;
+    fieldType: string;
+}
+
 /** Ringkasan report TERBARU milik 1 session_checkpoint (dipakai sebagai "detail step"). */
 export interface CheckpointLatestReport {
     id: string;
@@ -43,7 +51,16 @@ export interface CheckpointLatestReport {
     movedQuantity: number | null;
     latitude: number | null;
     longitude: number | null;
+    formValues?: ReportFormFieldValue[];
     photos: CheckpointReportPhoto[];
+}
+
+export interface MovementItemView {
+    id: string;
+    name: string;
+    type: string;
+    status: string;
+    report: CheckpointLatestReport | null;
 }
 
 /** Data 1 session_checkpoint untuk 1 shipment, digabung dengan definisi checkpoint & report terbaru. */
@@ -55,6 +72,8 @@ export interface CheckpointStepView {
     picName: string | null; // dari session_checkpoints.pic_user_id -> users.name
     actualStart: string | null;
     actualFinish: string | null;
+    templateSnapshot?: Record<string, any> | null;
+    movements?: MovementItemView[];
     latestReport: CheckpointLatestReport | null;
 }
 

@@ -160,7 +160,7 @@ class MovementService extends BaseService
 
         if ($sequence === 1) {
             return Movement::where('session_checkpoint_id', $checkpoint->id)
-                ->with(['createdBy'])
+                ->with(['parentMovement', 'createdBy'])
                 ->orderBy('sequence', 'asc')
                 ->get();
         }
@@ -172,7 +172,7 @@ class MovementService extends BaseService
             }
 
             return Movement::where('session_checkpoint_id', $step1Checkpoint->id)
-                ->with(['createdBy'])
+                ->with(['parentMovement', 'createdBy'])
                 ->orderBy('sequence', 'asc')
                 ->get();
         }

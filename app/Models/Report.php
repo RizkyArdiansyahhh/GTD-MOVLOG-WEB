@@ -84,6 +84,13 @@ class Report extends Model
         );
     }
 
+    public function values(): HasMany
+    {
+        return $this->hasMany(
+            ReportValue::class
+        );
+    }
+
     public function photos(): HasMany
     {
         return $this->hasMany(

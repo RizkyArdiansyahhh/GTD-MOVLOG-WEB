@@ -11,7 +11,10 @@ interface CheckpointStepTimelineProps {
  * Stepper timeline vertikal untuk alur checkpoint pengiriman.
  */
 export default function CheckpointStepTimeline({ steps }: CheckpointStepTimelineProps) {
-    const completedCount = steps.filter((step) => step.status === "COMPLETED").length;
+    const completedCount = steps.filter((step) => {
+        const s = (step.status ?? "").toLowerCase();
+        return s === "completed" || s === "selesai";
+    }).length;
     const isAllCompleted = completedCount === steps.length && steps.length > 0;
 
     return (

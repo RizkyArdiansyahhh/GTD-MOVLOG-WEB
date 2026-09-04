@@ -17,6 +17,7 @@ services:
     volumes:
       - .:/var/www/html
       - ./docker/app/php.ini:/usr/local/etc/php/conf.d/custom.ini
+      - ./docker/app/opcache.ini:/usr/local/etc/php/conf.d/opcache.ini
 
     environment:
       - PHP_OPCACHE_VALIDATE_TIMESTAMPS=1

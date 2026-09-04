@@ -40,12 +40,13 @@ function getStepIcon(title: string) {
 export default function CheckpointStepCard({ step, isLast }: CheckpointStepCardProps) {
     const [expanded, setExpanded] = useState(false);
 
-    const isPending = step.status === "pending";
-    const isCompleted = step.status === "COMPLETED";
-    const isInProgress = step.status === "IN_PROGRESS";
+    const rawStatus = (step.status ?? "pending").toLowerCase();
+    const isCompleted = rawStatus === "completed" || rawStatus === "selesai";
+    const isInProgress = rawStatus === "in_progress" || rawStatus === "aktif";
+    const isPending = !isCompleted && !isInProgress;
 
     const report = step.latestReport;
-    const hasDetail = Boolean(report?.description) || Boolean(report?.photos.length);
+    const hasDetail = Boolean(report?.description) || Boolean(report?.photos?.length);
 
     return (
         <div className="relative flex gap-4 pb-8 last:pb-2">

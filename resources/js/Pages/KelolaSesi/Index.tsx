@@ -62,21 +62,6 @@ export default function KelolaSesiIndex({ sessions, fieldWorkers }: KelolaSesiIn
                             Pusat monitoring progress pekerjaan logistik yang dibuat otomatis setelah verifikasi berkas lengkap.
                         </p>
                     </div>
-
-                    {/* Primary Action Button */}
-                    <Link
-                        href="/sesi-pekerja/tambah"
-                        className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-all duration-150 shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
-                        style={{
-                            backgroundColor: '#F5B800',
-                            color: '#06283A',
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#E0A800')}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#F5B800')}
-                    >
-                        <Plus size={18} strokeWidth={2.5} />
-                        <span>Buat Sesi Baru</span>
-                    </Link>
                 </div>
 
                 {/* ── Flash Message ── */}

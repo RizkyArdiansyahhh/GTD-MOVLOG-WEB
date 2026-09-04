@@ -117,86 +117,6 @@ class SesiPekerjaController extends Controller
             'sessions'     => $sessions,
         ]);
     }
-
-    /**
-     * GET /sesi-pekerja/tambah
-     * Display the form page for creating a new heavy equipment session.
-     */
-    public function create(Request $request): Response
-    {
-        $this->authorizeSuperAdmin($request);
-
-        $fieldWorkers = $this->getActiveFieldWorkers();
-
-        return Inertia::render('KelolaSesi/Create', [
-            'fieldWorkers' => $fieldWorkers,
-        ]);
-    }
-
-    /**
-     * POST /sesi-pekerja
-     * Store a new session and initialize checkpoint progression.
-     */
-    public function store(Request $request): RedirectResponse
-    {
-        $this->authorizeSuperAdmin($request);
-
-        $validated = $request->validate([
-            'id_sesi'            => ['required', 'string', 'max:50'],
-            'notes'              => ['nullable', 'string', 'max:1000'],
-
-            // Units list
-            'units'              => ['required', 'array', 'min:1'],
-            'units.*.unit_name'  => ['required', 'string', 'max:255'],
-            'units.*.quantity'   => ['required', 'integer', 'min:1'],
-
-            // Kapal checkpoint PIC assignment
-            'kapal_pic_user_id'  => [
-                'required',
-                'string',
-                Rule::exists('users', 'id')->where(function ($query) {
-                    $query->where('status', UserStatus::Active->value);
-                }),
-            ],
-            'kapal_worker_ids'   => ['nullable', 'array'],
-        ]);
-
-        $firstUnitName = $validated['units'][0]['unit_name'] ?? 'Unit';
-        $joinedUnitNames = collect($validated['units'])->pluck('unit_name')->join(', ');
-        $totalQuantity = collect($validated['units'])->sum('quantity');
-
-        // Create shipping session
-        $session = ShippingSession::create([
-            'assignment_no'  => $validated['id_sesi'],
-            'cargo_name'     => $joinedUnitNames ?: $firstUnitName,
-            'total_quantity' => $totalQuantity,
-            'unit'           => 'unit',
-            'status'         => ShippingSessionStatus::PENDING,
-            'notes'          => $validated['notes'] ?? null,
-            'created_by'     => $request->user()->id,
-            'customer_id'    => $this->getDefaultCustomerId(),
-        ]);
-
-        // Create SessionUnit rows for all units
-        foreach ($validated['units'] as $unitData) {
-            SessionUnit::create([
-                'shipping_session_id' => $session->id,
-                'unit_name'           => trim((string) $unitData['unit_name']),
-                'quantity'            => (int) $unitData['quantity'],
-                'notes'               => null,
-            ]);
-        }
-
-        // Initialize session checkpoints (Kapal -> Tongkang -> Pelabuhan -> Site)
-        $this->sessionCheckpointService->createCheckpointsForSession($session, [
-            'pic_user_id' => $validated['kapal_pic_user_id'],
-        ]);
-
-        return redirect()
-            ->route('sesi-pekerja')
-            ->with('success', 'Worker session created successfully.');
-    }
-
     /**
      * GET /sesi-pekerja/{session}
      * Display session detail with checkpoint progression stepper and physical movements.
@@ -673,14 +593,16 @@ class SesiPekerjaController extends Controller
     {
         $user = $request->user();
 
-        $hasSuperAdminRole = $user && (
+        $hasAccess = $user && (
             $user->hasRole(UserRole::SuperAdmin->value) ||
             $user->hasRole('super-admin') ||
             $user->hasRole('Super Admin') ||
-            $user->hasRole('Super-Admin')
+            $user->hasRole('Super-Admin') ||
+            $user->hasRole('staff') ||
+            $user->hasRole('Staff')
         );
 
-        if (!$hasSuperAdminRole) {
+        if (!$hasAccess) {
             abort(403, 'Anda tidak memiliki akses ke halaman Kelola Sesi Pekerja.');
         }
     }
