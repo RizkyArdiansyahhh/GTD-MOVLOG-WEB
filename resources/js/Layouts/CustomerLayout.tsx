@@ -5,6 +5,7 @@ import {
     LayoutDashboard,
     PackageSearch,
     MapPin,
+    LifeBuoy,
     LogOut,
     Search,
     ChevronDown,
@@ -30,6 +31,7 @@ const navLinks = [
     { href: '/customer/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/customer/monitoring-barang', label: 'Cargo Monitoring', icon: PackageSearch },
     { href: '/customer/checkpoints', label: 'Checkpoint', icon: MapPin },
+    { href: '/customer/pusat-bantuan', label: 'Help Center', icon: LifeBuoy },
 ];
 
 export default function CustomerLayout({ children }: CustomerLayoutProps) {
@@ -53,6 +55,11 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
 
     const [imageError, setImageError] = useState(false);
     const user = auth?.user;
+    // Retry loading the avatar whenever the URL changes (e.g. right after
+    // the user uploads a new photo).
+    useEffect(() => {
+        setImageError(false);
+    }, [user?.avatar_url]);
     const companyName = user?.customer?.company_name ?? user?.name ?? 'Customer';
 
     const getInitials = (name?: string) => {

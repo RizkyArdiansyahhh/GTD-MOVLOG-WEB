@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
+import CustomerLayout from '@/Layouts/CustomerLayout';
+import type { PageProps } from '@/types';
 import { Search, ChevronDown, ChevronUp, Send, CheckCircle2 } from 'lucide-react';
 
 interface FAQItem {
@@ -51,14 +53,76 @@ const faqData: FAQItem[] = [
 
 const categories = ['All', 'Cargo & Shipping', 'Documents & Verification', 'Account & Access'];
 
+// ── Customer-specific FAQ: written from the Customer Portal point of view
+// (Dashboard, Cargo Monitoring, Checkpoint, Shipment Detail, Notifications,
+// Edit Profile). No internal modules (Worker Sessions, Verify Documents,
+// Account Management) are referenced here.
+const customerFaqData: FAQItem[] = [
+    {
+        id: 'cfaq-1',
+        category: 'Cargo Tracking',
+        question: 'How do I track the status of my cargo?',
+        answer: 'Open the Cargo Monitoring menu in your Customer Portal. Each shipment card shows the assignment number, route, current checkpoint, and live status (Pending, In Transit, or Delivered). Click any shipment to see full details, document status, and the checkpoint timeline.',
+    },
+    {
+        id: 'cfaq-2',
+        category: 'Cargo Tracking',
+        question: 'What do the checkpoint stages mean?',
+        answer: 'Every shipment moves through four stages: Vessel (loading onto the ship), Barge/Tongkang (inter-island transit), Port (unloading and handling at the destination port), and Site (final land delivery). The progress percentage on your dashboard reflects how many stages are completed.',
+    },
+    {
+        id: 'cfaq-3',
+        category: 'Shipment Schedule',
+        question: 'My cargo seems delayed. What should I do?',
+        answer: 'First check the shipment detail page for the latest update time and activity history. If there has been no update for a long time or the schedule has passed, contact our Operations Hotline at +62 817-6086-206 and mention your assignment number (e.g. ASG-...) so the team can escalate immediately.',
+    },
+    {
+        id: 'cfaq-4',
+        category: 'Shipment Schedule',
+        question: 'What information is available on the shipment detail page?',
+        answer: 'The detail page shows cargo information, origin and destination ports, overall status, the checkpoint timeline with dates and personnel in charge, attached shipping documents and their verification status, as well as field photos and progress reports uploaded from the site.',
+    },
+    {
+        id: 'cfaq-5',
+        category: 'Notifications',
+        question: 'How do shipment notifications work?',
+        answer: 'Click the bell icon in the top navigation to see updates such as document verification results and shipment stage progress. Unread notifications are highlighted — clicking one marks it as read and takes you directly to the related shipment.',
+    },
+    {
+        id: 'cfaq-6',
+        category: 'Account',
+        question: 'How do I update my profile, photo, or password?',
+        answer: 'Click your company avatar in the upper-right corner, then select "Edit Profile". There you can update your name, phone number, profile photo, and password. Company name and legal identity are locked for security — please contact GTD Admin to change them.',
+    },
+];
+
+const customerCategories = ['All', 'Cargo Tracking', 'Shipment Schedule', 'Notifications', 'Account'];
+
+const customerTicketCategories = ['Cargo Tracking', 'Shipment Schedule', 'Notifications', 'Account', 'Other'];
+
 export default function HelpCenter() {
+    const { auth } = usePage<PageProps>().props;
+    // Customer portal (/customer/pusat-bantuan) must render inside the
+    // customer layout; internal staff keep the dashboard layout.
+    const isCustomer = auth?.user?.roles?.includes('customer') ?? false;
+    const Layout = isCustomer ? CustomerLayout : DashboardLayout;
+
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
-    const [expandedFaq, setExpandedFaq] = useState<string | null>('faq-1');
+    const [expandedFaq, setExpandedFaq] = useState<string | null>(isCustomer ? 'cfaq-1' : 'faq-1');
     const [ticketSubmitted, setTicketSubmitted] = useState(false);
-    const [formData, setFormData] = useState({ subject: '', category: 'Cargo & Shipping', message: '' });
+    const [formData, setFormData] = useState({ subject: '', category: '', message: '' });
 
-    const filteredFaqs = faqData.filter((faq) => {
+    // Pick the content set matching the audience. Defaults are applied once
+    // the audience is known so the first FAQ is expanded and the ticket form
+    // preselects a valid category for that audience.
+    const activeFaqData = isCustomer ? customerFaqData : faqData;
+    const activeCategories = isCustomer ? customerCategories : categories;
+    const activeTicketCategories = isCustomer ? customerTicketCategories : ['Cargo & Shipping', 'Documents & Verification', 'Account & Access', 'Other'];
+    const defaultCategory = activeTicketCategories[0];
+    const ticketCategory = formData.category || defaultCategory;
+
+    const filteredFaqs = activeFaqData.filter((faq) => {
         const matchesCategory = selectedCategory === 'All' || faq.category === selectedCategory;
         const matchesSearch =
             faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -71,12 +135,12 @@ export default function HelpCenter() {
         setTicketSubmitted(true);
         setTimeout(() => {
             setTicketSubmitted(false);
-            setFormData({ subject: '', category: 'Cargo & Shipping', message: '' });
+            setFormData({ subject: '', category: defaultCategory, message: '' });
         }, 5000);
     };
 
     return (
-        <DashboardLayout title="Help Center - GTD Logistics">
+        <Layout title="Help Center - GTD Logistics">
             <Head title="Help Center - GTD Logistics" />
 
             <div className="max-w-5xl mx-auto space-y-10 pb-12">
@@ -86,10 +150,12 @@ export default function HelpCenter() {
                         Help Center & Support
                     </span>
                     <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                        How can we assist your operations today?
+                        {isCustomer ? 'How can we help with your shipment today?' : 'How can we assist your operations today?'}
                     </h1>
                     <p className="text-sm text-slate-500 max-w-xl mx-auto leading-relaxed">
-                        Find quick answers regarding cargo tracking, document verification procedures, and GTD system usage.
+                        {isCustomer
+                            ? 'Find quick answers about cargo tracking, delivery schedules, notifications, and your customer account.'
+                            : 'Find quick answers regarding cargo tracking, document verification procedures, and GTD system usage.'}
                     </p>
 
                     {/* Clean Search Input */}
@@ -100,7 +166,7 @@ export default function HelpCenter() {
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Search issues, documents, or keywords..."
+                                placeholder={isCustomer ? 'Search shipments, schedules, or keywords...' : 'Search issues, documents, or keywords...'}
                                 className="w-full pl-11 pr-4 py-3 bg-white rounded-2xl border border-slate-200/80 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 shadow-xs"
                             />
                         </div>
@@ -109,7 +175,7 @@ export default function HelpCenter() {
 
                 {/* -- Category Tabs -- */}
                 <div className="flex flex-wrap items-center justify-center gap-2">
-                    {categories.map((category) => (
+                    {activeCategories.map((category) => (
                         <button
                             key={category}
                             type="button"
@@ -129,7 +195,7 @@ export default function HelpCenter() {
                 <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-xs space-y-4">
                     <div className="border-b border-slate-100 pb-4 mb-2">
                         <h2 className="text-base font-bold text-slate-900">Frequently Asked Questions</h2>
-                        <p className="text-xs text-slate-500 mt-0.5">Quick guides and answers for common operational issues.</p>
+                        <p className="text-xs text-slate-500 mt-0.5">{isCustomer ? 'Quick guides for tracking your cargo and managing your customer account.' : 'Quick guides and answers for common operational issues.'}</p>
                     </div>
 
                     {filteredFaqs.length > 0 ? (
@@ -175,9 +241,11 @@ export default function HelpCenter() {
                             <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400">
                                 24/7 Support Desk
                             </span>
-                            <h3 className="text-xl font-bold tracking-tight">Contact Operations Team</h3>
+                            <h3 className="text-xl font-bold tracking-tight">{isCustomer ? 'Contact Customer Support' : 'Contact Operations Team'}</h3>
                             <p className="text-xs text-slate-300 leading-relaxed">
-                                If you require urgent assistance outside standard operating hours, the GTD support team is ready to help.
+                                {isCustomer
+                                    ? 'Need help with your shipment, delivery schedule, or account? Our customer support team is ready to assist you.'
+                                    : 'If you require urgent assistance outside standard operating hours, the GTD support team is ready to help.'}
                             </p>
                         </div>
 
@@ -188,7 +256,7 @@ export default function HelpCenter() {
                             </div>
                             <div>
                                 <p className="text-[10px] text-slate-400 font-semibold uppercase">Operations Hotline</p>
-                                <p className="font-semibold text-slate-200 mt-0.5">+62 21 8000 9988</p>
+                                <p className="font-semibold text-slate-200 mt-0.5">+62 817-6086-206</p>
                             </div>
                             <div>
                                 <p className="text-[10px] text-slate-400 font-semibold uppercase">Helpdesk Hours</p>
@@ -201,7 +269,7 @@ export default function HelpCenter() {
                     <div className="md:col-span-2 bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-xs">
                         <div className="mb-6">
                             <h3 className="text-base font-bold text-slate-900">Submit a Support Ticket</h3>
-                            <p className="text-xs text-slate-500 mt-0.5">Fill out the form below for operational issues requiring technical attention.</p>
+                            <p className="text-xs text-slate-500 mt-0.5">{isCustomer ? 'Tell us about your shipment or account issue and our team will follow up.' : 'Fill out the form below for operational issues requiring technical attention.'}</p>
                         </div>
 
                         {ticketSubmitted ? (
@@ -220,14 +288,13 @@ export default function HelpCenter() {
                                             Issue Category
                                         </label>
                                         <select
-                                            value={formData.category}
+                                            value={ticketCategory}
                                             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                                             className="w-full px-3 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900"
                                         >
-                                            <option value="Cargo & Shipping">Cargo & Shipping</option>
-                                            <option value="Documents & Verification">Documents & Verification</option>
-                                            <option value="Account & Access">Account & Access</option>
-                                            <option value="Other">Other</option>
+                                            {activeTicketCategories.map((option) => (
+                                                <option key={option} value={option}>{option}</option>
+                                            ))}
                                         </select>
                                     </div>
                                     <div>
@@ -239,7 +306,7 @@ export default function HelpCenter() {
                                             required
                                             value={formData.subject}
                                             onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                                            placeholder="Example: PIB Document Upload Failed"
+                                            placeholder={isCustomer ? 'Example: Cargo status not updating for ASG-...' : 'Example: PIB Document Upload Failed'}
                                             className="w-full px-3 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900"
                                         />
                                     </div>
@@ -254,7 +321,7 @@ export default function HelpCenter() {
                                         rows={4}
                                         value={formData.message}
                                         onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                                        placeholder="Describe the issue chronology, relevant document/session number, and error messages if any..."
+                                        placeholder={isCustomer ? 'Describe the issue, your assignment number (e.g. ASG-...), and when it started...' : 'Describe the issue chronology, relevant document/session number, and error messages if any...'}
                                         className="w-full px-3 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900 resize-none"
                                     />
                                 </div>
@@ -271,6 +338,6 @@ export default function HelpCenter() {
                     </div>
                 </div>
             </div>
-        </DashboardLayout>
+        </Layout>
     );
 }

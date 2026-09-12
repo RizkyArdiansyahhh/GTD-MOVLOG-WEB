@@ -9,6 +9,7 @@ use App\Enums\UserRole;
 use App\Enums\UserStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\StoreUserRequest;
+use App\Http\Requests\User\ToggleUserStatusRequest;
 use App\Models\Customer;
 use App\Models\User;
 use App\Services\UserService;
@@ -49,45 +50,12 @@ class KelolaAkunController extends Controller
     public function index(Request $request): Response
     {
         $perPage = (int) $request->query('per_page', 5);
-        $search = $request->query('search');
-        $role = $request->query('role');
-        $status = $request->query('status');
 
-        // ── Build user query ──
-        $query = User::with(['roles', 'customer'])
-            ->orderBy('created_at', 'desc');
-
-        // Search by name or email (DB agnostic case-insensitive search)
-        if ($search && trim($search) !== '') {
-            $keyword = strtolower(trim($search));
-            $query->where(function ($q) use ($keyword) {
-                $q->whereRaw('LOWER(name) LIKE ?', ["%{$keyword}%"])
-                    ->orWhereRaw('LOWER(email) LIKE ?', ["%{$keyword}%"]);
-            });
-        }
-
-        // Filter by role (support both Spatie role name and display label)
-        if ($role && $role !== 'All Roles') {
-            $spatieRoleName = $this->unmapRoleLabel($role);
-            $query->whereHas('roles', function ($q) use ($spatieRoleName, $role) {
-                $q->whereIn('name', array_unique([$spatieRoleName, strtolower($role)]));
-            });
-        }
-
-        // Filter by status
-        if ($status && $status !== 'All Statuses') {
-            $statusValue = match (strtolower($status)) {
-                'aktif', 'active' => 'active',
-                'tidak aktif', 'inactive' => 'inactive',
-                'pending', 'pending verification' => 'pending',
-                default => null,
-            };
-            if ($statusValue) {
-                $query->where('status', $statusValue);
-            }
-        }
-
-        $users = $query->paginate($perPage)->withQueryString();
+        // Delegate filtering/pagination to Service → Repository (layered architecture).
+        $users = $this->userService->listFiltered(
+            $request->only(['search', 'role', 'status']),
+            $perPage
+        );
 
         // ── Transform users for frontend ──
         $transformedUsers = $users->through(function (User $user) {
@@ -143,7 +111,7 @@ class KelolaAkunController extends Controller
      * PATCH /kelola-akun/{user}/status
      * Toggle or update account status for a specific user.
      */
-    public function toggleStatus(Request $request, User $user)
+    public function toggleStatus(ToggleUserStatusRequest $request, User $user)
     {
         // Business Rule Safeguard: Prevent self-deactivation of currently logged-in user
         if ($request->user() && $user->id === $request->user()->id) {
@@ -155,9 +123,7 @@ class KelolaAkunController extends Controller
             }
         }
 
-        $validated = $request->validate([
-            'status' => ['required', 'string', 'in:Active,Inactive,active,inactive'],
-        ]);
+        $validated = $request->validated();
 
         $newStatusValue = match (strtolower($validated['status'])) {
             'active' => UserStatus::Active->value,

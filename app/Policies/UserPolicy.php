@@ -36,8 +36,9 @@ class UserPolicy
     public function viewAny(User $user): bool
     {
         return $user->hasAnyRole([
-            UserRole::Admin->value,
-            UserRole::Manager->value,
+            UserRole::SuperAdmin->value,
+            UserRole::Supervisor->value,
+            UserRole::Staff->value,
         ]);
     }
 
@@ -52,8 +53,9 @@ class UserPolicy
         }
 
         return $user->hasAnyRole([
-            UserRole::Admin->value,
-            UserRole::Manager->value,
+            UserRole::SuperAdmin->value,
+            UserRole::Supervisor->value,
+            UserRole::Staff->value,
         ]);
     }
 
@@ -62,7 +64,7 @@ class UserPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasRole(UserRole::Admin->value);
+        return $user->hasRole(UserRole::SuperAdmin->value);
     }
 
     /**
@@ -75,7 +77,7 @@ class UserPolicy
             return true;
         }
 
-        return $user->hasRole(UserRole::Admin->value);
+        return $user->hasRole(UserRole::SuperAdmin->value);
     }
 
     /**
@@ -88,6 +90,6 @@ class UserPolicy
             return false;
         }
 
-        return $user->hasRole(UserRole::Admin->value);
+        return $user->hasRole(UserRole::SuperAdmin->value);
     }
 }

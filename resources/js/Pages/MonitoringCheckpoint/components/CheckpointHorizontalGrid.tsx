@@ -353,7 +353,7 @@ export default function CheckpointHorizontalGrid({
                                                                     onClick={() =>
                                                                         setActivePhotoModal({
                                                                             url: photo.photoUrl,
-                                                                            caption: photo.caption,
+                                                                            caption: photo.caption ?? undefined,
                                                                             title: `${step.title} - Step ${step.order}`,
                                                                         })
                                                                     }

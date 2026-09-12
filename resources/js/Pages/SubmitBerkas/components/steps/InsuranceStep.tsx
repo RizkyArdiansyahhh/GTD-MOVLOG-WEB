@@ -174,10 +174,14 @@ export function InsuranceStep() {
 
     const executeSave = async () => {
         setShowChangedModal(false);
+        if (!assignmentNoRef || assignmentNoRef === 'null' || assignmentNoRef === 'undefined') {
+            setErrors((prev) => ({ ...prev, general: 'Assignment Reference tidak ditemukan. Muat ulang halaman dan pilih customer terlebih dahulu.' }));
+            return;
+        }
         setIsSaving(true);
         try {
             const formData = new FormData();
-      formData.append('assignment_no_ref', assignmentNoRef);
+      formData.append('assignment_no_ref', assignmentNoRef as string);
       formData.append('customer_id', String(selectedCustomer?.id));
       formData.append('document_type_id', '5');
       formData.append('document_data', JSON.stringify(data));

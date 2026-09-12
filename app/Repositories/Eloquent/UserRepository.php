@@ -56,4 +56,52 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function paginateFiltered(array $filters, int $perPage = 5): LengthAwarePaginator
+    {
+        $query = $this->model->newQuery()->with(['roles', 'customer'])->orderBy('created_at', 'desc');
+
+        $search = trim((string) ($filters['search'] ?? ''));
+        if ($search !== '') {
+            $keyword = strtolower($search);
+            $query->where(function ($q) use ($keyword) {
+                $q->whereRaw('LOWER(name) LIKE ?', ["%{$keyword}%"])
+                    ->orWhereRaw('LOWER(email) LIKE ?', ["%{$keyword}%"]);
+            });
+        }
+
+        $role = $filters['role'] ?? null;
+        if ($role && $role !== 'All Roles') {
+            $spatieRoleName = strtolower($role);
+            $map = [
+                'super admin' => 'super-admin',
+                'supervisor' => 'supervisor',
+                'staff' => 'staff',
+                'field worker' => 'field-worker',
+                'customer' => 'customer',
+            ];
+            $spatieRoleName = $map[strtolower($role)] ?? $spatieRoleName;
+            $query->whereHas('roles', function ($q) use ($spatieRoleName, $role) {
+                $q->whereIn('name', array_unique([$spatieRoleName, strtolower((string) $role)]));
+            });
+        }
+
+        $status = $filters['status'] ?? null;
+        if ($status && $status !== 'All Statuses') {
+            $statusValue = match (strtolower((string) $status)) {
+                'aktif', 'active' => 'active',
+                'tidak aktif', 'inactive' => 'inactive',
+                'pending', 'pending verification' => 'pending',
+                default => null,
+            };
+            if ($statusValue) {
+                $query->where('status', $statusValue);
+            }
+        }
+
+        return $query->paginate($perPage)->withQueryString();
+    }
 }

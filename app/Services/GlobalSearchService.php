@@ -350,14 +350,15 @@ class GlobalSearchService
         $query = Document::with(['documentType', 'shippingSession.customer', 'uploadedBy', 'verifiedBy']);
 
         // -- Role Authorization Scoping --
+        // NOTE: documents carry customer_id directly. Filtering via
+        // whereHas('shippingSession') hides Draft/Pending docs whose
+        // shipping_session_id is still NULL (pre-verification 5/5).
         if ($user->hasRole(UserRole::Customer->value)) {
             $customer = $this->getCustomerForUser($user);
             if (! $customer) {
                 return [];
             }
-            $query->whereHas('shippingSession', function ($sq) use ($customer) {
-                $sq->where('customer_id', $customer->id);
-            });
+            $query->where('customer_id', $customer->id);
         } elseif ($user->hasRole(UserRole::FieldWorker->value)) {
             $query->whereHas('shippingSession.sessionCheckpoints', function ($sq) use ($user) {
                 $sq->where('pic_user_id', $user->id);

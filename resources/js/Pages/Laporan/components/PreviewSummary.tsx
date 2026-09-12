@@ -1,0 +1,241 @@
+import React from 'react';
+import CheckpointPipelineChart from '../../Dashboard/components/CheckpointPipelineChart';
+import type { ReportSummary } from '../types/laporan';
+
+interface Props {
+    summary: ReportSummary;
+}
+
+/** Operational stage order for the funnel; 'Belum Ditentukan' is not a stage. */
+const STAGE_ORDER = ['Kapal', 'Tongkang', 'Pelabuhan', 'Site'];
+
+const STATUS_COLORS: Record<string, string> = {
+    PENDING:     '#64748B',
+    IN_TRANSIT:  '#B7791F',
+    DELIVERED:   '#16A34A',
+    pending:     '#64748B',
+    in_transit:  '#B7791F',
+    delivered:   '#16A34A',
+};
+
+const STATUS_LABELS: Record<string, string> = {
+    PENDING:     'Menunggu',
+    IN_TRANSIT:  'Dalam Perjalanan',
+    DELIVERED:   'Selesai',
+    pending:     'Menunggu',
+    in_transit:  'Dalam Perjalanan',
+    delivered:   'Selesai',
+};
+
+export const PreviewSummary: React.FC<Props> = ({ summary }) => {
+    const breakdown = Object.entries(summary.status_breakdown || {});
+    const narrative = summary.operational_narrative || summary.operational_summary;
+    const highlights = summary.operational_highlights || [];
+    const colCount = Math.min(breakdown.length + 1, 4);
+    const kpi = summary.kpi;
+
+    const funnelData = STAGE_ORDER.filter((stage) => summary.checkpoint_breakdown?.[stage] !== undefined).map(
+        (stage) => ({ name: stage, count: summary.checkpoint_breakdown?.[stage] ?? 0 }),
+    );
+
+    const alerts: { text: string; color: string }[] = [
+        ...(summary.exceptions?.stagnant ?? []).map((s) => ({
+            text: `${s.assignment_no} tertahan di tahap ${s.stage} selama ${s.stuck_days} hari.`,
+            color: '#C53030',
+        })),
+        ...(summary.exceptions?.rejected_documents ?? []).map((d) => ({
+            text: `${d.assignment_no} — ${d.document_type} ditolak${d.remarks ? `: ${d.remarks}` : '.'}`,
+            color: '#C53030',
+        })),
+        ...(summary.exceptions?.unverified_sessions ?? []).map((u) => ({
+            text: `${u.assignment_no} — ${u.verified}/${u.required} dokumen terverifikasi (${u.pending_items.join(', ')}).`,
+            color: '#B7791F',
+        })),
+    ];
+
+    return (
+        <div
+            style={{
+                background: '#fff',
+                borderRadius: 12,
+                border: '1px solid #E5E7EB',
+                padding: 20,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 16,
+            }}
+        >
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span
+                        style={{
+                            width: 34,
+                            height: 34,
+                            borderRadius: 8,
+                            background: '#FFF4D6',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                        }}
+                    >
+                        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#B7791F" strokeWidth={2}>
+                            <path strokeLinecap="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    </span>
+                    <div>
+                        <span style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 600, fontSize: 15, color: '#06283A' }}>
+                            Ringkasan Operasional Laporan
+                        </span>
+                        <p style={{ fontSize: 11, color: '#6B7280', margin: '2px 0 0' }}>
+                            Periode: {summary.period?.start} &ndash; {summary.period?.end} &nbsp;|&nbsp; Dibuat oleh: {summary.generated_by}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Narrative Box */}
+            {narrative && (
+                <div
+                    style={{
+                        background: '#FFFDF9',
+                        borderLeft: '4px solid #B7791F',
+                        borderRadius: '0 8px 8px 0',
+                        padding: '12px 16px',
+                        fontSize: 13,
+                        lineHeight: 1.6,
+                        color: '#1E293B',
+                    }}
+                >
+                    <p style={{ margin: '0 0 4px', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#B7791F' }}>
+                        Executive Summary
+                    </p>
+                    <p style={{ margin: 0 }}>{narrative}</p>
+                </div>
+            )}
+
+            {/* Highlights */}
+            {highlights.length > 0 && (
+                <div style={{ background: '#FAFBFD', borderRadius: 8, padding: '12px 16px', border: '1px solid #EEF2F6' }}>
+                    <p style={{ margin: '0 0 8px', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6B7280' }}>
+                        Highlight Operasional
+                    </p>
+                    <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, lineHeight: 1.5, color: '#334155' }}>
+                        {highlights.map((item, idx) => (
+                            <li key={idx} style={{ marginBottom: 4 }}>{item}</li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+
+            {/* Stats Grid */}
+            <div
+                style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(' + colCount + ', 1fr)',
+                    gap: 10,
+                }}
+            >
+                {/* Total Sessions */}
+                <div
+                    style={{
+                        background: '#F8FAFC',
+                        borderRadius: 10,
+                        padding: '12px 14px',
+                        border: '1px solid #E2E8F0',
+                    }}
+                >
+                    <p style={{ fontSize: 10, color: '#6B7280', margin: '0 0 4px', fontWeight: 500 }}>
+                        Total Sesi
+                    </p>
+                    <p style={{ fontSize: 20, fontWeight: 700, color: '#06283A', margin: 0, fontFamily: 'Poppins, sans-serif' }}>
+                        {summary.total_sessions}
+                    </p>
+                </div>
+
+                {/* Per-status cards */}
+                {breakdown.map(([status, count]) => {
+                    const statusKey = status.toUpperCase();
+                    const color = STATUS_COLORS[statusKey] ?? STATUS_COLORS[status] ?? '#64748B';
+                    const label = STATUS_LABELS[statusKey] ?? STATUS_LABELS[status] ?? statusKey;
+                    return (
+                        <div
+                            key={status}
+                            style={{
+                                background: '#F8FAFC',
+                                borderRadius: 10,
+                                padding: '12px 14px',
+                                border: '1px solid ' + color + '33',
+                                borderLeft: '3px solid ' + color,
+                            }}
+                        >
+                            <p style={{ fontSize: 10, color: '#6B7280', margin: '0 0 4px', fontWeight: 500 }}>
+                                {label}
+                            </p>
+                            <p style={{ fontSize: 20, fontWeight: 700, color, margin: 0, fontFamily: 'Poppins, sans-serif' }}>
+                                {count as number}
+                            </p>
+                        </div>
+                    );
+                })}
+            </div>
+
+            {/* Tonase & lead time scorecards — connected row, same card tokens */}
+            {kpi && (
+                <div
+                    style={{
+                        display: 'flex',
+                        background: '#F8FAFC',
+                        borderRadius: 10,
+                        border: '1px solid #E2E8F0',
+                    }}
+                >
+                    <div style={{ flex: 1, padding: '12px 14px' }}>
+                        <p style={{ fontSize: 10, color: '#6B7280', margin: '0 0 4px', fontWeight: 500 }}>
+                            Total Tonase (Gross)
+                        </p>
+                        <p style={{ fontSize: 20, fontWeight: 700, color: '#06283A', margin: 0, fontFamily: 'Poppins, sans-serif' }}>
+                            {kpi.gross_weight_label}
+                        </p>
+                        <p style={{ fontSize: 11, color: '#6B7280', margin: '4px 0 0' }}>
+                            {kpi.weight_sessions} sesi berkontribusi
+                        </p>
+                    </div>
+                    <div style={{ width: 1, background: '#E2E8F0', margin: '12px 0' }} />
+                    <div style={{ flex: 1, padding: '12px 14px' }}>
+                        <p style={{ fontSize: 10, color: '#6B7280', margin: '0 0 4px', fontWeight: 500 }}>
+                            Lead Time Rata-rata
+                        </p>
+                        <p style={{ fontSize: 20, fontWeight: 700, color: '#06283A', margin: 0, fontFamily: 'Poppins, sans-serif' }}>
+                            {kpi.avg_lead_time_days !== null && kpi.avg_lead_time_days !== undefined
+                                ? `${kpi.avg_lead_time_days} hari`
+                                : '-'}
+                        </p>
+                        <p style={{ fontSize: 11, color: '#6B7280', margin: '4px 0 0' }}>
+                            {kpi.completed_lead_time_count} sesi selesai terukur
+                            {kpi.bottleneck_stage ? ` · Bottleneck: ${kpi.bottleneck_stage}` : ''}
+                        </p>
+                    </div>
+                </div>
+            )}
+
+            {/* Funnel tahapan — reuse chart Dashboard */}
+            {funnelData.length > 0 && <CheckpointPipelineChart data={funnelData} />}
+
+            {/* Alert dini — teks warna di wadah netral, tanpa kotak alert besar */}
+            {alerts.length > 0 && (
+                <div style={{ background: '#FAFBFD', borderRadius: 8, padding: '12px 16px', border: '1px solid #EEF2F6' }}>
+                    <p style={{ margin: '0 0 8px', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6B7280' }}>
+                        Perlu Perhatian
+                    </p>
+                    <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, lineHeight: 1.5 }}>
+                        {alerts.map((alert, idx) => (
+                            <li key={idx} style={{ marginBottom: 4, color: alert.color }}>{alert.text}</li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+        </div>
+    );
+};

@@ -39,7 +39,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->validateCsrfTokens(except: [
-            'kelola-akun/*/status',
+            //
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

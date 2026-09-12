@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveDocumentStepRequest;
+use App\Http\Requests\StoreCustomerRequest;
 use App\Models\Customer;
+use App\Services\CustomerService;
 use App\Services\DocumentSubmissionService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -13,7 +15,8 @@ use Inertia\Response;
 class SubmitBerkasController extends Controller
 {
     public function __construct(
-        private DocumentSubmissionService $documentSubmissionService
+        private DocumentSubmissionService $documentSubmissionService,
+        private CustomerService $customerService,
     ) {}
 
     /**
@@ -30,20 +33,9 @@ class SubmitBerkasController extends Controller
     /**
      * Simpan customer baru dari AddCustomerModal.
      */
-    public function storeCustomer(Request $request)
+    public function storeCustomer(StoreCustomerRequest $request)
     {
-        $validated = $request->validate([
-            'company_name' => 'required|string|max:255',
-            'address'      => 'nullable|string',
-            'phone'        => 'nullable|string|min:10|max:15',
-            'email'        => 'nullable|email|max:255',
-            'pic_name'     => 'nullable|string|max:255',
-        ], [
-            'phone.min' => 'Nomor HP minimal 10 karakter.',
-            'phone.max' => 'Nomor HP maksimal 15 karakter.',
-        ]);
-
-        $customer = Customer::create($validated);
+        $customer = $this->customerService->create($request->validated());
 
         return response()->json([
             'message'  => 'Customer added successfully',

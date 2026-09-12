@@ -43,6 +43,15 @@ class UserService extends BaseService
     }
 
     /**
+     * Retrieve a filtered paginated list for Kelola Akun.
+     * Keeps query logic in Repository/Service layers (layered architecture).
+     */
+    public function listFiltered(array $filters, int $perPage = 5): LengthAwarePaginator
+    {
+        return $this->userRepository->paginateFiltered($filters, $perPage);
+    }
+
+    /**
      * Retrieve a single user by ID.
      */
     public function findById(int|string $id): User

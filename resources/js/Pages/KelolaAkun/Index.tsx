@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Users, ShieldCheck, UserCheck, UserX, Plus, AlertCircle } from 'lucide-react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
@@ -68,17 +68,38 @@ export default function Index() {
         return roles.includes('super-admin') || roles.includes('Super Admin');
     }, [auth]);
 
-    // Determine if server data is present and non-empty
-    const hasServerData = users && Array.isArray(users.data) && users.data.length > 0;
+    // Determine if server data is present (even when result set is empty).
+    // Previously `users.data.length > 0` caused empty search results to fall
+    // back to local seeder mock data — hiding the true "not found" state.
+    const hasServerData = Boolean(users && Array.isArray(users.data));
 
     // Base user list: server data if available, otherwise exact AdminUserSeeder data
     const [localUsers, setLocalUsers] = useState<KelolaAkunUser[]>(seederUsers);
-    const baseUsers: KelolaAkunUser[] = hasServerData ? users.data : localUsers;
+    const baseUsers: KelolaAkunUser[] = hasServerData ? (users as PaginatedUsers).data : localUsers;
+    const isEmptyServerResult = hasServerData && (users as PaginatedUsers).data.length === 0;
 
     const [search, setSearch] = useState(filters?.search ?? '');
     const [roleFilter, setRoleFilter] = useState(filters?.role ?? 'All Roles');
     const [statusFilter, setStatusFilter] = useState(filters?.status ?? 'All Statuses');
     const [currentPage, setCurrentPage] = useState(users?.current_page ?? 1);
+    const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const fetchFiltered = (params: { search: string; role: string; status: string; page?: string | number }) => {
+        router.get('/kelola-akun', params, { preserveState: true, preserveScroll: true, replace: true });
+    };
+
+    // Debounced server search (400ms) to avoid firing a request per keystroke.
+    useEffect(() => {
+        if (!hasServerData) return;
+        if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+        searchDebounceRef.current = setTimeout(() => {
+            fetchFiltered({ search, role: roleFilter, status: statusFilter });
+        }, 400);
+        return () => {
+            if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [search]);
 
     // State for Status Confirmation Modal, Delete Confirmation Modal & Toast
     const [modalUser, setModalUser] = useState<KelolaAkunUser | null>(null);
@@ -153,9 +174,7 @@ export default function Index() {
 
     const handleSearchChange = (value: string) => {
         setSearch(value);
-        if (hasServerData) {
-            router.get('/kelola-akun', { search: value, role: roleFilter, status: statusFilter }, { preserveState: true, preserveScroll: true });
-        }
+        // Server fetch is handled by the debounced effect above.
     };
 
     const handleSearchSubmit = () => {
@@ -324,9 +343,9 @@ export default function Index() {
     };
 
     // Pagination bounds
-    const totalPages = hasServerData ? (users.last_page ?? 1) : Math.max(1, Math.ceil(filteredUsers.length / ITEMS_PER_PAGE));
+    const totalPages = hasServerData ? ((users as PaginatedUsers).last_page ?? 1) : Math.max(1, Math.ceil(filteredUsers.length / ITEMS_PER_PAGE));
     const paginatedUsers = hasServerData ? filteredUsers : filteredUsers.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
-    const totalItems = hasServerData ? (users.total ?? filteredUsers.length) : filteredUsers.length;
+    const totalItems = hasServerData ? ((users as PaginatedUsers).total ?? filteredUsers.length) : filteredUsers.length;
 
     return (
         <DashboardLayout>

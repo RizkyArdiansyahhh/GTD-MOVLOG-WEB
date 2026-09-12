@@ -27,4 +27,9 @@ interface UserRepositoryInterface extends BaseRepositoryInterface
      * Search users by name or email.
      */
     public function search(string $keyword, int $perPage = 15): \Illuminate\Contracts\Pagination\LengthAwarePaginator;
+
+    /**
+     * Paginate users with search / role / status filters for Kelola Akun.
+     */
+    public function paginateFiltered(array $filters, int $perPage = 5): \Illuminate\Contracts\Pagination\LengthAwarePaginator;
 }

@@ -1,9 +1,11 @@
 export type ShippingStatus =
   | 'Menunggu'
     | 'Pending'
+    | 'Pending Verification'
     | 'In Transit'
     | 'Delivered'
     | 'Cancelled'
+    | 'Delayed'
   | 'Dalam Perjalanan'
   | 'Sampai Checkpoint'
   | 'Sampai Tujuan'
@@ -21,7 +23,12 @@ export type DocumentStatus =
   | 'Belum Upload'
   | 'Menunggu Verifikasi'
   | 'Disetujui'
-  | 'Ditolak';
+  | 'Ditolak'
+  | 'Approved'
+  | 'Rejected'
+  | 'Pending'
+  | 'Pending Verification'
+  | 'Draft';
 
 export type NodeStatus = 'completed' | 'current' | 'pending';
 

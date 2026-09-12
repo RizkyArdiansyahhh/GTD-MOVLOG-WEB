@@ -17,6 +17,12 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
 
     const [imageError, setImageError] = useState(false);
     const user = auth?.user;
+    // Retry loading the avatar whenever the URL changes (e.g. right after
+    // the user uploads a new photo). Without this, a previous 404 keeps
+    // `imageError=true` forever and the new photo never appears.
+    useEffect(() => {
+        setImageError(false);
+    }, [user?.avatar_url]);
     const rawRole = user?.roles?.[0] ?? 'User';
     const formattedRole = typeof rawRole === 'string'
         ? rawRole.replace('-', ' ').replace(/\b\w/g, (c) => c.toUpperCase())

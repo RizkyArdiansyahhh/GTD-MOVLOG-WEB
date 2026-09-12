@@ -35,7 +35,7 @@ export const INITIAL_DOWNLOAD_HISTORY: DownloadHistoryItem[] = [
     format: 'pdf',
     createdAt: '28 Okt 2023, 14:30',
     fileSize: '2.4 MB',
-    status: 'Ready',
+    status: 'ready',
     downloadUrl: '#',
   },
   {
@@ -44,7 +44,7 @@ export const INITIAL_DOWNLOAD_HISTORY: DownloadHistoryItem[] = [
     format: 'excel',
     createdAt: '15 Okt 2023, 09:15',
     fileSize: '4.8 MB',
-    status: 'Ready',
+    status: 'ready',
     downloadUrl: '#',
   },
   {
@@ -53,7 +53,7 @@ export const INITIAL_DOWNLOAD_HISTORY: DownloadHistoryItem[] = [
     format: 'pdf',
     createdAt: '30 Sep 2023, 17:45',
     fileSize: '1.9 MB',
-    status: 'Expired',
+    status: 'expired',
   },
   {
     id: 'RPT-2023-004',
@@ -61,7 +61,7 @@ export const INITIAL_DOWNLOAD_HISTORY: DownloadHistoryItem[] = [
     format: 'excel',
     createdAt: '12 Sep 2023, 11:20',
     fileSize: '3.1 MB',
-    status: 'Expired',
+    status: 'expired',
   },
   {
     id: 'RPT-2023-005',
@@ -69,7 +69,7 @@ export const INITIAL_DOWNLOAD_HISTORY: DownloadHistoryItem[] = [
     format: 'pdf',
     createdAt: '31 Agu 2023, 16:00',
     fileSize: '2.1 MB',
-    status: 'Ready',
+    status: 'ready',
     downloadUrl: '#',
   },
 ];

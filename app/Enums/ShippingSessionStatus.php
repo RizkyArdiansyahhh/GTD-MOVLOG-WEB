@@ -10,12 +10,16 @@ enum ShippingSessionStatus: string
     case IN_TRANSIT = 'in_transit';
     case DELIVERED = 'delivered';
 
+    /**
+     * Natural Indonesian label for narrative sentences
+     * (e.g. "sesi ini saat ini sedang dalam perjalanan").
+     */
     public function label(): string
     {
         return match ($this) {
-            self::PENDING => 'Menunggu',
-            self::IN_TRANSIT => 'Dalam Perjalanan',
-            self::DELIVERED => 'Selesai',
+            self::PENDING => 'menunggu diproses',
+            self::IN_TRANSIT => 'sedang dalam perjalanan',
+            self::DELIVERED => 'telah tiba di tujuan',
         };
     }
 

@@ -62,9 +62,14 @@ RUN groupadd --gid 1000 www && \
 # Copy existing application directory permissions
 COPY --chown=www:www . .
 
+# Copy entrypoint for storage symlink bootstrap
+COPY docker/app/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 # Change current user to www
 USER www
 
 EXPOSE 9000
 
+ENTRYPOINT ["entrypoint.sh"]
 CMD ["php-fpm"]

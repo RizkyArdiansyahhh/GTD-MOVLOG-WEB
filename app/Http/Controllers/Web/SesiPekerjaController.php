@@ -13,6 +13,10 @@ use App\Enums\UserRole;
 use App\Enums\UserStatus;
 use App\Exceptions\BusinessException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AssignAllStagesRequest;
+use App\Http\Requests\AssignStageRequest;
+use App\Http\Requests\SaveMovementReportRequest;
+use App\Http\Requests\StoreMovementRequest;
 use App\Models\Checkpoint;
 use App\Models\Customer;
 use App\Models\Movement;
@@ -27,7 +31,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -172,7 +175,7 @@ class SesiPekerjaController extends Controller
      * Assign PIC to a session checkpoint.
      */
     public function assignStage(
-        Request $request,
+        AssignStageRequest $request,
         ShippingSession $session,
         SessionCheckpoint $stage,
     ): RedirectResponse {
@@ -184,14 +187,7 @@ class SesiPekerjaController extends Controller
             'Checkpoint tidak ditemukan untuk sesi ini.'
         );
 
-        $validated = $request->validate([
-            'pic_user_id' => [
-                'required',
-                'string',
-                Rule::exists('users', 'id'),
-            ],
-            'worker_ids' => ['nullable', 'array'],
-        ]);
+        $validated = $request->validated();
 
         try {
             $this->sessionCheckpointService->assignCheckpoint(
@@ -214,15 +210,12 @@ class SesiPekerjaController extends Controller
      * Batch assign PIC for all session checkpoints at once.
      */
     public function assignAllStages(
-        Request $request,
+        AssignAllStagesRequest $request,
         ShippingSession $session,
     ): RedirectResponse {
         $this->authorizeSuperAdmin($request);
 
-        $validated = $request->validate([
-            'assignments' => ['required', 'array'],
-            'assignments.*' => ['nullable', 'string', 'exists:users,id'],
-        ]);
+        $validated = $request->validated();
 
         foreach ($validated['assignments'] as $stageId => $picUserId) {
             if (!$picUserId) {
@@ -278,7 +271,7 @@ class SesiPekerjaController extends Controller
      * Register a new physical movement (Step 1 Tongkang or Step 3 Truck).
      */
     public function storeMovement(
-        Request $request,
+        StoreMovementRequest $request,
         ShippingSession $session,
         SessionCheckpoint $stage,
     ): RedirectResponse {
@@ -290,10 +283,7 @@ class SesiPekerjaController extends Controller
             'Checkpoint tidak ditemukan untuk sesi ini.'
         );
 
-        $validated = $request->validate([
-            'movement_name'      => ['required', 'string', 'max:255'],
-            'parent_movement_id' => ['nullable', 'string'],
-        ]);
+        $validated = $request->validated();
 
         try {
             $this->movementService->createMovement(
@@ -338,7 +328,7 @@ class SesiPekerjaController extends Controller
      * Save isolated movement-specific report form values and uploaded photos.
      */
     public function saveReport(
-        Request $request,
+        SaveMovementReportRequest $request,
         ShippingSession $session,
         SessionCheckpoint $stage,
         Movement $movement,
@@ -351,14 +341,7 @@ class SesiPekerjaController extends Controller
             'Checkpoint tidak ditemukan untuk sesi ini.'
         );
 
-        $validated = $request->validate([
-            'fields'    => ['nullable', 'array'],
-            'latitude'  => ['nullable', 'numeric'],
-            'longitude' => ['nullable', 'numeric'],
-            'event_at'  => ['nullable', 'date'],
-            'photos'    => ['nullable', 'array'],
-            'photos.*'  => ['nullable', 'file', 'image', 'max:10240'],
-        ]);
+        $validated = $request->validated();
 
         $fieldValues = $validated['fields'] ?? [];
         $photosData = [];

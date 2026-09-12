@@ -16,6 +16,11 @@ export function useRealtimeUpdates(customCustomerId?: string) {
         }
 
         const reverbKey = import.meta.env.VITE_REVERB_APP_KEY;
+        // Guard: never initialise Echo without a key — otherwise the browser
+        // spams `ws://.../app/undefined` connection errors (see audit).
+        if (!reverbKey) {
+            return;
+        }
         const reverbHost = import.meta.env.VITE_REVERB_HOST || window.location.hostname;
         const reverbPort = import.meta.env.VITE_REVERB_PORT ? Number(import.meta.env.VITE_REVERB_PORT) : 8080;
         const reverbScheme = import.meta.env.VITE_REVERB_SCHEME || 'http';

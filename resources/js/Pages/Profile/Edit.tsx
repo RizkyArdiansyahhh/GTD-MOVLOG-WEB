@@ -1,4 +1,4 @@
-import { useState, useRef, useId } from 'react';
+import { useState, useRef, useId, useEffect } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import AvatarCropModal from '@/Components/AvatarCropModal';
@@ -106,6 +106,14 @@ export default function EditProfile({ profile }: EditProfileProps) {
     const primaryRoleLabel = profile.roles[0]?.label || 'Internal Staff';
     const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name || 'User')}&background=F6C343&color=1a1a1a&bold=true&size=128`;
 
+    // Keep preview in sync with the server value after save/reload.
+    useEffect(() => {
+        if (!profileData.avatar && !isDeletingAvatar) {
+            setAvatarPreview(profile.avatar_url);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [profile.avatar_url]);
+
     // Handle Initial File Selection & Validation
     const handleAvatarFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -135,12 +143,13 @@ export default function EditProfile({ profile }: EditProfileProps) {
     };
 
     // Callback when crop is completed in modal
+    // NOTE: Inertia useForm.setData does NOT support functional updater
+    // (prev) => ... — it must be called as setData(key, value) or
+    // setData(object). The previous functional form silently stored a
+    // function as form data, so `avatar` never reached the server.
     const handleCropFinished = (croppedFile: File, croppedPreviewUrl: string) => {
-        setProfileData((prev) => ({
-            ...prev,
-            avatar: croppedFile,
-            delete_avatar: false,
-        }));
+        setProfileData('avatar', croppedFile);
+        setProfileData('delete_avatar', false);
         setIsDeletingAvatar(false);
         setAvatarPreview(croppedPreviewUrl);
         setFileValidationError(null);
@@ -148,11 +157,8 @@ export default function EditProfile({ profile }: EditProfileProps) {
 
     // Handle Remove Avatar
     const handleRemoveAvatar = () => {
-        setProfileData((prev) => ({
-            ...prev,
-            avatar: null,
-            delete_avatar: true,
-        }));
+        setProfileData('avatar', null);
+        setProfileData('delete_avatar', true);
         setIsDeletingAvatar(true);
         setAvatarPreview(null);
         setFileValidationError(null);
@@ -166,8 +172,16 @@ export default function EditProfile({ profile }: EditProfileProps) {
         e.preventDefault();
         submitProfile('/profil', {
             preserveScroll: true,
-            onSuccess: () => {
+            forceFormData: true,
+            onSuccess: (page) => {
                 setIsDeletingAvatar(false);
+                // Adopt the fresh server avatar URL so the photo persists
+                // after refresh / re-login (not just the local blob URL).
+                const freshUrl = (page.props.profile as { avatar_url?: string | null } | undefined)?.avatar_url
+                    ?? (page.props.auth as { user?: { avatar_url?: string | null } } | undefined)?.user?.avatar_url;
+                if (freshUrl) {
+                    setAvatarPreview(freshUrl);
+                }
             },
         });
     };

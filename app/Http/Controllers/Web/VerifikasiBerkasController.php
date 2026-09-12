@@ -8,10 +8,13 @@ use App\Enums\DocumentStatus;
 use App\Enums\ShippingSessionStatus;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RejectDocumentRequest;
+use App\Http\Requests\VerifyDocumentRequest;
 use App\Models\Checkpoint;
 use App\Models\Document;
 use App\Models\ShippingSession;
 use App\Services\SessionCheckpointService;
+use App\Services\ShippingSessionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -35,6 +38,7 @@ class VerifikasiBerkasController extends Controller
 {
     public function __construct(
         private readonly SessionCheckpointService $sessionCheckpointService,
+        private readonly ShippingSessionService $shippingSessionService,
     ) {}
     /**
      * The 5 mandatory document types required for every shipment verification.
@@ -132,13 +136,11 @@ class VerifikasiBerkasController extends Controller
      * POST /verifikasi-berkas/{document}/verify
      * Approve a document: PENDING -> VERIFIED
      */
-    public function verify(Request $request, Document $document): RedirectResponse|JsonResponse
+    public function verify(VerifyDocumentRequest $request, Document $document): RedirectResponse|JsonResponse
     {
         $this->checkSupervisorAuthorization($request);
 
-        $validated = $request->validate([
-            'notes' => 'nullable|string|max:1000',
-        ]);
+        $validated = $request->validated();
 
         $document->update([
             'status'      => DocumentStatus::VERIFIED->value,
@@ -149,7 +151,7 @@ class VerifikasiBerkasController extends Controller
 
         // Jika ini melengkapi kelima dokumen wajib untuk assignment ini,
         // otomatis buat shipping_sessions (sumber data MonitoringCheckpoint dkk).
-        $this->maybeGenerateShippingSession($document->assignment_no_ref);
+        $this->shippingSessionService->maybeGenerateForAssignment($document->assignment_no_ref);
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -165,13 +167,11 @@ class VerifikasiBerkasController extends Controller
      * POST /verifikasi-berkas/{document}/reject
      * Reject a document: PENDING -> REJECTED
      */
-    public function reject(Request $request, Document $document): RedirectResponse|JsonResponse
+    public function reject(RejectDocumentRequest $request, Document $document): RedirectResponse|JsonResponse
     {
         $this->checkSupervisorAuthorization($request);
 
-        $validated = $request->validate([
-            'notes' => 'required|string|max:1000',
-        ]);
+        $validated = $request->validated();
 
         $document->update([
             'status'      => DocumentStatus::REJECTED->value,
@@ -213,8 +213,8 @@ class VerifikasiBerkasController extends Controller
 
     /**
      * Cek apakah SELURUH dokumen wajib (5 jenis) untuk 1 assignment_no_ref
-     * sudah berstatus VERIFIED. Jika ya dan shipping_sessions untuk assignment
-     * ini belum ada, buat 1 row baru berdasarkan data Commercial Invoice.
+     * sudah berstatus VERIFIED. Didelegasikan ke ShippingSessionService
+     * agar controller tetap tipis (layered architecture).
      *
      * Filter selalu ketat berdasarkan assignment_no_ref yang sedang diproses,
      * TIDAK pernah mengambil data dari assignment lain meski customer sama
@@ -226,75 +226,7 @@ class VerifikasiBerkasController extends Controller
      */
     private function maybeGenerateShippingSession(string $assignmentNoRef): void
     {
-        $alreadyExists = ShippingSession::query()
-            ->where('assignment_no', $assignmentNoRef)
-            ->exists();
-
-        if ($alreadyExists) {
-            return;
-        }
-
-        // Ambil SEMUA dokumen milik assignment ini (filter ketat, tidak boleh bocor ke assignment lain).
-        $documents = Document::query()
-            ->where('assignment_no_ref', $assignmentNoRef)
-            ->with('documentType')
-            ->get();
-
-        $isComplete = $documents->count() === count(self::REQUIRED_DOCUMENT_TYPES);
-        $allVerified = $documents->every(function (Document $doc) {
-            $status = $doc->status instanceof DocumentStatus ? $doc->status->value : (string) $doc->status;
-            return strtoupper($status) === DocumentStatus::VERIFIED->value;
-        });
-
-        if (!$isComplete || !$allVerified) {
-            return;
-        }
-
-        // customer_id diambil dari dokumen DALAM assignment ini saja (aman).
-        $customerId = $documents->first()->customer_id;
-
-        $ciDocument = $documents->first(
-            fn (Document $doc) => $doc->documentType?->name === 'Commercial Invoice'
-        );
-
-        if (!$ciDocument) {
-            report(new \RuntimeException(
-                "Commercial Invoice not found for assignment {$assignmentNoRef}, shipping_sessions not generated."
-            ));
-            return;
-        }
-
-        $ciData = $ciDocument->document_data ?? [];
-
-        $cargoNames = collect($ciData['cargoDetail'] ?? [])
-            ->pluck('descriptionOfGoods')
-            ->filter()
-            ->implode(', ');
-
-        $firstCheckpoint = Checkpoint::query()->orderBy('sequence', 'asc')->first();
-
-        DB::transaction(function () use ($assignmentNoRef, $customerId, $cargoNames, $ciData, $firstCheckpoint) {
-            $shippingSession = ShippingSession::create([
-                'customer_id'           => $customerId,
-                'created_by'            => auth()->id(),
-                'assignment_no'         => $assignmentNoRef,
-                'cargo_name'            => $cargoNames !== '' ? $cargoNames : '-',
-                'total_quantity'        => (float) ($ciData['totalQuantity']['totalGoods'] ?? 0),
-                'unit'                  => $ciData['totalQuantity']['totalGoodsUnit'] ?? '-',
-                'origin'                => $ciData['transportDetail']['portOfLoading'] ?? null,
-                'destination'           => $ciData['transportDetail']['portOfDischarge'] ?? null,
-                'current_checkpoint_id' => $firstCheckpoint?->id,
-                'status'                => ShippingSessionStatus::PENDING->value,
-            ]);
-
-            // Isi shipping_session_id di seluruh dokumen assignment ini (sebelumnya kosong).
-            Document::query()
-                ->where('assignment_no_ref', $assignmentNoRef)
-                ->update(['shipping_session_id' => $shippingSession->id]);
-
-            // Inisialisasi 4 Checkpoints + template snapshot
-            $this->sessionCheckpointService->createCheckpointsForSession($shippingSession);
-        });
+        $this->shippingSessionService->maybeGenerateForAssignment($assignmentNoRef);
     }
 
     /**
