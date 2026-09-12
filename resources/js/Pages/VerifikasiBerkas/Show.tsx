@@ -145,15 +145,15 @@ export default function VerifikasiBerkasShow({ contractNumber, documents = [] }:
         return (
             <DashboardLayout>
                 <Head title="Document Verification — Global Trans Djaya" />
-                <div className="bg-white rounded-2xl border border-red-100 shadow-sm p-8 text-center my-8">
+                <div className="bg-white rounded-xl border border-red-100 shadow-sm p-8 text-center my-8">
                     <div
                         className="flex items-center justify-center rounded-full mx-auto mb-4"
                         style={{ width: 56, height: 56, backgroundColor: '#fef2f2' }}
                     >
                         <AlertCircle size={28} className="text-red-500" strokeWidth={1.8} />
                     </div>
-                    <h2 className="text-lg font-bold text-gray-900 mb-1">Access Denied</h2>
-                    <p className="text-sm text-gray-500 max-w-md mx-auto">
+                    <h2 className="text-lg font-bold text-slate-900 mb-1">Access Denied</h2>
+                    <p className="text-sm text-slate-500 max-w-md mx-auto">
                         The <strong>Document Verification</strong> page is restricted to users with the <strong>Supervisor</strong> role.
                     </p>
                 </div>
@@ -165,15 +165,15 @@ export default function VerifikasiBerkasShow({ contractNumber, documents = [] }:
         return (
             <DashboardLayout>
                 <Head title="Shipment Not Found — Global Trans Djaya" />
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center my-8">
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-8 text-center my-8">
                     <div
-                        className="flex items-center justify-center rounded-full mx-auto mb-4 bg-gray-100 text-gray-400"
+                        className="flex items-center justify-center rounded-full mx-auto mb-4 bg-slate-100 text-slate-400"
                         style={{ width: 56, height: 56 }}
                     >
                         <Ship size={28} strokeWidth={1.8} />
                     </div>
-                    <h2 className="text-lg font-bold text-gray-900 mb-1">Shipment Not Found</h2>
-                    <p className="text-sm text-gray-500 max-w-md mx-auto mb-4">
+                    <h2 className="text-lg font-bold text-slate-900 mb-1">Shipment Not Found</h2>
+                    <p className="text-sm text-slate-500 max-w-md mx-auto mb-4">
                         Contract / Assignment <strong>{contractNumber}</strong> could not be found in the system.
                     </p>
                     <button
@@ -300,7 +300,7 @@ export default function VerifikasiBerkasShow({ contractNumber, documents = [] }:
                 {/* ── RIGHT PANEL: PDF Preview & Verification ── */}
                 <div className="w-full lg:w-[42%] md:w-[55%] bg-white rounded-[12px] border border-[#E2E8F0] shadow-sm p-5 flex flex-col justify-between gap-4">
                     <div>
-                        <div className="flex items-center justify-between border-b border-gray-100 pb-3 mb-3">
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
                             <div>
                                 <span className="text-xs font-mono font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
                                     {selectedDocument?.documentNumber || 'No Document Selected'}

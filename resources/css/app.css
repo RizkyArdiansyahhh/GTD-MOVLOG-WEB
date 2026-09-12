@@ -57,8 +57,8 @@
     /* Login page tokens */
     --color-surface-main: #F7F7F5;
     --color-foreground: #1a1a1a;
-    --color-gold: #f5b800;
-    --color-gold-hover: #d9a400;
+    --color-gold: #F6C343;
+    --color-gold-hover: #E0AD2C;
 }
 
 :root {

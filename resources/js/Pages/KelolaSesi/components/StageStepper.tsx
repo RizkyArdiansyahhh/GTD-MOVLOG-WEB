@@ -89,7 +89,7 @@ function StageCard({ stage, sessionId }: StageCardProps) {
                                 isSelesai
                                     ? 'bg-emerald-600 text-white'
                                     : isAktif
-                                    ? 'bg-[#06283A] text-[#F5B800]'
+                                    ? 'bg-[#06283A] text-[#F6C343]'
                                     : 'bg-slate-200 text-slate-500'
                             }`}
                         >
@@ -142,7 +142,7 @@ function StageCard({ stage, sessionId }: StageCardProps) {
                                 type="button"
                                 onClick={handleComplete}
                                 disabled={isSubmitting}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-[#06283A] bg-[#F5B800] hover:bg-[#E5AC00] shadow-xs transition-all cursor-pointer"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-[#06283A] bg-[#F6C343] hover:bg-[#E0AD2C] shadow-xs transition-all cursor-pointer"
                             >
                                 <CheckCircle2 size={13} />
                                 <span>{isSubmitting ? 'Memproses...' : 'Selesaikan Tahap & Lanjut'}</span>
@@ -183,7 +183,7 @@ function StageCard({ stage, sessionId }: StageCardProps) {
                                 <button
                                     type="button"
                                     onClick={() => setIsAddMovementOpen(true)}
-                                    className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-[#06283A] bg-[#F5B800] hover:bg-[#E5AC00] rounded-lg shadow-2xs transition-all cursor-pointer"
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-[#06283A] bg-[#F6C343] hover:bg-[#E0AD2C] rounded-lg shadow-2xs transition-all cursor-pointer"
                                 >
                                     <Plus size={12} />
                                     Tambah {stage.stage_order === 1 ? 'Tongkang' : 'Truk'}

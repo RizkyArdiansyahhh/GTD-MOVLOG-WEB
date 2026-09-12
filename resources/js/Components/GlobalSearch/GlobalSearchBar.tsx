@@ -46,7 +46,7 @@ function HighlightText({ text, query }: { text: string; query: string }) {
                 regex.test(part) ? (
                     <mark
                         key={i}
-                        className="bg-[#FEF08A] text-gray-950 font-semibold px-0.5 rounded-[2px]"
+                        className="bg-[#FEF08A] text-slate-950 font-semibold px-0.5 rounded-[2px]"
                         style={{ backgroundColor: '#FEF08A' }}
                     >
                         {part}
@@ -273,7 +273,7 @@ export default function GlobalSearchBar() {
     };
 
     const getCategoryIcon = (category: SearchCategoryType) => {
-        const props = { size: 16, strokeWidth: 1.7, className: 'text-gray-400 shrink-0' };
+        const props = { size: 16, strokeWidth: 1.7, className: 'text-slate-400 shrink-0' };
         switch (category) {
             case 'barang':
                 return <Package {...props} />;
@@ -301,7 +301,7 @@ export default function GlobalSearchBar() {
         } else if (type.includes('reject') || type.includes('inactive') || type.includes('batal')) {
             return 'text-red-600 font-medium';
         }
-        return 'text-gray-500 font-normal';
+        return 'text-slate-500 font-normal';
     };
 
     // Shared list content rendering (clean flat list with subtle dividers & headers)
@@ -315,13 +315,13 @@ export default function GlobalSearchBar() {
                     {recentSearches.length > 0 && (
                         <div>
                             <div className="flex items-center justify-between mb-2">
-                                <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
                                     Recent Searches
                                 </span>
                                 <button
                                     type="button"
                                     onClick={clearRecentSearches}
-                                    className="text-xs text-gray-400 hover:text-red-600 transition-colors"
+                                    className="text-xs text-slate-400 hover:text-red-600 transition-colors"
                                 >
                                     Hapus
                                 </button>
@@ -335,9 +335,9 @@ export default function GlobalSearchBar() {
                                             setQuery(item);
                                             fetchResults(item);
                                         }}
-                                        className="flex items-center gap-1.5 px-3 py-1 text-xs text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-md border border-gray-200/70 transition-colors"
+                                        className="flex items-center gap-1.5 px-3 py-1 text-xs text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-md border border-slate-200/70 transition-colors"
                                     >
-                                        <History size={12} className="text-gray-400" />
+                                        <History size={12} className="text-slate-400" />
                                         <span>{item}</span>
                                     </button>
                                 ))}
@@ -346,7 +346,7 @@ export default function GlobalSearchBar() {
                     )}
 
                     <div>
-                        <span className="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                        <span className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
                             Pintasan Cepat
                         </span>
                         <div className="grid grid-cols-2 gap-1">
@@ -358,10 +358,10 @@ export default function GlobalSearchBar() {
                                         setQuery(item);
                                         fetchResults(item);
                                     }}
-                                    className="text-left px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors flex items-center justify-between group"
+                                    className="text-left px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors flex items-center justify-between group"
                                 >
                                     <span className="truncate">{item}</span>
-                                    <ArrowRight size={12} className="text-gray-300 group-hover:text-gray-600 transition-colors" />
+                                    <ArrowRight size={12} className="text-slate-300 group-hover:text-slate-600 transition-colors" />
                                 </button>
                             ))}
                         </div>
@@ -374,8 +374,8 @@ export default function GlobalSearchBar() {
         if (loading && (!results || results.query !== trimmed)) {
             return (
                 <div className="py-12 flex flex-col items-center justify-center text-center">
-                    <Loader2 size={20} className="animate-spin text-gray-400 mb-2" />
-                    <p className="text-xs text-gray-500 font-medium">Searching for &quot;{trimmed}&quot;...</p>
+                    <Loader2 size={20} className="animate-spin text-slate-400 mb-2" />
+                    <p className="text-xs text-slate-500 font-medium">Searching for &quot;{trimmed}&quot;...</p>
                 </div>
             );
         }
@@ -386,24 +386,24 @@ export default function GlobalSearchBar() {
 
             return (
                 <div className="flex flex-col">
-                    <div className="max-h-[380px] overflow-y-auto divide-y divide-gray-100 scroll-smooth">
+                    <div className="max-h-[380px] overflow-y-auto divide-y divide-slate-100 scroll-smooth">
                         {Object.entries(results.categories).map(([catKey, categoryGroup]) => {
                             if (!categoryGroup.items || categoryGroup.items.length === 0) return null;
 
                             return (
                                 <div key={catKey} className="pt-2.5 pb-1">
                                     {/* ── Category Header ── */}
-                                    <div className="flex items-center justify-between px-4 py-1 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                                    <div className="flex items-center justify-between px-4 py-1 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
                                         <div className="flex items-center gap-1.5">
                                             <span>{categoryGroup.label}</span>
                                         </div>
-                                        <span className="text-[11px] text-gray-400 font-normal">
+                                        <span className="text-[11px] text-slate-400 font-normal">
                                             {categoryGroup.count}
                                         </span>
                                     </div>
 
                                     {/* ── Flat Result Rows ── */}
-                                    <div className="divide-y divide-gray-100/60 mt-1">
+                                    <div className="divide-y divide-slate-100/60 mt-1">
                                         {categoryGroup.items.map((item) => {
                                             const itemIndex = currentIndexCounter++;
                                             const isSelected = selectedIndex === itemIndex;
@@ -418,21 +418,21 @@ export default function GlobalSearchBar() {
                                                     onMouseEnter={() => setSelectedIndex(itemIndex)}
                                                     className={`px-4 py-2.5 cursor-pointer transition-colors flex items-center justify-between gap-3 select-none ${
                                                         isSelected
-                                                            ? 'bg-gray-50 text-gray-950'
-                                                            : 'hover:bg-gray-50/70 text-gray-800'
+                                                            ? 'bg-slate-50 text-slate-950'
+                                                            : 'hover:bg-slate-50/70 text-slate-800'
                                                     }`}
                                                 >
                                                     {/* Left: Icon */}
-                                                    <div className="shrink-0 flex items-center justify-center w-5 h-5 text-gray-400">
+                                                    <div className="shrink-0 flex items-center justify-center w-5 h-5 text-slate-400">
                                                         {getCategoryIcon(item.category)}
                                                     </div>
 
                                                     {/* Center: Title & Subtitle */}
                                                     <div className="min-w-0 flex-1">
-                                                        <div className="text-sm font-semibold text-gray-900 leading-snug truncate">
+                                                        <div className="text-sm font-semibold text-slate-900 leading-snug truncate">
                                                             <HighlightText text={item.title} query={trimmed} />
                                                         </div>
-                                                        <div className="text-xs text-gray-500 truncate leading-relaxed">
+                                                        <div className="text-xs text-slate-500 truncate leading-relaxed">
                                                             <HighlightText text={item.subtitle} query={trimmed} />
                                                         </div>
                                                     </div>
@@ -445,7 +445,7 @@ export default function GlobalSearchBar() {
                                                             </span>
                                                         )}
                                                         {isSelected && (
-                                                            <div className="hidden sm:flex items-center gap-1 text-[11px] font-medium text-gray-400 bg-gray-200/80 px-1.5 py-0.5 rounded border border-gray-300/60">
+                                                            <div className="hidden sm:flex items-center gap-1 text-[11px] font-medium text-slate-400 bg-slate-200/80 px-1.5 py-0.5 rounded border border-slate-300/60">
                                                                 <span>Select</span>
                                                                 <CornerDownLeft size={10} strokeWidth={2.5} />
                                                             </div>
@@ -466,10 +466,10 @@ export default function GlobalSearchBar() {
         // 4. Empty state: Simple & Clean
         return (
             <div className="py-10 px-6 text-center">
-                <p className="text-sm font-semibold text-gray-800">
+                <p className="text-sm font-semibold text-slate-800">
                     No results found for &ldquo;{trimmed}&rdquo;
                 </p>
-                <p className="text-xs text-gray-500 mt-1 max-w-sm mx-auto leading-relaxed">
+                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto leading-relaxed">
                     Try searching by unit name, tracking ID, session, checkpoint, document, or user name.
                 </p>
             </div>
@@ -482,8 +482,8 @@ export default function GlobalSearchBar() {
             <div
                 className={`hidden md:flex items-center gap-2.5 rounded-xl px-3.5 transition-all duration-150 border ${
                     isOpen
-                        ? 'bg-white border-gray-300 shadow-sm ring-1 ring-gray-200'
-                        : 'bg-gray-100/90 hover:bg-gray-100 border-transparent hover:border-gray-200'
+                        ? 'bg-white border-slate-300 shadow-sm ring-1 ring-slate-200'
+                        : 'bg-slate-100/90 hover:bg-slate-100 border-transparent hover:border-slate-200'
                 }`}
                 style={{
                     width: '340px',
@@ -491,9 +491,9 @@ export default function GlobalSearchBar() {
                 }}
             >
                 {loading ? (
-                    <Loader2 size={16} className="text-gray-400 animate-spin shrink-0" />
+                    <Loader2 size={16} className="text-slate-400 animate-spin shrink-0" />
                 ) : (
-                    <Search size={16} className="text-gray-400 shrink-0" strokeWidth={2} />
+                    <Search size={16} className="text-slate-400 shrink-0" strokeWidth={2} />
                 )}
                 <input
                     ref={inputRef}
@@ -503,7 +503,7 @@ export default function GlobalSearchBar() {
                     onFocus={() => setIsOpen(true)}
                     onKeyDown={handleKeyDown}
                     placeholder="Search anything (Ctrl + K)..."
-                    className="flex-1 bg-transparent text-sm text-gray-800 placeholder-gray-400 outline-none"
+                    className="flex-1 bg-transparent text-sm text-slate-800 placeholder-slate-400 outline-none"
                 />
                 {query ? (
                     <button
@@ -513,13 +513,13 @@ export default function GlobalSearchBar() {
                             setResults(null);
                             inputRef.current?.focus();
                         }}
-                        className="text-gray-400 hover:text-gray-600 transition-colors p-0.5"
+                        className="text-slate-400 hover:text-slate-600 transition-colors p-0.5"
                         aria-label="Clear search"
                     >
                         <X size={14} />
                     </button>
                 ) : (
-                    <kbd className="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-gray-400 bg-white/80 rounded border border-gray-200 select-none shadow-2xs">
+                    <kbd className="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-slate-400 bg-white/80 rounded border border-slate-200 select-none shadow-2xs">
                         ⌘K
                     </kbd>
                 )}
@@ -532,7 +532,7 @@ export default function GlobalSearchBar() {
                     setIsMobileModalOpen(true);
                     setTimeout(() => mobileInputRef.current?.focus(), 100);
                 }}
-                className="flex md:hidden items-center justify-center w-9 h-9 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors"
+                className="flex md:hidden items-center justify-center w-9 h-9 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors"
                 aria-label="Open global search"
             >
                 <Search size={18} strokeWidth={1.8} />
@@ -542,44 +542,44 @@ export default function GlobalSearchBar() {
             {isOpen && (
                 <div
                     ref={dropdownRef}
-                    className="hidden md:block absolute right-0 top-full mt-2 w-[540px] bg-white rounded-xl shadow-2xl border border-gray-200/90 z-50 overflow-hidden text-gray-800 animate-in fade-in slide-in-from-top-1 duration-100"
+                    className="hidden md:block absolute right-0 top-full mt-2 w-[540px] bg-white rounded-xl shadow-2xl border border-slate-200/90 z-50 overflow-hidden text-slate-800 animate-in fade-in slide-in-from-top-1 duration-100"
                 >
                     {/* Flat Search Results List */}
                     {renderSearchResultsList()}
 
                     {/* Compact Integrated Keyboard Navigation Footer */}
-                    <div className="px-4 py-2.5 bg-gray-50/90 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500 select-none">
+                    <div className="px-4 py-2.5 bg-slate-50/90 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 select-none">
                         {results && results.total_count > 0 ? (
                             <button
                                 type="button"
                                 onClick={() => handleViewAllResults()}
-                                className="font-semibold text-gray-700 hover:text-gray-950 flex items-center gap-1 transition-colors"
+                                className="font-semibold text-slate-700 hover:text-slate-950 flex items-center gap-1 transition-colors"
                             >
                                 <span>Lihat semua hasil ({results.total_count} item)</span>
                                 <ArrowRight size={12} />
                             </button>
                         ) : (
-                            <span className="text-[11px] text-gray-400">Global Search</span>
+                            <span className="text-[11px] text-slate-400">Global Search</span>
                         )}
 
-                        <div className="flex items-center gap-3 text-[11px] text-gray-400">
+                        <div className="flex items-center gap-3 text-[11px] text-slate-400">
                             <div className="flex items-center gap-1">
-                                <span className="inline-flex items-center justify-center px-1 py-0.5 bg-white border border-gray-200 rounded text-[9px] font-mono text-gray-600 shadow-2xs">
+                                <span className="inline-flex items-center justify-center px-1 py-0.5 bg-white border border-slate-200 rounded text-[9px] font-mono text-slate-600 shadow-2xs">
                                     ▲
                                 </span>
-                                <span className="inline-flex items-center justify-center px-1 py-0.5 bg-white border border-gray-200 rounded text-[9px] font-mono text-gray-600 shadow-2xs">
+                                <span className="inline-flex items-center justify-center px-1 py-0.5 bg-white border border-slate-200 rounded text-[9px] font-mono text-slate-600 shadow-2xs">
                                     ▼
                                 </span>
                                 <span className="ml-0.5">To navigate</span>
                             </div>
                             <div className="flex items-center gap-1">
-                                <span className="inline-flex items-center justify-center px-1.5 py-0.5 bg-white border border-gray-200 rounded text-[9px] font-mono text-gray-600 shadow-2xs">
+                                <span className="inline-flex items-center justify-center px-1.5 py-0.5 bg-white border border-slate-200 rounded text-[9px] font-mono text-slate-600 shadow-2xs">
                                     ↵
                                 </span>
                                 <span className="ml-0.5">To select</span>
                             </div>
                             <div className="flex items-center gap-1">
-                                <span className="inline-flex items-center justify-center px-1.5 py-0.5 bg-white border border-gray-200 rounded text-[9px] font-mono text-gray-600 shadow-2xs">
+                                <span className="inline-flex items-center justify-center px-1.5 py-0.5 bg-white border border-slate-200 rounded text-[9px] font-mono text-slate-600 shadow-2xs">
                                     esc
                                 </span>
                                 <span className="ml-0.5">To dismiss</span>
@@ -592,12 +592,12 @@ export default function GlobalSearchBar() {
             {/* ── Mobile Unified Search Modal Dialog ── */}
             {isMobileModalOpen && (
                 <div className="fixed inset-0 z-50 md:hidden flex flex-col bg-white animate-in fade-in duration-100">
-                    <div className="flex items-center gap-2 p-3 border-b border-gray-200 bg-white">
-                        <div className="flex-1 flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-2">
+                    <div className="flex items-center gap-2 p-3 border-b border-slate-200 bg-white">
+                        <div className="flex-1 flex items-center gap-2 bg-slate-100 rounded-lg px-3 py-2">
                             {loading ? (
-                                <Loader2 size={16} className="text-gray-400 animate-spin shrink-0" />
+                                <Loader2 size={16} className="text-slate-400 animate-spin shrink-0" />
                             ) : (
-                                <Search size={16} className="text-gray-400 shrink-0" />
+                                <Search size={16} className="text-slate-400 shrink-0" />
                             )}
                             <input
                                 ref={mobileInputRef}
@@ -606,13 +606,13 @@ export default function GlobalSearchBar() {
                                 onChange={(e) => setQuery(e.target.value)}
                                 onKeyDown={handleKeyDown}
                                 placeholder="Search tracking, sessions, documents..."
-                                className="flex-1 bg-transparent text-sm text-gray-900 placeholder-gray-400 outline-none"
+                                className="flex-1 bg-transparent text-sm text-slate-900 placeholder-slate-400 outline-none"
                             />
                             {query && (
                                 <button
                                     type="button"
                                     onClick={() => setQuery('')}
-                                    className="text-gray-400 hover:text-gray-600"
+                                    className="text-slate-400 hover:text-slate-600"
                                 >
                                     <X size={16} />
                                 </button>
@@ -621,22 +621,22 @@ export default function GlobalSearchBar() {
                         <button
                             type="button"
                             onClick={() => setIsMobileModalOpen(false)}
-                            className="px-2.5 py-2 text-xs font-semibold text-gray-600 hover:text-gray-900"
+                            className="px-2.5 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900"
                         >
                             Tutup
                         </button>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
+                    <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
                         {renderSearchResultsList()}
                     </div>
 
                     {results && results.total_count > 0 && (
-                        <div className="p-3 bg-gray-50 border-t border-gray-200">
+                        <div className="p-3 bg-slate-50 border-t border-slate-200">
                             <button
                                 type="button"
                                 onClick={() => handleViewAllResults()}
-                                className="w-full py-2 bg-white hover:bg-gray-100 text-xs font-semibold text-gray-800 rounded-lg border border-gray-300 text-center transition-colors"
+                                className="w-full py-2 bg-white hover:bg-slate-100 text-xs font-semibold text-slate-800 rounded-lg border border-slate-300 text-center transition-colors"
                             >
                                 Lihat semua {results.total_count} hasil →
                             </button>

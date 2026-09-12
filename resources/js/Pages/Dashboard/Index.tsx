@@ -1,5 +1,6 @@
 import { Head, usePage } from '@inertiajs/react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
+import { PageHeader } from '@/Components/ui';
 import type { PageProps } from '@/types';
 import { Users, Package, Truck, Clock, ArrowUpRight } from 'lucide-react';
 
@@ -84,29 +85,17 @@ export default function Index({ stats, recentSessions = [] }: DashboardProps) {
         <DashboardLayout title="Dashboard">
             <Head title="Dashboard" />
 
-            <div
-                className="p-6 flex flex-col gap-6"
-                style={{
-                    minHeight: '100%',
-                    backgroundColor: '#F5F7FA',
-                    fontFamily: "'Poppins', sans-serif",
-                }}
-            >
-                {/* ── Welcome Banner ── */}
-                <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold text-[#06283A]">
-                            Welcome, {auth.user?.name ?? 'User'} 👋
-                        </h1>
-                        <p className="text-sm text-slate-500 mt-1">
-                            Sistem Informasi Monitoring Operational Logistics (GTD-MOVLOG)
-                        </p>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-200/60 self-start md:self-auto">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span>System Operating Normally</span>
-                    </div>
-                </div>
+            <div className="flex flex-col gap-6">
+                <PageHeader
+                    title={`Welcome, ${auth.user?.name ?? 'User'} 👋`}
+                    subtitle="Sistem Informasi Monitoring Operational Logistics (GTD-MOVLOG)"
+                    actions={
+                        <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-200/60">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                            <span>System Operating Normally</span>
+                        </div>
+                    }
+                />
 
                 {/* ── Stat Cards Grid ── */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -115,7 +104,7 @@ export default function Index({ stats, recentSessions = [] }: DashboardProps) {
                         return (
                             <div
                                 key={i}
-                                className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between"
+                                className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between"
                             >
                                 <div className="flex items-center justify-between">
                                     <span className="text-xs font-medium text-slate-500">{card.label}</span>
@@ -136,7 +125,7 @@ export default function Index({ stats, recentSessions = [] }: DashboardProps) {
                 {/* ── Dashboard Quick Sections ── */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Ringkasan Activity */}
-                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                    <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="font-semibold text-[#06283A]">Recent Shipment Activity</h2>
                         </div>
@@ -169,7 +158,7 @@ export default function Index({ stats, recentSessions = [] }: DashboardProps) {
                     </div>
 
                     {/* Quick Access */}
-                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col justify-between">
+                    <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
                         <div>
                             <h2 className="font-semibold text-[#06283A] mb-4">Quick Navigation</h2>
                             <div className="grid grid-cols-2 gap-3">

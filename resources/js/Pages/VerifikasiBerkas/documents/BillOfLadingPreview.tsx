@@ -47,7 +47,7 @@ export default function BillOfLadingPreview({ document }: BillOfLadingPreviewPro
     };
 
     return (
-        <div className="relative bg-white p-6 sm:p-7 rounded-lg border border-gray-200 shadow-sm text-gray-800 text-[11px] font-sans">
+        <div className="relative bg-white p-6 sm:p-7 rounded-lg border border-slate-200 shadow-sm text-slate-800 text-[11px] font-sans">
             {/* Watermark Stamp */}
             {document.status === 'Approved' && (
                 <div className="absolute right-6 top-24 pointer-events-none transform rotate-[-12deg] opacity-25 border-4 border-emerald-600 rounded-xl px-4 py-2 text-center text-emerald-700 font-extrabold tracking-widest text-base uppercase">
@@ -68,14 +68,14 @@ export default function BillOfLadingPreview({ document }: BillOfLadingPreviewPro
             {/* Header section */}
             <div className="flex items-start justify-between border-b-2 border-[#06283A] pb-3 mb-4">
                 <div className="flex items-center gap-2.5">
-                    <div className="flex items-center justify-center rounded-lg bg-[#06283A] text-[#F5B800] w-9 h-9">
+                    <div className="flex items-center justify-center rounded-lg bg-[#06283A] text-[#F6C343] w-9 h-9">
                         <Anchor size={20} />
                     </div>
                     <div>
                         <h2 className="text-sm font-bold text-[#06283A] tracking-tight">
                             GTD LOGISTICS OS
                         </h2>
-                        <p className="text-[9px] text-gray-500 uppercase tracking-wide">
+                        <p className="text-[9px] text-slate-500 uppercase tracking-wide">
                             Ocean Freight Logistics System
                         </p>
                     </div>
@@ -84,21 +84,21 @@ export default function BillOfLadingPreview({ document }: BillOfLadingPreviewPro
                     <span className="text-[10px] uppercase font-bold text-[#06283A] block">
                         BILL OF LADING
                     </span>
-                    <span className="text-xs font-mono font-bold text-gray-900">
+                    <span className="text-xs font-mono font-bold text-slate-900">
                         {document.documentNumber}
                     </span>
                 </div>
             </div>
 
             {/* Title & Document Detail */}
-            <div className="mb-4 bg-gray-50 p-2.5 rounded border border-gray-200 grid grid-cols-2 gap-2 text-[11px]">
+            <div className="mb-4 bg-slate-50 p-2.5 rounded border border-slate-200 grid grid-cols-2 gap-2 text-[11px]">
                 <div>
-                    <span className="text-gray-500 block font-medium">1. Document Detail:</span>
+                    <span className="text-slate-500 block font-medium">1. Document Detail:</span>
                     <p className="font-bold text-[#06283A]">Number: <span className="font-mono">{document.documentNumber}</span></p>
                     <p className="font-bold text-[#06283A]">Date: <span className="font-normal">{document.uploadDate.split(' ')[0]}</span></p>
                 </div>
                 <div className="text-right">
-                    <span className="text-gray-500 block font-medium">Ref Shipment:</span>
+                    <span className="text-slate-500 block font-medium">Ref Shipment:</span>
                     <span className="font-mono font-bold text-[#06283A]">{document.shipmentReference}</span>
                 </div>
             </div>
@@ -106,69 +106,69 @@ export default function BillOfLadingPreview({ document }: BillOfLadingPreviewPro
             {/* Shipper & Consignee Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
                 {/* 2. Shipper */}
-                <div className="border border-gray-200 rounded p-2.5 bg-white">
+                <div className="border border-slate-200 rounded p-2.5 bg-white">
                     <h4 className="font-bold text-[#06283A] uppercase tracking-wide border-b pb-1 mb-1.5 text-[10px]">
                         2. Shipper
                     </h4>
-                    <p className="font-semibold text-gray-900">{shipper.name}</p>
-                    <p className="text-gray-600 leading-snug mt-0.5">{shipper.address}</p>
-                    <p className="mt-1 font-mono text-[10px] text-gray-700">
-                        <span className="text-gray-500 font-sans">Tax ID:</span> {shipper.taxId}
+                    <p className="font-semibold text-slate-900">{shipper.name}</p>
+                    <p className="text-slate-600 leading-snug mt-0.5">{shipper.address}</p>
+                    <p className="mt-1 font-mono text-[10px] text-slate-700">
+                        <span className="text-slate-500 font-sans">Tax ID:</span> {shipper.taxId}
                     </p>
                 </div>
 
                 {/* 3. Consignee */}
-                <div className="border border-gray-200 rounded p-2.5 bg-white">
+                <div className="border border-slate-200 rounded p-2.5 bg-white">
                     <h4 className="font-bold text-[#06283A] uppercase tracking-wide border-b pb-1 mb-1.5 text-[10px]">
                         3. Consignee
                     </h4>
-                    <p className="font-semibold text-gray-900">{consignee.name}</p>
-                    <p className="text-gray-600 leading-snug mt-0.5">{consignee.address}</p>
-                    <p className="mt-1 font-mono text-[10px] text-gray-700">
-                        <span className="text-gray-500 font-sans">Tax ID:</span> {consignee.taxId}
+                    <p className="font-semibold text-slate-900">{consignee.name}</p>
+                    <p className="text-slate-600 leading-snug mt-0.5">{consignee.address}</p>
+                    <p className="mt-1 font-mono text-[10px] text-slate-700">
+                        <span className="text-slate-500 font-sans">Tax ID:</span> {consignee.taxId}
                     </p>
                 </div>
             </div>
 
             {/* 4. Notify Party */}
-            <div className="border border-gray-200 rounded p-2.5 bg-white mb-4">
+            <div className="border border-slate-200 rounded p-2.5 bg-white mb-4">
                 <h4 className="font-bold text-[#06283A] uppercase tracking-wide border-b pb-1 mb-1.5 text-[10px]">
                     4. Notify Party
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     <div>
-                        <p className="font-semibold text-gray-900">{notifyParty.name}</p>
-                        <p className="text-gray-600 leading-snug">{notifyParty.address}</p>
+                        <p className="font-semibold text-slate-900">{notifyParty.name}</p>
+                        <p className="text-slate-600 leading-snug">{notifyParty.address}</p>
                     </div>
                     <div className="text-left md:text-right">
-                        <p className="font-mono text-[10px] text-gray-700">
-                            <span className="text-gray-500 font-sans">Tax ID:</span> {notifyParty.taxId}
+                        <p className="font-mono text-[10px] text-slate-700">
+                            <span className="text-slate-500 font-sans">Tax ID:</span> {notifyParty.taxId}
                         </p>
                     </div>
                 </div>
             </div>
 
             {/* 5. Transport Detail */}
-            <div className="border border-gray-200 rounded p-2.5 bg-gray-50 mb-4">
+            <div className="border border-slate-200 rounded p-2.5 bg-slate-50 mb-4">
                 <h4 className="font-bold text-[#06283A] uppercase tracking-wide border-b pb-1 mb-2 text-[10px]">
                     5. Transport Detail
                 </h4>
                 <div className="grid grid-cols-2 gap-2 text-[10px]">
                     <div>
-                        <span className="text-gray-500 block">a. Port of Loading:</span>
-                        <strong className="text-gray-900">{transport.portOfLoading}</strong>
+                        <span className="text-slate-500 block">a. Port of Loading:</span>
+                        <strong className="text-slate-900">{transport.portOfLoading}</strong>
                     </div>
                     <div>
-                        <span className="text-gray-500 block">b. Port of Discharge:</span>
-                        <strong className="text-gray-900">{transport.portOfDischarge}</strong>
+                        <span className="text-slate-500 block">b. Port of Discharge:</span>
+                        <strong className="text-slate-900">{transport.portOfDischarge}</strong>
                     </div>
                     <div>
-                        <span className="text-gray-500 block">c. Ship Name:</span>
-                        <strong className="text-gray-900">{transport.shipName}</strong>
+                        <span className="text-slate-500 block">c. Ship Name:</span>
+                        <strong className="text-slate-900">{transport.shipName}</strong>
                     </div>
                     <div>
-                        <span className="text-gray-500 block">d. Voyage:</span>
-                        <strong className="text-gray-900 font-mono">{transport.voyage}</strong>
+                        <span className="text-slate-500 block">d. Voyage:</span>
+                        <strong className="text-slate-900 font-mono">{transport.voyage}</strong>
                     </div>
                 </div>
             </div>
@@ -178,7 +178,7 @@ export default function BillOfLadingPreview({ document }: BillOfLadingPreviewPro
                 <h4 className="font-bold text-[#06283A] uppercase tracking-wide mb-1 text-[10px]">
                     6. Cargo Detail (List)
                 </h4>
-                <div className="overflow-hidden border border-gray-200 rounded">
+                <div className="overflow-hidden border border-slate-200 rounded">
                     <table className="w-full text-left border-collapse text-[10px]">
                         <thead>
                             <tr className="bg-[#06283A] text-white font-semibold">
@@ -187,12 +187,12 @@ export default function BillOfLadingPreview({ document }: BillOfLadingPreviewPro
                                 <th className="py-1.5 px-2.5 text-right">b. HS Code POL</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-200">
+                        <tbody className="divide-y divide-slate-200">
                             {cargoList.map((item, index) => (
                                 <tr key={index} className="bg-white">
                                     <td className="py-1.5 px-2.5 font-mono">{index + 1}</td>
-                                    <td className="py-1.5 px-2.5 font-medium text-gray-900">{item.description}</td>
-                                    <td className="py-1.5 px-2.5 text-right font-mono text-gray-700">{item.hsCodePOL || '-'}</td>
+                                    <td className="py-1.5 px-2.5 font-medium text-slate-900">{item.description}</td>
+                                    <td className="py-1.5 px-2.5 text-right font-mono text-slate-700">{item.hsCodePOL || '-'}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -201,28 +201,28 @@ export default function BillOfLadingPreview({ document }: BillOfLadingPreviewPro
             </div>
 
             {/* 7. Quantity (manual) */}
-            <div className="border border-gray-200 rounded p-2.5 bg-amber-50/40 mb-4">
+            <div className="border border-slate-200 rounded p-2.5 bg-amber-50/40 mb-4">
                 <h4 className="font-bold text-[#06283A] uppercase tracking-wide border-b border-amber-200 pb-1 mb-2 text-[10px]">
                     7. Quantity (Summary)
                 </h4>
                 <div className="grid grid-cols-3 gap-2 text-[10px] text-center">
                     <div className="bg-white p-1.5 rounded border border-amber-200/80">
-                        <span className="text-gray-500 block text-[9px]">a. Total of Gross Weight</span>
-                        <strong className="text-gray-900 font-mono">{totals.totalGrossWeight || '-'}</strong>
+                        <span className="text-slate-500 block text-[9px]">a. Total of Gross Weight</span>
+                        <strong className="text-slate-900 font-mono">{totals.totalGrossWeight || '-'}</strong>
                     </div>
                     <div className="bg-white p-1.5 rounded border border-amber-200/80">
-                        <span className="text-gray-500 block text-[9px]">b. Total of Packages</span>
-                        <strong className="text-gray-900 font-mono">{totals.totalPackages || '-'}</strong>
+                        <span className="text-slate-500 block text-[9px]">b. Total of Packages</span>
+                        <strong className="text-slate-900 font-mono">{totals.totalPackages || '-'}</strong>
                     </div>
                     <div className="bg-white p-1.5 rounded border border-amber-200/80">
-                        <span className="text-gray-500 block text-[9px]">c. Total Volume</span>
-                        <strong className="text-gray-900 font-mono">{totals.totalVolume || '-'}</strong>
+                        <span className="text-slate-500 block text-[9px]">c. Total Volume</span>
+                        <strong className="text-slate-900 font-mono">{totals.totalVolume || '-'}</strong>
                     </div>
                 </div>
             </div>
 
             {/* Footers */}
-            <div className="pt-3 border-t border-gray-200 flex items-center justify-between text-[9px] text-gray-500">
+            <div className="pt-3 border-t border-slate-200 flex items-center justify-between text-[9px] text-slate-500">
                 <span>GTD Logistics OS — Verified Freight Manifest</span>
                 <span>Page 1 of 1</span>
             </div>

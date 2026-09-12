@@ -28,15 +28,14 @@ export function MonitoringTable({ data, onViewDetail, selectedId, itemsPerPage =
   const rangeEnd = Math.min(currentPage * itemsPerPage, data.length);
 
   return (
-    <div className="bg-white w-full overflow-hidden" style={{ borderRadius: 10, border: '1px solid #E5E7EB' }}>
+    <div className="bg-white w-full overflow-hidden rounded-xl border border-slate-200 shadow-sm">
       <table className="w-full border-collapse">
         <thead>
-          <tr style={{ height: 42, borderBottom: '1px solid #F1F5F9' }}>
+          <tr className="border-b border-slate-200 bg-[#F8FAFC]">
             {['Contract & Assignment No', 'Cargo List', 'Origin', 'Destination', 'Status', 'Last Updated', 'Actions'].map((col) => (
               <th
                 key={col}
-                className="text-left px-4"
-                style={{ fontSize: 11, fontWeight: 600, color: '#64748B', textTransform: 'uppercase' }}
+                className="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500"
               >
                 {col}
               </th>

@@ -44,7 +44,7 @@ export default function UnitListInput({ units, onChange, disabled = false }: Uni
                         key={idx}
                         className="flex items-start gap-3 p-3 bg-slate-50/60 border border-[#E2E8F0] rounded-xl transition-all hover:border-slate-300"
                     >
-                        <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200/60 flex items-center justify-center text-[#F5B800] shrink-0 mt-0.5">
+                        <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200/60 flex items-center justify-center text-[#F6C343] shrink-0 mt-0.5">
                             <Package size={16} />
                         </div>
 
@@ -55,7 +55,7 @@ export default function UnitListInput({ units, onChange, disabled = false }: Uni
                                 onChange={(e) => updateUnit(idx, 'unit_name', e.target.value)}
                                 placeholder={"Nama & Model Unit (cth: Excavator CAT 320)"}
                                 disabled={disabled}
-                                className="w-full px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-sm text-[#06283A] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#F5B800] transition-all disabled:opacity-50"
+                                className="w-full px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-sm text-[#06283A] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#F6C343] transition-all disabled:opacity-50"
                             />
                         </div>
 
@@ -66,7 +66,7 @@ export default function UnitListInput({ units, onChange, disabled = false }: Uni
                                 value={unit.quantity}
                                 onChange={(e) => updateUnit(idx, 'quantity', Math.max(1, parseInt(e.target.value) || 1))}
                                 disabled={disabled}
-                                className="w-full px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-sm text-center font-semibold text-[#06283A] focus:outline-none focus:ring-2 focus:ring-[#F5B800] transition-all disabled:opacity-50"
+                                className="w-full px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-sm text-center font-semibold text-[#06283A] focus:outline-none focus:ring-2 focus:ring-[#F6C343] transition-all disabled:opacity-50"
                             />
                             <span className="block text-[10px] text-slate-400 text-center mt-0.5">Jumlah</span>
                         </div>
@@ -88,7 +88,7 @@ export default function UnitListInput({ units, onChange, disabled = false }: Uni
                 type="button"
                 onClick={addUnit}
                 disabled={disabled}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed border-slate-200 text-sm font-medium text-slate-500 hover:border-[#F5B800] hover:text-[#06283A] hover:bg-amber-50/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed border-slate-200 text-sm font-medium text-slate-500 hover:border-[#F6C343] hover:text-[#06283A] hover:bg-amber-50/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 <Plus size={16} />
                 <span>Add Unit</span>

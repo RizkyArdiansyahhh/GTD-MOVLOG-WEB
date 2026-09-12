@@ -439,7 +439,7 @@ class ApiEndToEndOperationalTest extends TestCase
         $finalSessionResp = $this->withHeaders($headersWorker1)->getJson("/api/v1/sessions/{$this->session->id}");
         $finalSessionResp->assertStatus(200)
             ->assertJsonPath('data.status', 'delivered')
-            ->assertJsonPath('data.status_label', 'Selesai');
+            ->assertJsonPath('data.status_label', 'telah tiba di tujuan');
     }
 
     // ─── 8. REQUIRED NEGATIVE SCENARIOS ──────────────────────────────────

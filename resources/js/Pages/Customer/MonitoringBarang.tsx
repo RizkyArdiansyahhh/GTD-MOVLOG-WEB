@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import CustomerLayout from '@/Layouts/CustomerLayout';
+import { PageHeader } from '@/Components/ui';
 import { useRealtimeUpdates } from '@/hooks/useRealtimeUpdates';
 import type { CustomerShipmentListItem, PaginatedData } from '@/types/customer';
 import {
@@ -91,14 +92,10 @@ export default function MonitoringBarang({ shipments, filters }: MonitoringBaran
 
             <div className="space-y-6">
                 {/* ── Page Header ── */}
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6">
-                    <h1 className="text-xl sm:text-2xl font-bold text-[#06283A] tracking-tight">
-                        Cargo &amp; Fleet Monitoring
-                    </h1>
-                    <p className="text-xs sm:text-sm text-slate-500 mt-1 font-normal">
-                        Monitor transit routes, tonnage, stage statuses, and estimated arrival times (ETA) for all your cargo.
-                    </p>
-                </div>
+                <PageHeader
+                    title="Cargo & Fleet Monitoring"
+                    subtitle="Monitor transit routes, tonnage, stage statuses, and estimated arrival times (ETA) for all your cargo."
+                />
 
                 {/* ── Search & Filter Controls ── */}
                 <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">

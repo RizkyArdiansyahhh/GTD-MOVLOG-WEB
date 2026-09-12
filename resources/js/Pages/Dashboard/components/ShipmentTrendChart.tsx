@@ -25,7 +25,7 @@ export default function ShipmentTrendChart({ data = [] }: ShipmentTrendChartProp
     const avgPerMonth = data.length > 0 ? (totalShipments / data.length).toFixed(1) : '0';
 
     return (
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm flex flex-col justify-between">
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col justify-between">
             <div>
                 <div className="flex items-center justify-between mb-1">
                     <h2 className="text-sm font-semibold text-[#06283A]">

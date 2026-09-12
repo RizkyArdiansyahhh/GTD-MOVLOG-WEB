@@ -46,7 +46,7 @@ export default function ProgressTimeline({ stages, currentStage }: ProgressTimel
                                         backgroundColor: isCompleted
                                             ? '#10B981'
                                             : isCurrent
-                                            ? '#F5B800'
+                                            ? '#F6C343'
                                             : '#CBD5E1',
                                     }}
                                     title={`${label}: ${isCompleted ? 'Completed' : isCurrent ? 'In Progress' : 'Upcoming'}`}
@@ -124,7 +124,7 @@ export default function ProgressTimeline({ stages, currentStage }: ProgressTimel
                                     backgroundColor: isCompleted
                                         ? '#10B981'
                                         : isCurrent
-                                        ? '#F5B800'
+                                        ? '#F6C343'
                                         : '#CBD5E1',
                                 }}
                                 title={`${stage}: ${isCompleted ? 'Completed' : isCurrent ? 'In Progress' : 'Upcoming'}`}

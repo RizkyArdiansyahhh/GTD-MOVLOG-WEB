@@ -30,7 +30,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     };
 
     return (
-        <div className="min-h-screen bg-[#F5F7FC] flex text-gray-800 font-sans antialiased">
+        <div className="min-h-screen bg-[#F5F7FC] flex text-slate-800 font-sans antialiased">
             {/* -- Left Fixed Desktop Sidebar & Mobile Drawer -- */}
             <Sidebar
                 isOpen={sidebarOpen}

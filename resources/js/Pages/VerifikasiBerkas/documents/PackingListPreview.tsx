@@ -49,7 +49,7 @@ export default function PackingListPreview({ document }: PackingListPreviewProps
     };
 
     return (
-        <div className="relative bg-white p-6 sm:p-7 rounded-lg border border-gray-200 shadow-sm text-gray-800 text-[11px] font-sans">
+        <div className="relative bg-white p-6 sm:p-7 rounded-lg border border-slate-200 shadow-sm text-slate-800 text-[11px] font-sans">
             {/* Watermark Stamp */}
             {document.status === 'Approved' && (
                 <div className="absolute right-6 top-24 pointer-events-none transform rotate-[-12deg] opacity-25 border-4 border-emerald-600 rounded-xl px-4 py-2 text-center text-emerald-700 font-extrabold tracking-widest text-base uppercase">
@@ -70,14 +70,14 @@ export default function PackingListPreview({ document }: PackingListPreviewProps
             {/* Header section */}
             <div className="flex items-start justify-between border-b-2 border-[#06283A] pb-3 mb-4">
                 <div className="flex items-center gap-2.5">
-                    <div className="flex items-center justify-center rounded-lg bg-[#06283A] text-[#F5B800] w-9 h-9">
+                    <div className="flex items-center justify-center rounded-lg bg-[#06283A] text-[#F6C343] w-9 h-9">
                         <Package size={20} />
                     </div>
                     <div>
                         <h2 className="text-sm font-bold text-[#06283A] tracking-tight">
                             GTD LOGISTICS OS
                         </h2>
-                        <p className="text-[9px] text-gray-500 uppercase tracking-wide">
+                        <p className="text-[9px] text-slate-500 uppercase tracking-wide">
                             Cargo Packaging Manifest
                         </p>
                     </div>
@@ -86,32 +86,32 @@ export default function PackingListPreview({ document }: PackingListPreviewProps
                     <span className="text-[10px] uppercase font-bold text-[#06283A] block">
                         PACKING LIST
                     </span>
-                    <span className="text-xs font-mono font-bold text-gray-900">
+                    <span className="text-xs font-mono font-bold text-slate-900">
                         {document.documentNumber}
                     </span>
                 </div>
             </div>
 
             {/* 1. Document Detail */}
-            <div className="mb-4 bg-gray-50 p-2.5 rounded border border-gray-200 text-[10px]">
+            <div className="mb-4 bg-slate-50 p-2.5 rounded border border-slate-200 text-[10px]">
                 <h4 className="font-bold text-[#06283A] uppercase tracking-wide border-b pb-1 mb-1.5 text-[10px]">
                     1. Document Detail
                 </h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                     <div>
-                        <span className="text-gray-500 block">a. Number:</span>
-                        <strong className="font-mono text-gray-900">{document.documentNumber}</strong>
+                        <span className="text-slate-500 block">a. Number:</span>
+                        <strong className="font-mono text-slate-900">{document.documentNumber}</strong>
                     </div>
                     <div>
-                        <span className="text-gray-500 block">b. Date:</span>
-                        <strong className="text-gray-900">{document.uploadDate.split(' ')[0]}</strong>
+                        <span className="text-slate-500 block">b. Date:</span>
+                        <strong className="text-slate-900">{document.uploadDate.split(' ')[0]}</strong>
                     </div>
                     <div>
-                        <span className="text-gray-500 block">c. Shipment Contract Number:</span>
-                        <strong className="font-mono text-gray-900">{document.contractNumber || 'CTR-GTD-2026-012'}</strong>
+                        <span className="text-slate-500 block">c. Shipment Contract Number:</span>
+                        <strong className="font-mono text-slate-900">{document.contractNumber || 'CTR-GTD-2026-012'}</strong>
                     </div>
                     <div>
-                        <span className="text-gray-500 block">d. Term of Shipment:</span>
+                        <span className="text-slate-500 block">d. Term of Shipment:</span>
                         <span className="inline-block bg-[#06283A] text-white px-2 py-0.5 rounded text-[9px] font-bold">
                             {document.termOfShipment || 'FOB'}
                         </span>
@@ -122,51 +122,51 @@ export default function PackingListPreview({ document }: PackingListPreviewProps
             {/* Shipper & Consignee */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
                 {/* 2. Shipper */}
-                <div className="border border-gray-200 rounded p-2.5 bg-white">
+                <div className="border border-slate-200 rounded p-2.5 bg-white">
                     <h4 className="font-bold text-[#06283A] uppercase tracking-wide border-b pb-1 mb-1.5 text-[10px]">
                         2. Shipper
                     </h4>
-                    <p className="font-semibold text-gray-900">{shipper.name}</p>
-                    <p className="text-gray-600 leading-snug mt-0.5">{shipper.address}</p>
-                    <p className="mt-1 font-mono text-[10px] text-gray-700">
-                        <span className="text-gray-500 font-sans">Tax ID:</span> {shipper.taxId}
+                    <p className="font-semibold text-slate-900">{shipper.name}</p>
+                    <p className="text-slate-600 leading-snug mt-0.5">{shipper.address}</p>
+                    <p className="mt-1 font-mono text-[10px] text-slate-700">
+                        <span className="text-slate-500 font-sans">Tax ID:</span> {shipper.taxId}
                     </p>
                 </div>
 
                 {/* 3. Consignee */}
-                <div className="border border-gray-200 rounded p-2.5 bg-white">
+                <div className="border border-slate-200 rounded p-2.5 bg-white">
                     <h4 className="font-bold text-[#06283A] uppercase tracking-wide border-b pb-1 mb-1.5 text-[10px]">
                         3. Consignee
                     </h4>
-                    <p className="font-semibold text-gray-900">{consignee.name}</p>
-                    <p className="text-gray-600 leading-snug mt-0.5">{consignee.address}</p>
-                    <p className="mt-1 font-mono text-[10px] text-gray-700">
-                        <span className="text-gray-500 font-sans">Tax ID:</span> {consignee.taxId}
+                    <p className="font-semibold text-slate-900">{consignee.name}</p>
+                    <p className="text-slate-600 leading-snug mt-0.5">{consignee.address}</p>
+                    <p className="mt-1 font-mono text-[10px] text-slate-700">
+                        <span className="text-slate-500 font-sans">Tax ID:</span> {consignee.taxId}
                     </p>
                 </div>
             </div>
 
             {/* 4. Transport Detail */}
-            <div className="border border-gray-200 rounded p-2.5 bg-gray-50 mb-4">
+            <div className="border border-slate-200 rounded p-2.5 bg-slate-50 mb-4">
                 <h4 className="font-bold text-[#06283A] uppercase tracking-wide border-b pb-1 mb-2 text-[10px]">
                     4. Transport Detail
                 </h4>
                 <div className="grid grid-cols-2 gap-2 text-[10px]">
                     <div>
-                        <span className="text-gray-500 block">a. Port of Loading:</span>
-                        <strong className="text-gray-900">{transport.portOfLoading}</strong>
+                        <span className="text-slate-500 block">a. Port of Loading:</span>
+                        <strong className="text-slate-900">{transport.portOfLoading}</strong>
                     </div>
                     <div>
-                        <span className="text-gray-500 block">b. Port of Discharge:</span>
-                        <strong className="text-gray-900">{transport.portOfDischarge}</strong>
+                        <span className="text-slate-500 block">b. Port of Discharge:</span>
+                        <strong className="text-slate-900">{transport.portOfDischarge}</strong>
                     </div>
                     <div>
-                        <span className="text-gray-500 block">c. Ship Name:</span>
-                        <strong className="text-gray-900">{transport.shipName}</strong>
+                        <span className="text-slate-500 block">c. Ship Name:</span>
+                        <strong className="text-slate-900">{transport.shipName}</strong>
                     </div>
                     <div>
-                        <span className="text-gray-500 block">d. Voyage:</span>
-                        <strong className="text-gray-900 font-mono">{transport.voyage}</strong>
+                        <span className="text-slate-500 block">d. Voyage:</span>
+                        <strong className="text-slate-900 font-mono">{transport.voyage}</strong>
                     </div>
                 </div>
             </div>
@@ -176,7 +176,7 @@ export default function PackingListPreview({ document }: PackingListPreviewProps
                 <h4 className="font-bold text-[#06283A] uppercase tracking-wide mb-1 text-[10px]">
                     5. Cargo Detail (List)
                 </h4>
-                <div className="overflow-x-auto border border-gray-200 rounded">
+                <div className="overflow-x-auto border border-slate-200 rounded">
                     <table className="w-full text-left border-collapse text-[9.5px]">
                         <thead>
                             <tr className="bg-[#06283A] text-white font-semibold whitespace-nowrap">
@@ -191,20 +191,20 @@ export default function PackingListPreview({ document }: PackingListPreviewProps
                                 <th className="py-1.5 px-2 text-right">j. Vol/Dim</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-200">
+                        <tbody className="divide-y divide-slate-200">
                             {cargoList.map((item, idx) => (
                                 <tr key={idx} className="bg-white">
-                                    <td className="py-1.5 px-2 font-medium text-gray-900">{item.description}</td>
+                                    <td className="py-1.5 px-2 font-medium text-slate-900">{item.description}</td>
                                     <td className="py-1.5 px-2 text-center font-mono">{item.quantityGoods || '-'}</td>
-                                    <td className="py-1.5 px-2 text-center text-gray-600">{item.goodsUnit || '-'}</td>
+                                    <td className="py-1.5 px-2 text-center text-slate-600">{item.goodsUnit || '-'}</td>
                                     <td className="py-1.5 px-2 text-center font-mono">{item.quantityPackage || '-'}</td>
-                                    <td className="py-1.5 px-2 text-center text-gray-600">{item.packageUnit || '-'}</td>
-                                    <td className="py-1.5 px-2 text-gray-700">
+                                    <td className="py-1.5 px-2 text-center text-slate-600">{item.packageUnit || '-'}</td>
+                                    <td className="py-1.5 px-2 text-slate-700">
                                         {item.type || '-'} {item.brand ? `(${item.brand})` : ''}
                                     </td>
-                                    <td className="py-1.5 px-2 text-right font-mono text-gray-700">{item.netWeight || '-'}</td>
-                                    <td className="py-1.5 px-2 text-right font-mono font-semibold text-gray-900">{item.grossWeight || '-'}</td>
-                                    <td className="py-1.5 px-2 text-right font-mono text-gray-700">{item.volume || '-'}</td>
+                                    <td className="py-1.5 px-2 text-right font-mono text-slate-700">{item.netWeight || '-'}</td>
+                                    <td className="py-1.5 px-2 text-right font-mono font-semibold text-slate-900">{item.grossWeight || '-'}</td>
+                                    <td className="py-1.5 px-2 text-right font-mono text-slate-700">{item.volume || '-'}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -213,25 +213,25 @@ export default function PackingListPreview({ document }: PackingListPreviewProps
             </div>
 
             {/* Total Lump-sum */}
-            <div className="border border-gray-200 rounded p-2.5 bg-gray-50 mb-4">
+            <div className="border border-slate-200 rounded p-2.5 bg-slate-50 mb-4">
                 <div className="grid grid-cols-3 gap-2 text-[10px] text-center">
-                    <div className="bg-white p-1.5 rounded border border-gray-200">
-                        <span className="text-gray-500 block text-[9px]">Lump-sum Gross Weight</span>
-                        <strong className="text-gray-900 font-mono">{totals.totalGrossWeight || '-'}</strong>
+                    <div className="bg-white p-1.5 rounded border border-slate-200">
+                        <span className="text-slate-500 block text-[9px]">Lump-sum Gross Weight</span>
+                        <strong className="text-slate-900 font-mono">{totals.totalGrossWeight || '-'}</strong>
                     </div>
-                    <div className="bg-white p-1.5 rounded border border-gray-200">
-                        <span className="text-gray-500 block text-[9px]">Total Package Count</span>
-                        <strong className="text-gray-900 font-mono">{totals.totalPackages || '-'}</strong>
+                    <div className="bg-white p-1.5 rounded border border-slate-200">
+                        <span className="text-slate-500 block text-[9px]">Total Package Count</span>
+                        <strong className="text-slate-900 font-mono">{totals.totalPackages || '-'}</strong>
                     </div>
-                    <div className="bg-white p-1.5 rounded border border-gray-200">
-                        <span className="text-gray-500 block text-[9px]">Lump-sum Volume / Dimension</span>
-                        <strong className="text-gray-900 font-mono">{totals.totalVolume || '-'}</strong>
+                    <div className="bg-white p-1.5 rounded border border-slate-200">
+                        <span className="text-slate-500 block text-[9px]">Lump-sum Volume / Dimension</span>
+                        <strong className="text-slate-900 font-mono">{totals.totalVolume || '-'}</strong>
                     </div>
                 </div>
             </div>
 
             {/* Footers */}
-            <div className="pt-3 border-t border-gray-200 flex items-center justify-between text-[9px] text-gray-500">
+            <div className="pt-3 border-t border-slate-200 flex items-center justify-between text-[9px] text-slate-500">
                 <span>GTD Logistics OS — Verified Packing List</span>
                 <span>Page 1 of 1</span>
             </div>

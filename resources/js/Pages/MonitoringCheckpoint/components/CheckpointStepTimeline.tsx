@@ -18,7 +18,7 @@ export default function CheckpointStepTimeline({ steps }: CheckpointStepTimeline
     const isAllCompleted = completedCount === steps.length && steps.length > 0;
 
     return (
-        <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs sm:p-7">
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs sm:p-7">
             {/* Header Timeline */}
             <div className="mb-6 flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
                 <div className="flex items-center gap-2">

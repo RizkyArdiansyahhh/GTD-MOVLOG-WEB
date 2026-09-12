@@ -66,26 +66,26 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
     }, [dropdownOpen]);
 
     return (
-        <header className="sticky top-0 z-30 h-16 w-full bg-white/95 backdrop-blur-md border-b border-gray-200/80 px-4 sm:px-6 flex items-center justify-between">
+        <header className="sticky top-0 z-30 h-16 w-full bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-6 flex items-center justify-between">
             {/* -- Left Section: Mobile Toggle & Dynamic Greeting -- */}
             <div className="flex items-center gap-3 min-w-0">
                 <button
                     type="button"
                     onClick={onToggleSidebar}
-                    className="flex lg:hidden items-center justify-center w-9 h-9 rounded-xl border border-gray-200 hover:bg-gray-100 transition-colors"
+                    className="flex lg:hidden items-center justify-center w-9 h-9 rounded-xl border border-slate-200 hover:bg-slate-100 transition-colors"
                     aria-label="Toggle Navigation Menu"
                 >
-                    <Menu size={20} className="text-gray-700" />
+                    <Menu size={20} className="text-slate-700" />
                 </button>
 
                 <div className="flex flex-col min-w-0">
-                    <h1 className="text-sm sm:text-base font-bold text-gray-900 leading-snug truncate">
+                    <h1 className="text-sm sm:text-base font-bold text-slate-900 leading-snug truncate">
                         {getGreeting()},{' '}
-                        <span className="font-semibold text-gray-700">
+                        <span className="font-semibold text-slate-700">
                             {user?.name?.split(' ')[0] || 'User'}
                         </span>
                     </h1>
-                    <p className="hidden md:block text-[11px] text-gray-400 font-medium leading-none mt-0.5 truncate">
+                    <p className="hidden md:block text-[11px] text-slate-400 font-medium leading-none mt-0.5 truncate">
                         GTD Activity & Logistics Summary
                     </p>
                 </div>
@@ -94,8 +94,8 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
             {/* -- Right Section: Search, Date, Notifications, Profile -- */}
             <div className="flex items-center gap-2 sm:gap-4 shrink-0">
                 {/* Date Pill */}
-                <div className="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100/80 border border-gray-200/60 text-xs font-semibold text-gray-600">
-                    <Calendar size={14} className="text-gray-400" />
+                <div className="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100/80 border border-slate-200/60 text-xs font-semibold text-slate-600">
+                    <Calendar size={14} className="text-slate-400" />
                     <span>{formattedDate}</span>
                 </div>
 
@@ -105,12 +105,12 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
                 {/* Notification Bell */}
                 <button
                     type="button"
-                    className="relative flex items-center justify-center w-9 h-9 rounded-full bg-gray-100/80 hover:bg-gray-200/80 text-gray-600 hover:text-gray-900 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+                    className="relative flex items-center justify-center w-9 h-9 rounded-full bg-slate-100/80 hover:bg-slate-200/80 text-slate-600 hover:text-slate-900 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
                     aria-label="Notifications"
                 >
                     <Bell size={18} strokeWidth={1.8} />
                     {NOTIFICATION_COUNT > 0 && (
-                        <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold text-gray-900 bg-amber-400 ring-2 ring-white">
+                        <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold text-slate-900 bg-amber-400 ring-2 ring-white">
                             {NOTIFICATION_COUNT > 9 ? '9+' : NOTIFICATION_COUNT}
                         </span>
                     )}
@@ -121,7 +121,7 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
                     <button
                         type="button"
                         onClick={() => setDropdownOpen((prev) => !prev)}
-                        className="flex items-center gap-2.5 p-1 rounded-full hover:bg-gray-100/80 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 cursor-pointer group"
+                        className="flex items-center gap-2.5 p-1 rounded-full hover:bg-slate-100/80 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 cursor-pointer group"
                         aria-label="User profile menu"
                         aria-expanded={dropdownOpen}
                     >
@@ -138,23 +138,23 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
                             </div>
                         )}
                         <div className="hidden sm:block text-left leading-tight">
-                            <p className="text-xs font-bold text-gray-800 truncate max-w-[130px]">
+                            <p className="text-xs font-bold text-slate-800 truncate max-w-[130px]">
                                 {user?.name}
                             </p>
-                            <p className="text-[10px] text-gray-400 font-medium capitalize truncate">
+                            <p className="text-[10px] text-slate-400 font-medium capitalize truncate">
                                 {formattedRole}
                             </p>
                         </div>
-                        <ChevronDown size={14} className="text-gray-400 group-hover:text-gray-600 transition-colors hidden sm:block" />
+                        <ChevronDown size={14} className="text-slate-400 group-hover:text-slate-600 transition-colors hidden sm:block" />
                     </button>
 
                     {dropdownOpen && (
-                        <div className="absolute right-0 mt-2 w-60 rounded-2xl bg-white border border-gray-200 shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                            <div className="px-3 py-2.5 border-b border-gray-100 mb-1">
-                                <p className="text-xs font-bold text-gray-900 truncate">
+                        <div className="absolute right-0 mt-2 w-60 rounded-2xl bg-white border border-slate-200 shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                            <div className="px-3 py-2.5 border-b border-slate-100 mb-1">
+                                <p className="text-xs font-bold text-slate-900 truncate">
                                     {user?.name}
                                 </p>
-                                <p className="text-[11px] text-gray-500 font-medium truncate mt-0.5">
+                                <p className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
                                     {user?.email}
                                 </p>
                                 <div className="inline-flex items-center gap-1 mt-2 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-400/20 text-amber-900 border border-amber-400/30">
@@ -166,13 +166,13 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
                             <Link
                                 href="/profil"
                                 onClick={() => setDropdownOpen(false)}
-                                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-gray-700 hover:text-gray-900 hover:bg-gray-100/80 rounded-xl transition-colors cursor-pointer mb-0.5"
+                                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100/80 rounded-xl transition-colors cursor-pointer mb-0.5"
                             >
-                                <UserRound size={16} className="text-gray-400 shrink-0" strokeWidth={1.8} />
+                                <UserRound size={16} className="text-slate-400 shrink-0" strokeWidth={1.8} />
                                 <span>Edit Profile</span>
                             </Link>
 
-                            <div className="my-1 border-t border-gray-100" />
+                            <div className="my-1 border-t border-slate-100" />
 
                             {/* Logout Option - Neutral Soft Gray Style (bukan merah pekat) */}
                             <Link
@@ -180,9 +180,9 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
                                 method="post"
                                 as="button"
                                 onClick={() => setDropdownOpen(false)}
-                                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-gray-700 hover:text-gray-900 hover:bg-gray-100/80 rounded-xl transition-colors cursor-pointer"
+                                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100/80 rounded-xl transition-colors cursor-pointer"
                             >
-                                <LogOut size={16} className="text-gray-400 shrink-0" strokeWidth={1.8} />
+                                <LogOut size={16} className="text-slate-400 shrink-0" strokeWidth={1.8} />
                                 <span>Sign Out</span>
                             </Link>
                         </div>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Plus, CheckCircle2, AlertCircle } from 'lucide-react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
+import { PageHeader } from '@/Components/ui';
 import type { MasterTemplateItem, CheckpointOption } from './types';
 
 interface IndexProps {
@@ -34,26 +35,20 @@ export default function TemplateLaporanIndex({ templates = [], checkpoints = [] 
         <DashboardLayout>
             <Head title="Report Templates - GTD Logistics" />
 
-            <div className="w-full max-w-7xl mx-auto space-y-4">
-                {/* ── Page Header ── */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
-                    <div>
-                        <h1 className="text-base font-bold text-[#06283A]">
-                            Report Templates
-                        </h1>
-                        <p className="text-xs text-slate-500">
-                            Konfigurasi formulir dan slot foto bukti untuk setiap tahapan pengiriman
-                        </p>
-                    </div>
-
-                    <Link
-                        href="/template-laporan/create"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#06283A] bg-[#F5B800] hover:bg-[#E5AC00] transition-colors self-start sm:self-auto cursor-pointer shadow-2xs"
-                    >
-                        <Plus size={13} />
-                        Add Template
-                    </Link>
-                </div>
+            <div className="w-full max-w-7xl mx-auto space-y-6">
+                <PageHeader
+                    title="Report Templates"
+                    subtitle="Konfigurasi formulir dan slot foto bukti untuk setiap tahapan pengiriman"
+                    actions={
+                        <Link
+                            href="/template-laporan/create"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#06283A] bg-[#F6C343] hover:bg-[#E0AD2C] transition-colors self-start sm:self-auto cursor-pointer shadow-2xs"
+                        >
+                            <Plus size={13} />
+                            Add Template
+                        </Link>
+                    }
+                />
 
                 {/* ── Flash Messages ── */}
                 {flash?.success && (

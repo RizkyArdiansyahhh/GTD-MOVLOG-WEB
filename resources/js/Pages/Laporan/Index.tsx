@@ -1,6 +1,7 @@
 import React from 'react';
 import { Head } from '@inertiajs/react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
+import { PageHeader } from '@/Components/ui';
 import { useLaporan } from './hooks/useLaporan';
 import { DateRangeCard, FileFormatCard } from './components/ExportOptionsCards';
 import { DownloadHistoryTable } from './components/DownloadHistoryTable';
@@ -110,29 +111,16 @@ export default function LaporanIndex({ customers = [], statuses = [] }: Props) {
 
             <div
                 style={{
-                    padding: 24,
-                    background: '#F5F7FA',
-                    minHeight: '100%',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 24,
                     boxSizing: 'border-box',
                 }}
             >
-                {/* Page Header */}
-                <div>
-                    <h1
-                        style={{
-                            fontFamily: 'Poppins, sans-serif',
-                            fontWeight: 600,
-                            fontSize: 32,
-                            color: '#06283A',
-                            margin: 0,
-                        }}
-                    >
-                        Laporan
-                    </h1>
-                </div>
+                <PageHeader
+                    title="Laporan"
+                    subtitle="Buat dan unduh laporan pengiriman operasional"
+                />
 
                 {/* Export error banner */}
                 {exportError && <AlertError message={exportError} />}

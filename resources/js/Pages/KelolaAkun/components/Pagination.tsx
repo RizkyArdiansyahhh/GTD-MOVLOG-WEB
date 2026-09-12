@@ -44,9 +44,9 @@ export default function Pagination({
     return (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 px-1">
             {/* Info */}
-            <p className="text-sm text-gray-400 text-center sm:text-left">
-                Showing <span className="font-semibold text-gray-600">{from}–{to}</span> of{' '}
-                <span className="font-semibold text-gray-600">{totalItems}</span> users
+            <p className="text-sm text-slate-400 text-center sm:text-left">
+                Showing <span className="font-semibold text-slate-600">{from}–{to}</span> of{' '}
+                <span className="font-semibold text-slate-600">{totalItems}</span> users
             </p>
 
             {/* Page Controls */}
@@ -56,7 +56,7 @@ export default function Pagination({
                     type="button"
                     disabled={currentPage === 1}
                     onClick={() => onPageChange(currentPage - 1)}
-                    className="flex items-center gap-1 rounded-lg px-3 text-sm font-medium transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100 text-gray-600"
+                    className="flex items-center gap-1 rounded-lg px-3 text-sm font-medium transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 text-slate-600"
                     style={{ height: 36 }}
                 >
                     <ChevronLeft size={16} strokeWidth={2} />
@@ -68,7 +68,7 @@ export default function Pagination({
                     page === '...' ? (
                         <span
                             key={`ellipsis-${idx}`}
-                            className="flex items-center justify-center text-sm text-gray-400"
+                            className="flex items-center justify-center text-sm text-slate-400"
                             style={{ width: 36, height: 36 }}
                         >
                             …
@@ -81,13 +81,13 @@ export default function Pagination({
                             className={[
                                 'flex items-center justify-center rounded-lg text-sm font-semibold transition-all duration-150',
                                 currentPage === page
-                                    ? 'text-gray-900 shadow-sm'
-                                    : 'text-gray-500 hover:bg-gray-100',
+                                    ? 'text-slate-900 shadow-sm'
+                                    : 'text-slate-500 hover:bg-slate-100',
                             ].join(' ')}
                             style={{
                                 width: 36,
                                 height: 36,
-                                backgroundColor: currentPage === page ? '#F5B800' : undefined,
+                                backgroundColor: currentPage === page ? '#F6C343' : undefined,
                             }}
                         >
                             {page}
@@ -100,7 +100,7 @@ export default function Pagination({
                     type="button"
                     disabled={currentPage === totalPages}
                     onClick={() => onPageChange(currentPage + 1)}
-                    className="flex items-center gap-1 rounded-lg px-3 text-sm font-medium transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100 text-gray-600"
+                    className="flex items-center gap-1 rounded-lg px-3 text-sm font-medium transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 text-slate-600"
                     style={{ height: 36 }}
                 >
                     Next

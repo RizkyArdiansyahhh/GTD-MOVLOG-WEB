@@ -237,7 +237,7 @@ export default function MovementReportModal({
                 {/* ── Header ── */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/70 shrink-0">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-[#F5B800]">
+                        <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-[#F6C343]">
                             <FileText size={20} />
                         </div>
                         <div>
@@ -278,7 +278,7 @@ export default function MovementReportModal({
                 {/* ── Progress Requirement Bar ── */}
                 <div className="px-6 py-2.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between text-xs shrink-0">
                     <div className="flex items-center gap-2 text-slate-600 font-medium">
-                        <span className="w-2 h-2 rounded-full bg-[#F5B800]" />
+                        <span className="w-2 h-2 rounded-full bg-[#F6C343]" />
                         Kelengkapan Syarat Snapshot:
                         <span className="font-bold text-[#06283A]">
                             {satisfiedRequirements} / {totalRequirements} Syarat Terpenuhi
@@ -287,7 +287,7 @@ export default function MovementReportModal({
                     <div className="w-36 h-2 bg-slate-200 rounded-full overflow-hidden">
                         <div
                             className={`h-full transition-all duration-300 ${
-                                satisfiedRequirements === totalRequirements ? 'bg-emerald-500' : 'bg-[#F5B800]'
+                                satisfiedRequirements === totalRequirements ? 'bg-emerald-500' : 'bg-[#F6C343]'
                             }`}
                             style={{
                                 width: `${totalRequirements > 0 ? (satisfiedRequirements / totalRequirements) * 100 : 0}%`,
@@ -333,7 +333,7 @@ export default function MovementReportModal({
                                                         [field.field_key]: e.target.value,
                                                     }))
                                                 }
-                                                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-[#06283A] focus:outline-none focus:ring-2 focus:ring-[#F5B800]/20 focus:border-[#F5B800] transition-all"
+                                                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-[#06283A] focus:outline-none focus:ring-2 focus:ring-[#F6C343]/20 focus:border-[#F6C343] transition-all"
                                             >
                                                 <option value="">-- Pilih {field.label} --</option>
                                                 {field.options.map((opt) => (
@@ -353,7 +353,7 @@ export default function MovementReportModal({
                                                         [field.field_key]: e.target.value,
                                                     }))
                                                 }
-                                                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-[#06283A] focus:outline-none focus:ring-2 focus:ring-[#F5B800]/20 focus:border-[#F5B800] transition-all"
+                                                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-[#06283A] focus:outline-none focus:ring-2 focus:ring-[#F6C343]/20 focus:border-[#F6C343] transition-all"
                                             />
                                         )}
                                     </div>
@@ -445,7 +445,7 @@ export default function MovementReportModal({
                                                 )}
                                             </div>
                                         ) : (
-                                            <label className="flex flex-col items-center justify-center py-3 border border-dashed border-slate-300 hover:border-[#F5B800] rounded-lg cursor-pointer bg-white hover:bg-amber-50/20 transition-all">
+                                            <label className="flex flex-col items-center justify-center py-3 border border-dashed border-slate-300 hover:border-[#F6C343] rounded-lg cursor-pointer bg-white hover:bg-amber-50/20 transition-all">
                                                 <Upload size={16} className="text-slate-400 mb-1" />
                                                 <span className="text-[11px] font-medium text-slate-600">
                                                     Klik untuk upload foto
@@ -507,7 +507,7 @@ export default function MovementReportModal({
                                         placeholder="-1.265386"
                                         value={latitude}
                                         onChange={(e) => setLatitude(e.target.value)}
-                                        className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-[#06283A] focus:outline-none focus:ring-2 focus:ring-[#F5B800]/20 focus:border-[#F5B800]"
+                                        className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-[#06283A] focus:outline-none focus:ring-2 focus:ring-[#F6C343]/20 focus:border-[#F6C343]"
                                     />
                                 </div>
                             </div>
@@ -523,7 +523,7 @@ export default function MovementReportModal({
                                         placeholder="116.831200"
                                         value={longitude}
                                         onChange={(e) => setLongitude(e.target.value)}
-                                        className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-[#06283A] focus:outline-none focus:ring-2 focus:ring-[#F5B800]/20 focus:border-[#F5B800]"
+                                        className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-[#06283A] focus:outline-none focus:ring-2 focus:ring-[#F6C343]/20 focus:border-[#F6C343]"
                                     />
                                 </div>
                             </div>
@@ -546,7 +546,7 @@ export default function MovementReportModal({
                                         type="datetime-local"
                                         value={eventAt}
                                         onChange={(e) => setEventAt(e.target.value)}
-                                        className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-[#06283A] focus:outline-none focus:ring-2 focus:ring-[#F5B800]/20 focus:border-[#F5B800]"
+                                        className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-[#06283A] focus:outline-none focus:ring-2 focus:ring-[#F6C343]/20 focus:border-[#F6C343]"
                                     />
                                 </div>
                             </div>

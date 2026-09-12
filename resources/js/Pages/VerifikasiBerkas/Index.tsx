@@ -3,6 +3,7 @@ import { Head, usePage, router } from '@inertiajs/react';
 import { FileCheck2, Search, AlertCircle, Ship, Clock } from 'lucide-react';
 import './shipment-table.css';
 import DashboardLayout from '@/Layouts/DashboardLayout';
+import { PageHeader } from '@/Components/ui';
 import type { PageProps } from '@/types';
 import type { VerificationDocument } from './types';
 import { groupDocumentsByShipment } from './utils/shipmentUtils';
@@ -92,38 +93,32 @@ export default function VerifikasiBerkasIndex() {
                     >
                         <AlertCircle size={28} className="text-red-500" strokeWidth={1.8} />
                     </div>
-                    <h2 className="text-lg font-bold text-gray-900 mb-1">Access Denied</h2>
-                    <p className="text-sm text-gray-500 max-w-md mx-auto">
+                    <h2 className="text-lg font-bold text-slate-900 mb-1">Access Denied</h2>
+                    <p className="text-sm text-slate-500 max-w-md mx-auto">
                         The <strong>Document Verification</strong> page is restricted to users with the <strong>Supervisor</strong> role.
                     </p>
                 </div>
             ) : (
                 <>
                     {/* ──────── HEADER ──────── */}
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-                        <div>
-                            <h1
-                                className="text-[24px] font-semibold leading-tight"
-                                style={{ color: '#06283A' }}
-                            >
-                                Document Verification
-                            </h1>
-                            <p className="text-xs text-slate-500 mt-1 font-normal">
-                                Verify the completeness and validity of submitted shipment documents.
-                            </p>
-                        </div>
-
-                        {pendingVerificationCount > 0 && (
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/80 shrink-0">
-                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                                <Clock size={12} className="text-amber-600" />
-                                <span>{pendingVerificationCount} shipment(s) pending verification</span>
-                            </span>
-                        )}
+                    <div className="mb-6">
+                        <PageHeader
+                            title="Document Verification"
+                            subtitle="Verify the completeness and validity of submitted shipment documents."
+                            actions={
+                                pendingVerificationCount > 0 ? (
+                                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/80 shrink-0">
+                                        <span className="w-1.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
+                                        <Clock size={12} className="text-amber-600" />
+                                        <span>{pendingVerificationCount} shipment(s) pending verification</span>
+                                    </span>
+                                ) : undefined
+                            }
+                        />
                     </div>
 
                     {/* ──────── FILTERS & SEARCH ──────── */}
-                    <div className="bg-white rounded-[10px] border border-[#E2E8F0] shadow-sm p-4 mb-5">
+                    <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm p-4 mb-6">
                         <div className="flex flex-col sm:flex-row items-center gap-3">
                             {/* Search */}
                             <div className="relative w-full sm:flex-1">

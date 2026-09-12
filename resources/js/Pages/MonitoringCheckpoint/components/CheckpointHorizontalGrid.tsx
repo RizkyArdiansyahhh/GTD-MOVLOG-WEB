@@ -67,7 +67,7 @@ export default function CheckpointHorizontalGrid({
     return (
         <div className="space-y-6">
             {/* Horizontal Stepper Connector Bar */}
-            <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs">
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
                 <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
                     <div>
                         <h2 className="text-base font-bold text-[#06283A]">
@@ -128,7 +128,7 @@ export default function CheckpointHorizontalGrid({
                             return (
                                 <div
                                     key={step.checkpointId}
-                                    className={`relative flex flex-col items-center rounded-2xl border p-4 text-center transition-all ${
+                                    className={`relative flex flex-col items-center rounded-xl border p-4 text-center transition-all ${
                                         isInProgress
                                             ? "border-amber-300 bg-amber-50/40 shadow-xs ring-2 ring-amber-400/20"
                                             : isCompleted
@@ -139,18 +139,18 @@ export default function CheckpointHorizontalGrid({
                                     {/* Number / Status Circle Node */}
                                     <div className="mb-3">
                                         {isCompleted ? (
-                                            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#06283A] text-white shadow-xs">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#06283A] text-white shadow-xs">
                                                 <Check className="h-5 w-5" strokeWidth={2.5} />
                                             </div>
                                         ) : isInProgress ? (
-                                            <div className="flex h-10 w-10 items-center justify-center rounded-2xl border-2 border-[#B7791F] bg-amber-50 text-[#B7791F] shadow-xs">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-[#B7791F] bg-amber-50 text-[#B7791F] shadow-xs">
                                                 <span className="relative flex h-3 w-3">
                                                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
                                                     <span className="relative inline-flex h-3 w-3 rounded-full bg-[#B7791F]" />
                                                 </span>
                                             </div>
                                         ) : (
-                                            <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-xs font-bold text-slate-400">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-400">
                                                 {idx + 1}
                                             </div>
                                         )}
@@ -203,7 +203,7 @@ export default function CheckpointHorizontalGrid({
                     return (
                         <div
                             key={step.checkpointId}
-                            className={`flex flex-col rounded-2xl border bg-white shadow-xs transition-all ${
+                            className={`flex flex-col rounded-xl border bg-white shadow-xs transition-all ${
                                 isInProgress
                                     ? "border-amber-300 ring-1 ring-amber-300/40"
                                     : isCompleted

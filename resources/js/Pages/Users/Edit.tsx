@@ -109,7 +109,7 @@ export default function Edit({ user, companies = [] }: EditUserProps) {
             <div className="max-w-4xl mx-auto space-y-6">
                 {/* ── Breadcrumb & Navigation Header ── */}
                 <div>
-                    <nav className="flex items-center gap-2 text-sm text-gray-500 mb-2">
+                    <nav className="flex items-center gap-2 text-sm text-slate-500 mb-2">
                         <Link
                             href="/kelola-akun"
                             className="hover:text-[#06283A] transition-colors flex items-center gap-1 font-medium"
@@ -117,13 +117,13 @@ export default function Edit({ user, companies = [] }: EditUserProps) {
                             <ArrowLeft size={16} />
                             Kelola Akun
                         </Link>
-                        <ChevronRight size={14} className="text-gray-400" />
-                        <span className="text-gray-900 font-semibold">Edit User</span>
+                        <ChevronRight size={14} className="text-slate-400" />
+                        <span className="text-slate-900 font-semibold">Edit User</span>
                     </nav>
                     <h1 className="text-2xl font-bold" style={{ color: '#06283A' }}>
                         Edit User
                     </h1>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-slate-500 mt-1">
                         Update user information and system access permissions for <strong>{user.name}</strong>.
                     </p>
                 </div>
@@ -131,11 +131,11 @@ export default function Edit({ user, companies = [] }: EditUserProps) {
                 {/* ── Main Form Card ── */}
                 <form
                     onSubmit={handleSubmit}
-                    className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8 space-y-8"
+                    className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-8"
                 >
                     {/* ── Section 1: Personal Information ── */}
                     <div className="space-y-4">
-                        <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
+                        <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
                             <UserIcon size={18} className="text-[#06283A]" />
                             <h2 className="text-base font-bold" style={{ color: '#06283A' }}>
                                 Personal Information
@@ -145,7 +145,7 @@ export default function Edit({ user, companies = [] }: EditUserProps) {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             {/* Full Name */}
                             <div>
-                                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                                     Full Name <span className="text-red-500">*</span>
                                 </label>
                                 <input
@@ -156,7 +156,7 @@ export default function Edit({ user, companies = [] }: EditUserProps) {
                                     className={`w-full rounded-xl border px-3.5 py-2.5 text-sm transition-all focus:outline-none focus:ring-2 ${
                                         errors.name
                                             ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
-                                            : 'border-gray-200 focus:border-[#F5B800] focus:ring-[#F5B800]/20'
+                                            : 'border-slate-200 focus:border-[#F6C343] focus:ring-[#F6C343]/20'
                                     }`}
                                 />
                                 {errors.name && (
@@ -166,7 +166,7 @@ export default function Edit({ user, companies = [] }: EditUserProps) {
 
                             {/* Email */}
                             <div>
-                                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                                     Email Address <span className="text-red-500">*</span>
                                 </label>
                                 <input
@@ -177,7 +177,7 @@ export default function Edit({ user, companies = [] }: EditUserProps) {
                                     className={`w-full rounded-xl border px-3.5 py-2.5 text-sm transition-all focus:outline-none focus:ring-2 ${
                                         errors.email
                                             ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
-                                            : 'border-gray-200 focus:border-[#F5B800] focus:ring-[#F5B800]/20'
+                                            : 'border-slate-200 focus:border-[#F6C343] focus:ring-[#F6C343]/20'
                                     }`}
                                 />
                                 {errors.email && (
@@ -187,7 +187,7 @@ export default function Edit({ user, companies = [] }: EditUserProps) {
 
                             {/* Phone */}
                             <div>
-                                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                                     Phone Number
                                 </label>
                                 <input
@@ -198,7 +198,7 @@ export default function Edit({ user, companies = [] }: EditUserProps) {
                                     className={`w-full rounded-xl border px-3.5 py-2.5 text-sm transition-all focus:outline-none focus:ring-2 ${
                                         errors.phone
                                             ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
-                                            : 'border-gray-200 focus:border-[#F5B800] focus:ring-[#F5B800]/20'
+                                            : 'border-slate-200 focus:border-[#F6C343] focus:ring-[#F6C343]/20'
                                     }`}
                                 />
                                 {errors.phone && (
@@ -210,7 +210,7 @@ export default function Edit({ user, companies = [] }: EditUserProps) {
 
                     {/* ── Section 2: Access & Role ── */}
                     <div className="space-y-4">
-                        <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
+                        <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
                             <Shield size={18} className="text-[#06283A]" />
                             <h2 className="text-base font-bold" style={{ color: '#06283A' }}>
                                 Access & Role
@@ -220,7 +220,7 @@ export default function Edit({ user, companies = [] }: EditUserProps) {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             {/* Role */}
                             <div className={isCustomer ? '' : 'sm:col-span-2'}>
-                                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                                     Role <span className="text-red-500">*</span>
                                 </label>
                                 <select
@@ -229,7 +229,7 @@ export default function Edit({ user, companies = [] }: EditUserProps) {
                                     className={`w-full rounded-xl border px-3.5 py-2.5 text-sm bg-white transition-all focus:outline-none focus:ring-2 ${
                                         errors.role
                                             ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
-                                            : 'border-gray-200 focus:border-[#F5B800] focus:ring-[#F5B800]/20'
+                                            : 'border-slate-200 focus:border-[#F6C343] focus:ring-[#F6C343]/20'
                                     }`}
                                 >
                                     <option value="super-admin">Super Admin</option>
@@ -246,7 +246,7 @@ export default function Edit({ user, companies = [] }: EditUserProps) {
                             {/* Company Name — shown only when role is Customer */}
                             {isCustomer && (
                                 <div>
-                                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                                         Company Name <span className="text-red-500">*</span>
                                     </label>
                                     <select
@@ -256,7 +256,7 @@ export default function Edit({ user, companies = [] }: EditUserProps) {
                                         className={`w-full rounded-xl border px-3.5 py-2.5 text-sm bg-white transition-all focus:outline-none focus:ring-2 ${
                                             companyError
                                                 ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
-                                                : 'border-gray-200 focus:border-[#F5B800] focus:ring-[#F5B800]/20'
+                                                : 'border-slate-200 focus:border-[#F6C343] focus:ring-[#F6C343]/20'
                                         }`}
                                     >
                                         <option value="">Select Company</option>
@@ -279,7 +279,7 @@ export default function Edit({ user, companies = [] }: EditUserProps) {
 
                             {/* Status */}
                             <div>
-                                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                                     Account Status <span className="text-red-500">*</span>
                                 </label>
                                 <select
@@ -288,7 +288,7 @@ export default function Edit({ user, companies = [] }: EditUserProps) {
                                     className={`w-full rounded-xl border px-3.5 py-2.5 text-sm bg-white transition-all focus:outline-none focus:ring-2 ${
                                         errors.status
                                             ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
-                                            : 'border-gray-200 focus:border-[#F5B800] focus:ring-[#F5B800]/20'
+                                            : 'border-slate-200 focus:border-[#F6C343] focus:ring-[#F6C343]/20'
                                     }`}
                                 >
                                     <option value="active">Active</option>
@@ -304,7 +304,7 @@ export default function Edit({ user, companies = [] }: EditUserProps) {
 
                     {/* ── Section 3: Password ── */}
                     <div className="space-y-4">
-                        <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
+                        <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
                             <Lock size={18} className="text-[#06283A]" />
                             <h2 className="text-base font-bold" style={{ color: '#06283A' }}>
                                 Password
@@ -314,10 +314,10 @@ export default function Edit({ user, companies = [] }: EditUserProps) {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             {/* Password (Optional) */}
                             <div>
-                                <label className="block text-xs font-semibold text-gray-700 mb-1">
-                                    Password <span className="text-gray-400 font-normal">(optional)</span>
+                                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                    Password <span className="text-slate-400 font-normal">(optional)</span>
                                 </label>
-                                <p className="text-[11px] text-gray-400 mb-1.5">
+                                <p className="text-[11px] text-slate-400 mb-1.5">
                                     Leave blank if you do not wish to change the password.
                                 </p>
                                 <input
@@ -328,7 +328,7 @@ export default function Edit({ user, companies = [] }: EditUserProps) {
                                     className={`w-full rounded-xl border px-3.5 py-2.5 text-sm transition-all focus:outline-none focus:ring-2 ${
                                         errors.password
                                             ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
-                                            : 'border-gray-200 focus:border-[#F5B800] focus:ring-[#F5B800]/20'
+                                            : 'border-slate-200 focus:border-[#F6C343] focus:ring-[#F6C343]/20'
                                     }`}
                                 />
                                 {errors.password && (
@@ -338,10 +338,10 @@ export default function Edit({ user, companies = [] }: EditUserProps) {
 
                             {/* Confirm Password (Optional) */}
                             <div>
-                                <label className="block text-xs font-semibold text-gray-700 mb-1">
-                                    Confirm Password <span className="text-gray-400 font-normal">(optional)</span>
+                                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                    Confirm Password <span className="text-slate-400 font-normal">(optional)</span>
                                 </label>
-                                <p className="text-[11px] text-gray-400 mb-1.5">
+                                <p className="text-[11px] text-slate-400 mb-1.5">
                                     Repeat the new password entered above.
                                 </p>
                                 <input
@@ -352,7 +352,7 @@ export default function Edit({ user, companies = [] }: EditUserProps) {
                                     className={`w-full rounded-xl border px-3.5 py-2.5 text-sm transition-all focus:outline-none focus:ring-2 ${
                                         errors.password_confirmation
                                             ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
-                                            : 'border-gray-200 focus:border-[#F5B800] focus:ring-[#F5B800]/20'
+                                            : 'border-slate-200 focus:border-[#F6C343] focus:ring-[#F6C343]/20'
                                     }`}
                                 />
                                 {errors.password_confirmation && (
@@ -365,11 +365,11 @@ export default function Edit({ user, companies = [] }: EditUserProps) {
                     </div>
 
                     {/* ── Bottom Action Buttons ── */}
-                    <div className="flex items-center justify-between pt-6 border-t border-gray-100">
+                    <div className="flex items-center justify-between pt-6 border-t border-slate-100">
                         {/* Cancel Button (Bottom Left) */}
                         <Link
                             href="/kelola-akun"
-                            className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-sm font-semibold hover:bg-gray-50 transition-colors inline-flex items-center justify-center cursor-pointer"
+                            className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50 transition-colors inline-flex items-center justify-center cursor-pointer"
                         >
                             Cancel
                         </Link>
@@ -380,7 +380,7 @@ export default function Edit({ user, companies = [] }: EditUserProps) {
                             disabled={processing}
                             className="px-6 py-2.5 rounded-xl text-sm font-semibold shadow-md transition-all duration-200 hover:brightness-110 active:scale-[0.98] cursor-pointer flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             style={{
-                                backgroundColor: '#F5B800',
+                                backgroundColor: '#F6C343',
                                 color: '#06283A',
                             }}
                         >

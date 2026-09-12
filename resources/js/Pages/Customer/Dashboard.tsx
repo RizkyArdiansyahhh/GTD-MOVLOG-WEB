@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import CustomerLayout from '@/Layouts/CustomerLayout';
+import { PageHeader } from '@/Components/ui';
 import { useRealtimeUpdates } from '@/hooks/useRealtimeUpdates';
 import type {
     CustomerCompany,
@@ -100,17 +101,17 @@ export default function Dashboard({
 
             <div className="space-y-6">
                 {/* ── 1. Hero Greeting ── */}
-                <div className="pb-1">
-                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#06283A]">
-                        {greeting},{' '}
-                        <span className="text-slate-800">
-                            {customer?.company_name || customer?.pic_name || 'PT Customer A'}
+                <PageHeader
+                    title={
+                        <span>
+                            {greeting},{' '}
+                            <span className="text-slate-800">
+                                {customer?.company_name || customer?.pic_name || 'PT Customer A'}
+                            </span>
                         </span>
-                    </h1>
-                    <p className="text-xs sm:text-sm text-slate-500 mt-1 font-normal">
-                        Here is your logistics summary and active shipments today.
-                    </p>
-                </div>
+                    }
+                    subtitle="Here is your logistics summary and active shipments today."
+                />
 
                 {/* ── 2. Top Split Workstation: Left Action Cards + Right Metrics & Table ── */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
@@ -130,7 +131,7 @@ export default function Dashboard({
                             <div className="pt-3.5 mt-2 border-t border-slate-100">
                                 <Link
                                     href="/customer/monitoring-barang"
-                                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-900 hover:text-yellow-600 transition-colors uppercase tracking-wider group"
+                                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-900 hover:text-amber-600 transition-colors uppercase tracking-wider group"
                                 >
                                     <span>Buka Monitoring</span>
                                     <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
@@ -388,7 +389,7 @@ export default function Dashboard({
                                         <PhoneCall size={14} />
                                     </div>
                                     <div>
-                                        <p className="text-xs font-semibold text-white group-hover:text-yellow-400 transition-colors">
+                                        <p className="text-xs font-semibold text-white group-hover:text-[#F6C343] transition-colors">
                                             Hubungi Account Manager
                                         </p>
                                         <p className="text-[10px] text-slate-400 font-medium">

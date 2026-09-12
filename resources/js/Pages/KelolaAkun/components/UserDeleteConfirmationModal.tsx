@@ -59,7 +59,7 @@ export default function UserDeleteConfirmationModal({
 
             {/* Modal Card */}
             <div
-                className="relative bg-white rounded-2xl border border-gray-100 shadow-2xl p-6 max-w-md w-full z-10 transform transition-all duration-200"
+                className="relative bg-white rounded-2xl border border-slate-100 shadow-2xl p-6 max-w-md w-full z-10 transform transition-all duration-200"
                 style={{ fontFamily: "'Poppins', sans-serif" }}
             >
                 {/* Icon Container */}
@@ -84,23 +84,23 @@ export default function UserDeleteConfirmationModal({
                 </h3>
 
                 {/* Message */}
-                <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                <p className="text-sm text-slate-600 leading-relaxed mb-4">
                     Are you sure you want to delete the following user?
                 </p>
 
                 {/* User Info Details */}
-                <div className="bg-gray-50 rounded-xl p-4 mb-4 border border-gray-100 text-sm space-y-2">
+                <div className="bg-slate-50 rounded-xl p-4 mb-4 border border-slate-100 text-sm space-y-2">
                     <div className="flex justify-between items-center gap-2">
-                        <span className="text-gray-500 font-medium shrink-0">Name:</span>
-                        <span className="font-semibold text-gray-900 truncate">{user.name}</span>
+                        <span className="text-slate-500 font-medium shrink-0">Name:</span>
+                        <span className="font-semibold text-slate-900 truncate">{user.name}</span>
                     </div>
                     <div className="flex justify-between items-center gap-2">
-                        <span className="text-gray-500 font-medium shrink-0">Email:</span>
-                        <span className="font-semibold text-gray-900 truncate">{user.email}</span>
+                        <span className="text-slate-500 font-medium shrink-0">Email:</span>
+                        <span className="font-semibold text-slate-900 truncate">{user.email}</span>
                     </div>
                     <div className="flex justify-between items-center gap-2">
-                        <span className="text-gray-500 font-medium shrink-0">Role:</span>
-                        <span className="font-semibold text-gray-900">{user.role}</span>
+                        <span className="text-slate-500 font-medium shrink-0">Role:</span>
+                        <span className="font-semibold text-slate-900">{user.role}</span>
                     </div>
                 </div>
 
@@ -117,7 +117,7 @@ export default function UserDeleteConfirmationModal({
                         type="button"
                         disabled={isSubmitting}
                         onClick={onClose}
-                        className="rounded-xl px-4 text-sm font-semibold text-gray-600 border border-gray-200 hover:bg-gray-100 transition-all duration-150 disabled:opacity-50 cursor-pointer"
+                        className="rounded-xl px-4 text-sm font-semibold text-slate-600 border border-slate-200 hover:bg-slate-100 transition-all duration-150 disabled:opacity-50 cursor-pointer"
                         style={{ height: 42 }}
                     >
                         Cancel

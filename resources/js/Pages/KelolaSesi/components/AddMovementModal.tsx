@@ -68,7 +68,7 @@ export default function AddMovementModal({ sessionId, stage, isOpen, onClose }: 
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
                     <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-[#F5B800]">
+                        <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-[#F6C343]">
                             {isStep1 ? <Ship size={18} /> : <Truck size={18} />}
                         </div>
                         <div>
@@ -108,7 +108,7 @@ export default function AddMovementModal({ sessionId, stage, isOpen, onClose }: 
                             placeholder={isStep1 ? 'contoh: Tongkang Perkasa 01' : 'contoh: Truk Hino KT 8899 BB'}
                             value={movementName}
                             onChange={(e) => setMovementName(e.target.value)}
-                            className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-[#06283A] focus:outline-none focus:ring-2 focus:ring-[#F5B800]/20 focus:border-[#F5B800] transition-all"
+                            className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-[#06283A] focus:outline-none focus:ring-2 focus:ring-[#F6C343]/20 focus:border-[#F6C343] transition-all"
                             autoFocus
                         />
                     </div>
@@ -123,7 +123,7 @@ export default function AddMovementModal({ sessionId, stage, isOpen, onClose }: 
                                 <select
                                     value={parentMovementId}
                                     onChange={(e) => setParentMovementId(e.target.value)}
-                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-[#06283A] focus:outline-none focus:ring-2 focus:ring-[#F5B800]/20 focus:border-[#F5B800] transition-all"
+                                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-[#06283A] focus:outline-none focus:ring-2 focus:ring-[#F6C343]/20 focus:border-[#F6C343] transition-all"
                                 >
                                     <option value="">-- Pilih Tongkang Asal --</option>
                                     {stage.available_parents.map((p) => (
@@ -152,7 +152,7 @@ export default function AddMovementModal({ sessionId, stage, isOpen, onClose }: 
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-slate-900 bg-[#F5B800] hover:bg-[#E5AC00] rounded-xl shadow-sm hover:shadow transition-all disabled:opacity-50"
+                            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-slate-900 bg-[#F6C343] hover:bg-[#E0AD2C] rounded-xl shadow-sm hover:shadow transition-all disabled:opacity-50"
                         >
                             <Plus size={14} />
                             {isSubmitting ? 'Mendaftarkan...' : 'Daftarkan Armada'}

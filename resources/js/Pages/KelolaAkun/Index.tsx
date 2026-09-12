@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Users, ShieldCheck, UserCheck, UserX, Plus, AlertCircle } from 'lucide-react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
+import { PageHeader } from '@/Components/ui';
 import type { PageProps } from '@/types';
 import UserStatsCard from './components/UserStatsCard';
 import UserFilters from './components/UserFilters';
@@ -373,45 +374,40 @@ export default function Index() {
             />
 
             {!isSuperAdmin ? (
-                <div className="bg-white rounded-2xl border border-red-100 shadow-sm p-8 text-center my-8">
+                <div className="bg-white rounded-xl border border-red-100 shadow-sm p-8 text-center my-8">
                     <div
                         className="flex items-center justify-center rounded-full mx-auto mb-4"
                         style={{ width: 56, height: 56, backgroundColor: '#fef2f2' }}
                     >
                         <AlertCircle size={28} className="text-red-500" strokeWidth={1.8} />
                     </div>
-                    <h2 className="text-lg font-bold text-gray-900 mb-1">Access Denied</h2>
-                    <p className="text-sm text-gray-500 max-w-md mx-auto">
+                    <h2 className="text-lg font-bold text-slate-900 mb-1">Access Denied</h2>
+                    <p className="text-sm text-slate-500 max-w-md mx-auto">
                         The <strong>Account Management</strong> page is only accessible to users with the <strong>super-admin</strong> role.
                     </p>
                 </div>
             ) : (
                 <>
                     {/* ── Header ── */}
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-                        <div>
-                            <h1
-                                className="text-2xl font-bold"
-                                style={{ color: '#06283A' }}
-                            >
-                                Account Management
-                            </h1>
-                            <p className="text-sm text-gray-500 mt-1">
-                                Manage all user accounts including roles, status, and recent activity.
-                            </p>
-                        </div>
-                        <Link
-                            href="/kelola-akun/tambah"
-                            className="flex items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold shadow-lg transition-all duration-200 hover:shadow-xl hover:brightness-110 active:scale-[0.98] shrink-0 cursor-pointer w-full sm:w-auto text-decoration-none"
-                            style={{
-                                height: 44,
-                                backgroundColor: '#F5B800',
-                                color: '#06283A',
-                            }}
-                        >
-                            <Plus size={18} strokeWidth={2.2} />
-                            Add New User
-                        </Link>
+                    <div className="mb-6">
+                        <PageHeader
+                            title="Account Management"
+                            subtitle="Manage all user accounts including roles, status, and recent activity."
+                            actions={
+                                <Link
+                                    href="/kelola-akun/tambah"
+                                    className="flex items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold shadow-lg transition-all duration-200 hover:shadow-xl hover:brightness-110 active:scale-[0.98] shrink-0 cursor-pointer w-full sm:w-auto text-decoration-none"
+                                    style={{
+                                        height: 44,
+                                        backgroundColor: '#F6C343',
+                                        color: '#06283A',
+                                    }}
+                                >
+                                    <Plus size={18} strokeWidth={2.2} />
+                                    Add New User
+                                </Link>
+                            }
+                        />
                     </div>
 
                     {/* ── Stats Cards ── */}

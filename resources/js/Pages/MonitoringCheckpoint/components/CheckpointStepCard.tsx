@@ -82,7 +82,7 @@ export default function CheckpointStepCard({ step, isLast }: CheckpointStepCardP
 
             {/* Kartu konten step */}
             <div
-                className={`flex-1 rounded-2xl border p-5 shadow-xs transition-all ${
+                className={`flex-1 rounded-xl border p-5 shadow-xs transition-all ${
                     isInProgress
                         ? "border-amber-300/80 bg-amber-50/20"
                         : isPending

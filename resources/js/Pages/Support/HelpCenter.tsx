@@ -167,7 +167,7 @@ export default function HelpCenter() {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder={isCustomer ? 'Search shipments, schedules, or keywords...' : 'Search issues, documents, or keywords...'}
-                                className="w-full pl-11 pr-4 py-3 bg-white rounded-2xl border border-slate-200/80 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 shadow-xs"
+                                className="w-full pl-11 pr-4 py-3 bg-white rounded-xl border border-slate-200/80 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#F6C343] shadow-xs"
                             />
                         </div>
                     </div>
@@ -218,7 +218,7 @@ export default function HelpCenter() {
                                         </button>
 
                                         {isExpanded && (
-                                            <div className="mt-3 text-xs sm:text-sm text-slate-600 leading-relaxed bg-slate-50/70 rounded-2xl p-4 border border-slate-100">
+                                            <div className="mt-3 text-xs sm:text-sm text-slate-600 leading-relaxed bg-slate-50/70 rounded-xl p-4 border border-slate-100">
                                                 {faq.answer}
                                             </div>
                                         )}
@@ -273,7 +273,7 @@ export default function HelpCenter() {
                         </div>
 
                         {ticketSubmitted ? (
-                            <div className="p-6 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-center gap-3">
+                            <div className="p-6 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-center gap-3">
                                 <CheckCircle2 className="text-emerald-600 shrink-0" size={24} />
                                 <div>
                                     <p className="text-xs font-bold">Support Ticket Submitted Successfully</p>
@@ -290,7 +290,7 @@ export default function HelpCenter() {
                                         <select
                                             value={ticketCategory}
                                             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                            className="w-full px-3 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900"
+                                            className="w-full px-3 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#F6C343]"
                                         >
                                             {activeTicketCategories.map((option) => (
                                                 <option key={option} value={option}>{option}</option>
@@ -307,7 +307,7 @@ export default function HelpCenter() {
                                             value={formData.subject}
                                             onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                                             placeholder={isCustomer ? 'Example: Cargo status not updating for ASG-...' : 'Example: PIB Document Upload Failed'}
-                                            className="w-full px-3 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900"
+                                            className="w-full px-3 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#F6C343]"
                                         />
                                     </div>
                                 </div>
@@ -322,7 +322,7 @@ export default function HelpCenter() {
                                         value={formData.message}
                                         onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                                         placeholder={isCustomer ? 'Describe the issue, your assignment number (e.g. ASG-...), and when it started...' : 'Describe the issue chronology, relevant document/session number, and error messages if any...'}
-                                        className="w-full px-3 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900 resize-none"
+                                        className="w-full px-3 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#F6C343] resize-none"
                                     />
                                 </div>
 

@@ -44,7 +44,7 @@ export default function CheckpointDetailHeader({
                         <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
                             Nomor Penugasan
                         </p>
-                        <h1 className="mt-1 text-xl font-bold tracking-tight text-[#06283A]">
+                        <h1 className="mt-1 text-2xl font-bold tracking-tight text-[#06283A]">
                             {assignmentNo}
                         </h1>
                         <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-slate-500">

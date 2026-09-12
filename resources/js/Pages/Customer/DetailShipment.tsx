@@ -127,10 +127,10 @@ export default function DetailShipment({
                                 </span>
                                 {renderStatusBadge(shipment.status)}
                             </div>
-                            <h1 className="text-xl sm:text-2xl font-bold text-[#06283A] tracking-tight">
+                            <h1 className="text-2xl font-bold text-[#06283A] tracking-tight">
                                 {shipment.cargo_name}
                             </h1>
-                            <p className="text-xs text-slate-500 mt-1 font-normal">
+                            <p className="text-sm text-slate-500 mt-1 font-normal">
                                 Date Registered: <span className="font-semibold text-slate-800">{shipment.created_at}</span>
                             </p>
                         </div>

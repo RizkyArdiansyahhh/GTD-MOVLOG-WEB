@@ -161,12 +161,12 @@ export default function TambahAkun() {
                 <Link
                     href="/kelola-akun"
                     className="font-medium transition-colors duration-150 hover:opacity-80"
-                    style={{ color: '#F5B800' }}
+                    style={{ color: '#F6C343' }}
                 >
                     Kelola Akun
                 </Link>
-                <ChevronRight size={14} className="text-gray-400 shrink-0" />
-                <span className="font-medium text-gray-500">Add Account</span>
+                <ChevronRight size={14} className="text-slate-400 shrink-0" />
+                <span className="font-medium text-slate-500">Add Account</span>
             </nav>
 
             {/* ── Page Title ── */}
@@ -180,7 +180,7 @@ export default function TambahAkun() {
             {/* ── Form Card ── */}
             <div className="max-w-3xl mx-auto">
                 <form onSubmit={handleSubmit}>
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
 
                         {/* ── Section: Data Pribadi ── */}
                         <div className="p-6 sm:p-8">
@@ -207,10 +207,10 @@ export default function TambahAkun() {
                                         value={form.name}
                                         onChange={(e) => handleChange('name', e.target.value)}
                                         placeholder="Masukkan nama lengkap"
-                                        className={`w-full rounded-xl px-4 text-sm text-gray-700 placeholder-gray-400 border outline-none transition-all duration-150 focus:ring-2 focus:ring-amber-100 ${
+                                        className={`w-full rounded-xl px-4 text-sm text-slate-700 placeholder-slate-400 border outline-none transition-all duration-150 focus:ring-2 focus:ring-amber-100 ${
                                             serverErrors.name
                                                 ? 'border-red-300 focus:border-red-400'
-                                                : 'border-gray-200 focus:border-amber-300'
+                                                : 'border-slate-200 focus:border-amber-300'
                                         }`}
                                         style={{ height: 44, backgroundColor: '#F8FAFC' }}
                                     />
@@ -234,10 +234,10 @@ export default function TambahAkun() {
                                         value={form.email}
                                         onChange={(e) => handleChange('email', e.target.value)}
                                         placeholder="contoh@email.com"
-                                        className={`w-full rounded-xl px-4 text-sm text-gray-700 placeholder-gray-400 border outline-none transition-all duration-150 focus:ring-2 focus:ring-amber-100 ${
+                                        className={`w-full rounded-xl px-4 text-sm text-slate-700 placeholder-slate-400 border outline-none transition-all duration-150 focus:ring-2 focus:ring-amber-100 ${
                                             serverErrors.email
                                                 ? 'border-red-300 focus:border-red-400'
-                                                : 'border-gray-200 focus:border-amber-300'
+                                                : 'border-slate-200 focus:border-amber-300'
                                         }`}
                                         style={{ height: 44, backgroundColor: '#F8FAFC' }}
                                     />
@@ -261,10 +261,10 @@ export default function TambahAkun() {
                                         value={form.phone}
                                         onChange={(e) => handleChange('phone', e.target.value)}
                                         placeholder="08xxxxxxxxxx"
-                                        className={`w-full rounded-xl px-4 text-sm text-gray-700 placeholder-gray-400 border outline-none transition-all duration-150 focus:ring-2 focus:ring-amber-100 ${
+                                        className={`w-full rounded-xl px-4 text-sm text-slate-700 placeholder-slate-400 border outline-none transition-all duration-150 focus:ring-2 focus:ring-amber-100 ${
                                             serverErrors.phone
                                                 ? 'border-red-300 focus:border-red-400'
-                                                : 'border-gray-200 focus:border-amber-300'
+                                                : 'border-slate-200 focus:border-amber-300'
                                         }`}
                                         style={{ height: 44, backgroundColor: '#F8FAFC' }}
                                     />
@@ -276,7 +276,7 @@ export default function TambahAkun() {
                         </div>
 
                         {/* ── Divider ── */}
-                        <div className="border-t border-gray-100" />
+                        <div className="border-t border-slate-100" />
 
                         {/* ── Section: Akses Sistem ── */}
                         <div className="p-6 sm:p-8">
@@ -301,10 +301,10 @@ export default function TambahAkun() {
                                         id="role"
                                         value={form.role}
                                         onChange={(e) => handleRoleChange(e.target.value)}
-                                        className={`w-full rounded-xl px-4 text-sm text-gray-700 border outline-none cursor-pointer transition-all duration-150 focus:ring-2 focus:ring-amber-100 ${
+                                        className={`w-full rounded-xl px-4 text-sm text-slate-700 border outline-none cursor-pointer transition-all duration-150 focus:ring-2 focus:ring-amber-100 ${
                                             serverErrors.role || clientErrors.role
                                                 ? 'border-red-300 focus:border-red-400'
-                                                : 'border-gray-200 focus:border-amber-300'
+                                                : 'border-slate-200 focus:border-amber-300'
                                         }`}
                                         style={{ height: 44, backgroundColor: '#F8FAFC' }}
                                     >
@@ -336,10 +336,10 @@ export default function TambahAkun() {
                                             id="company_id"
                                             value={form.company_id}
                                             onChange={(e) => handleChange('company_id', e.target.value)}
-                                            className={`w-full rounded-xl px-4 text-sm text-gray-700 border outline-none cursor-pointer transition-all duration-150 focus:ring-2 focus:ring-amber-100 ${
+                                            className={`w-full rounded-xl px-4 text-sm text-slate-700 border outline-none cursor-pointer transition-all duration-150 focus:ring-2 focus:ring-amber-100 ${
                                                 companyError
                                                     ? 'border-red-300 focus:border-red-400'
-                                                    : 'border-gray-200 focus:border-amber-300'
+                                                    : 'border-slate-200 focus:border-amber-300'
                                             }`}
                                             style={{ height: 44, backgroundColor: '#F8FAFC' }}
                                         >
@@ -377,17 +377,17 @@ export default function TambahAkun() {
                                             value={form.password}
                                             onChange={(e) => handleChange('password', e.target.value)}
                                             placeholder="Min. 8 characters"
-                                            className={`w-full rounded-xl px-4 pr-11 text-sm text-gray-700 placeholder-gray-400 border outline-none transition-all duration-150 focus:ring-2 focus:ring-amber-100 ${
+                                            className={`w-full rounded-xl px-4 pr-11 text-sm text-slate-700 placeholder-slate-400 border outline-none transition-all duration-150 focus:ring-2 focus:ring-amber-100 ${
                                                 serverErrors.password
                                                     ? 'border-red-300 focus:border-red-400'
-                                                    : 'border-gray-200 focus:border-amber-300'
+                                                    : 'border-slate-200 focus:border-amber-300'
                                             }`}
                                             style={{ height: 44, backgroundColor: '#F8FAFC' }}
                                         />
                                         <button
                                             type="button"
                                             onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                                             tabIndex={-1}
                                         >
                                             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -414,17 +414,17 @@ export default function TambahAkun() {
                                             value={form.password_confirmation}
                                             onChange={(e) => handleChange('password_confirmation', e.target.value)}
                                             placeholder="Repeat password"
-                                            className={`w-full rounded-xl px-4 pr-11 text-sm text-gray-700 placeholder-gray-400 border outline-none transition-all duration-150 focus:ring-2 focus:ring-amber-100 ${
+                                            className={`w-full rounded-xl px-4 pr-11 text-sm text-slate-700 placeholder-slate-400 border outline-none transition-all duration-150 focus:ring-2 focus:ring-amber-100 ${
                                                 serverErrors.password_confirmation
                                                     ? 'border-red-300 focus:border-red-400'
-                                                    : 'border-gray-200 focus:border-amber-300'
+                                                    : 'border-slate-200 focus:border-amber-300'
                                             }`}
                                             style={{ height: 44, backgroundColor: '#F8FAFC' }}
                                         />
                                         <button
                                             type="button"
                                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                                             tabIndex={-1}
                                         >
                                             {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -438,12 +438,12 @@ export default function TambahAkun() {
                         </div>
 
                         {/* ── Footer Actions ── */}
-                        <div className="border-t border-gray-100 px-6 sm:px-8 py-5">
+                        <div className="border-t border-slate-100 px-6 sm:px-8 py-5">
                             <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3">
                                 {/* Cancel */}
                                 <Link
                                     href="/kelola-akun"
-                                    className="flex items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-800 transition-all duration-200 active:scale-[0.98]"
+                                    className="flex items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition-all duration-200 active:scale-[0.98]"
                                     style={{ height: 44 }}
                                 >
                                     <X size={16} strokeWidth={2.2} />
@@ -457,7 +457,7 @@ export default function TambahAkun() {
                                     className="flex items-center justify-center gap-2 rounded-xl px-6 text-sm font-semibold shadow-lg transition-all duration-200 hover:shadow-xl hover:brightness-110 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
                                     style={{
                                         height: 44,
-                                        backgroundColor: '#F5B800',
+                                        backgroundColor: '#F6C343',
                                         color: '#06283A',
                                     }}
                                 >

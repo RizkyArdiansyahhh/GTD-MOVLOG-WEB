@@ -17,48 +17,48 @@ export default function SesiTable({ sessions }: SesiTableProps) {
     }
 
     return (
-        <div className="w-full overflow-x-auto rounded-lg border border-[#E2E8F0]">
+        <div className="w-full overflow-x-auto rounded-xl border border-slate-200">
             <table className="w-full text-left border-collapse">
                 <thead>
                     <tr
                         style={{
-                            backgroundColor: '#F8FAFB',
+                            backgroundColor: '#F8FAFC',
                             height: '44px',
                         }}
-                        className="border-b border-[#E2E8F0]"
+                        className="border-b border-slate-200"
                     >
                         <th
-                            className="px-4 text-[12px] font-semibold uppercase tracking-wider text-[#64748B] whitespace-nowrap"
+                            className="px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap"
                             style={{ width: '140px' }}
                         >
                             ID Sesi
                         </th>
                         <th
-                            className="px-4 text-[12px] font-semibold uppercase tracking-wider text-[#64748B] whitespace-nowrap"
+                            className="px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap"
                             style={{ width: '250px' }}
                         >
                             Nama Unit / Kargo
                         </th>
                         <th
-                            className="px-4 text-[12px] font-semibold uppercase tracking-wider text-[#64748B] whitespace-nowrap"
+                            className="px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap"
                             style={{ width: '200px' }}
                         >
                             Tahap Operasional
                         </th>
                         <th
-                            className="px-4 text-[12px] font-semibold uppercase tracking-wider text-[#64748B] whitespace-nowrap"
+                            className="px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap"
                             style={{ width: '130px' }}
                         >
                             Status
                         </th>
                         <th
-                            className="px-4 text-[12px] font-semibold uppercase tracking-wider text-[#64748B] whitespace-nowrap"
+                            className="px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap"
                             style={{ width: '180px' }}
                         >
                             PIC Tahap Aktif
                         </th>
                         <th
-                            className="px-4 text-[12px] font-semibold uppercase tracking-wider text-[#64748B] whitespace-nowrap text-right"
+                            className="px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap text-right"
                             style={{ width: '100px' }}
                         >
                             Aksi
@@ -97,7 +97,7 @@ export default function SesiTable({ sessions }: SesiTableProps) {
                                         </span>
                                     ) : (
                                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-[#06283A]">
-                                            <span className="w-2 h-2 rounded-full bg-[#F5B800]" />
+                                            <span className="w-2 h-2 rounded-full bg-[#F6C343]" />
                                             {session.currentStage || 'Kapal'}
                                         </span>
                                     )}
@@ -142,7 +142,7 @@ export default function SesiTable({ sessions }: SesiTableProps) {
                                 <td className="px-4 py-3 whitespace-nowrap text-right">
                                     <Link
                                         href={`/sesi-pekerja/${session.id}`}
-                                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold text-[#06283A] bg-[#F5B800] hover:bg-[#E5AC00] transition-colors cursor-pointer shadow-2xs"
+                                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold text-[#06283A] bg-[#F6C343] hover:bg-[#E0AD2C] transition-colors cursor-pointer shadow-2xs"
                                     >
                                         <Eye size={12} />
                                         Detail

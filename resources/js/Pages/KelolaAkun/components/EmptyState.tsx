@@ -13,9 +13,9 @@ export default function EmptyState({
         <div className="flex flex-col items-center justify-center py-16 text-center">
             <div
                 className="flex items-center justify-center rounded-full mb-4"
-                style={{ width: 56, height: 56, backgroundColor: '#F5B80018' }}
+                style={{ width: 56, height: 56, backgroundColor: '#F6C34318' }}
             >
-                <SearchIcon size={24} style={{ color: '#F5B800' }} strokeWidth={1.8} />
+                <SearchIcon size={24} style={{ color: '#F6C343' }} strokeWidth={1.8} />
             </div>
             <p
                 className="text-sm font-semibold mb-1"
@@ -23,7 +23,7 @@ export default function EmptyState({
             >
                 {title}
             </p>
-            <p className="text-xs text-gray-400 max-w-xs">{description}</p>
+            <p className="text-xs text-slate-400 max-w-xs">{description}</p>
         </div>
     );
 }

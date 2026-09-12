@@ -260,7 +260,7 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                     <button
                                         type="button"
                                         onClick={() => fileInputRef.current?.click()}
-                                        className="absolute -bottom-1 -right-1 p-2.5 rounded-full bg-[#06283A] text-white hover:bg-yellow-400 hover:text-slate-900 transition-all shadow-md cursor-pointer group-hover:scale-105"
+                                        className="absolute -bottom-1 -right-1 p-2.5 rounded-full bg-[#06283A] text-white hover:bg-[#F6C343] hover:text-slate-900 transition-all shadow-md cursor-pointer group-hover:scale-105"
                                         title="Change & Crop Profile Photo"
                                     >
                                         <Camera size={15} strokeWidth={2} />
@@ -285,8 +285,8 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                     </p>
                                 </div>
 
-                                <div className="mt-3.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-semibold bg-yellow-400/15 text-[#06283A] border border-yellow-400/30">
-                                    <Shield size={13} className="text-yellow-600" strokeWidth={2} />
+                                <div className="mt-3.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-semibold bg-[#F6C343]/15 text-[#06283A] border border-[#F6C343]/30">
+                                    <Shield size={13} className="text-amber-600" strokeWidth={2} />
                                     <span>Akun Customer Terverifikasi</span>
                                 </div>
 
@@ -335,7 +335,7 @@ export default function EditProfile({ profile }: EditProfileProps) {
                         {/* Read-Only Company Information Card */}
                         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6">
                             <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
-                                <Building2 size={18} className="text-yellow-500 shrink-0" strokeWidth={2} />
+                                <Building2 size={18} className="text-[#E0AD2C] shrink-0" strokeWidth={2} />
                                 <div>
                                     <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
                                         Data Perusahaan (Read-Only)
@@ -417,7 +417,7 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                             value={profileData.name}
                                             onChange={(e) => setProfileData('name', e.target.value)}
                                             required
-                                            className="w-full pl-9 pr-3.5 py-2.5 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all font-medium"
+                                            className="w-full pl-9 pr-3.5 py-2.5 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#F6C343] focus:border-transparent transition-all font-medium"
                                             placeholder="Enter your full name"
                                         />
                                     </div>
@@ -446,7 +446,7 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                             type="tel"
                                             value={profileData.phone}
                                             onChange={(e) => setProfileData('phone', e.target.value)}
-                                            className="w-full pl-9 pr-3.5 py-2.5 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all font-medium"
+                                            className="w-full pl-9 pr-3.5 py-2.5 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#F6C343] focus:border-transparent transition-all font-medium"
                                             placeholder="Contoh: 081234567890"
                                         />
                                     </div>
@@ -549,7 +549,7 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                             value={passwordData.current_password}
                                             onChange={(e) => setPasswordData('current_password', e.target.value)}
                                             required
-                                            className="w-full pl-9 pr-10 py-2.5 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all font-medium"
+                                            className="w-full pl-9 pr-10 py-2.5 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#F6C343] focus:border-transparent transition-all font-medium"
                                             placeholder="Enter your current password"
                                         />
                                         <button
@@ -586,7 +586,7 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                             value={passwordData.password}
                                             onChange={(e) => setPasswordData('password', e.target.value)}
                                             required
-                                            className="w-full pl-9 pr-10 py-2.5 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all font-medium"
+                                            className="w-full pl-9 pr-10 py-2.5 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#F6C343] focus:border-transparent transition-all font-medium"
                                             placeholder="Minimal 8 karakter (huruf, angka, simbol)"
                                         />
                                         <button
@@ -650,7 +650,7 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                             value={passwordData.password_confirmation}
                                             onChange={(e) => setPasswordData('password_confirmation', e.target.value)}
                                             required
-                                            className="w-full pl-9 pr-10 py-2.5 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all font-medium"
+                                            className="w-full pl-9 pr-10 py-2.5 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#F6C343] focus:border-transparent transition-all font-medium"
                                             placeholder="Repeat your new password"
                                         />
                                         <button

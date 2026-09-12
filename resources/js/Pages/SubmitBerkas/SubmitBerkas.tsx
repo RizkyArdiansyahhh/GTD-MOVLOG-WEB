@@ -220,11 +220,9 @@ function SubmitBerkasHubContent({
   return (
     <div
       style={{
-        padding: 24,
-        minHeight: '100%',
         display: 'flex',
         flexDirection: 'column',
-        gap: 20,
+        gap: 24,
         boxSizing: 'border-box',
       }}
     >

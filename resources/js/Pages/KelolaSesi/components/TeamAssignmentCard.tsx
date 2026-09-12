@@ -175,7 +175,7 @@ export default function TeamAssignmentCard({
                         disabled={isSaving || !isAllAssigned}
                         className={`w-full py-2 px-3 rounded-lg text-xs font-bold transition-all ${
                             isAllAssigned && !isSaving
-                                ? 'bg-[#F5B800] hover:bg-[#E5AC00] text-[#06283A] shadow-xs cursor-pointer'
+                                ? 'bg-[#F6C343] hover:bg-[#E0AD2C] text-[#06283A] shadow-xs cursor-pointer'
                                 : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-60'
                         }`}
                     >

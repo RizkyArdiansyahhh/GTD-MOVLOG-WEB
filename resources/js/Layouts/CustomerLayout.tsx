@@ -170,7 +170,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
     const getNotificationIcon = (type: string) => {
         switch (type) {
             case 'shipment_stage_updated':
-                return <MapPin size={15} className="text-yellow-600 shrink-0" strokeWidth={1.8} />;
+                return <MapPin size={15} className="text-amber-600 shrink-0" strokeWidth={1.8} />;
             case 'document_verified':
                 return <FileCheck size={15} className="text-emerald-600 shrink-0" strokeWidth={1.8} />;
             case 'shipment_completed':
@@ -246,7 +246,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
                     <div className="flex items-center gap-3">
                         {/* Quick Search */}
                         <form onSubmit={handleSearch} className="hidden lg:flex items-center">
-                            <div className="flex items-center gap-2 rounded-full px-3.5 bg-slate-100/90 border border-slate-200 focus-within:ring-2 focus-within:ring-yellow-400 focus-within:bg-white transition-all w-52 h-9">
+                            <div className="flex items-center gap-2 rounded-full px-3.5 bg-slate-100/90 border border-slate-200 focus-within:ring-2 focus-within:ring-[#F6C343] focus-within:bg-white transition-all w-52 h-9">
                                 <Search size={14} className="text-slate-400 shrink-0" strokeWidth={2} />
                                 <input
                                     type="text"
@@ -266,7 +266,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
                                     setNotifOpen(!notifOpen);
                                     setProfileOpen(false);
                                 }}
-                                className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200/80 border border-slate-200 flex items-center justify-center text-slate-600 transition-colors cursor-pointer relative focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400"
+                                className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200/80 border border-slate-200 flex items-center justify-center text-slate-600 transition-colors cursor-pointer relative focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F6C343]"
                                 title="Notifikasi Sistem"
                                 aria-label="Notifikasi"
                             >
@@ -291,7 +291,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
                                                 Notifikasi
                                             </span>
                                             {unreadCount > 0 && (
-                                                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-yellow-400/20 text-yellow-800 border border-yellow-400/40">
+                                                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#F6C343]/20 text-amber-800 border border-[#F6C343]/40">
                                                     {unreadCount} baru
                                                 </span>
                                             )}
@@ -392,17 +392,17 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
                                     setProfileOpen(!profileOpen);
                                     setNotifOpen(false);
                                 }}
-                                className="flex items-center gap-2.5 p-1 rounded-full hover:bg-slate-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 cursor-pointer group"
+                                className="flex items-center gap-2.5 p-1 rounded-full hover:bg-slate-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F6C343] cursor-pointer group"
                             >
                                 {user?.avatar_url && !imageError ? (
                                     <img
                                         src={user.avatar_url}
                                         alt={user?.name ?? 'Customer'}
                                         onError={() => setImageError(true)}
-                                        className="w-9 h-9 rounded-full object-cover ring-2 ring-slate-200 group-hover:ring-yellow-400 transition-all duration-150"
+                                        className="w-9 h-9 rounded-full object-cover ring-2 ring-slate-200 group-hover:ring-[#F6C343] transition-all duration-150"
                                     />
                                 ) : (
-                                    <div className="w-9 h-9 rounded-full bg-slate-900 text-[#F6C343] font-bold flex items-center justify-center text-xs ring-2 ring-slate-200 group-hover:ring-yellow-400 transition-all duration-150 shadow-sm">
+                                    <div className="w-9 h-9 rounded-full bg-slate-900 text-[#F6C343] font-bold flex items-center justify-center text-xs ring-2 ring-slate-200 group-hover:ring-[#F6C343] transition-all duration-150 shadow-sm">
                                         {getInitials(companyName)}
                                     </div>
                                 )}

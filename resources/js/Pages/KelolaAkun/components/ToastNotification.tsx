@@ -51,7 +51,7 @@ export default function ToastNotification({ toast, onClose }: ToastNotificationP
             <button
                 type="button"
                 onClick={onClose}
-                className="shrink-0 p-1 rounded-lg hover:bg-black/5 text-gray-500 transition-colors"
+                className="shrink-0 p-1 rounded-lg hover:bg-black/5 text-slate-500 transition-colors"
             >
                 <X size={16} />
             </button>

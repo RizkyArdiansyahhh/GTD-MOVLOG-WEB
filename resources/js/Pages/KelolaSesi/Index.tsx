@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { Plus, Search } from 'lucide-react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
+import { PageHeader } from '@/Components/ui';
 import { mockWorkSessions } from './mockData';
 import type { WorkSession, FieldWorker } from './types';
 import SesiTable from './components/SesiTable';
@@ -52,17 +53,10 @@ export default function KelolaSesiIndex({ sessions, fieldWorkers }: KelolaSesiIn
             <Head title="Worker Sessions - GTD Logistics" />
 
             <div className="max-w-7xl mx-auto space-y-6">
-                {/* ── Outer Page Title ── */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight text-[#06283A]">
-                            Worker Sessions
-                        </h1>
-                        <p className="text-xs text-slate-500 mt-1">
-                            Pusat monitoring progress pekerjaan logistik yang dibuat otomatis setelah verifikasi berkas lengkap.
-                        </p>
-                    </div>
-                </div>
+                <PageHeader
+                    title="Worker Sessions"
+                    subtitle="Pusat monitoring progress pekerjaan logistik yang dibuat otomatis setelah verifikasi berkas lengkap."
+                />
 
                 {/* ── Flash Message ── */}
                 {flash?.success && (
@@ -72,7 +66,7 @@ export default function KelolaSesiIndex({ sessions, fieldWorkers }: KelolaSesiIn
                 )}
 
                 {/* ── Single Large Card Container ── */}
-                <div className="bg-white border border-[#E2E8F0] shadow-sm rounded-2xl p-6 space-y-5">
+                <div className="bg-white border border-[#E2E8F0] shadow-sm rounded-xl p-6 space-y-5">
                     {/* ── Search Box ── */}
                     <div className="relative w-full sm:w-[320px]">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
@@ -83,7 +77,7 @@ export default function KelolaSesiIndex({ sessions, fieldWorkers }: KelolaSesiIn
                             value={searchQuery}
                             onChange={handleSearchChange}
                             placeholder="Search Session ID or Unit Name..."
-                            className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-[#E2E8F0] rounded-xl text-[#06283A] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#F5B800] focus:border-transparent transition-all"
+                            className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-[#E2E8F0] rounded-xl text-[#06283A] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#F6C343] focus:border-transparent transition-all"
                         />
                     </div>
 

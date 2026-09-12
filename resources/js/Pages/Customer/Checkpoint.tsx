@@ -1,5 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import CustomerLayout from '@/Layouts/CustomerLayout';
+import { PageHeader } from '@/Components/ui';
 import { useRealtimeUpdates } from '@/hooks/useRealtimeUpdates';
 import type { CheckpointOverviewGroup } from '@/types/customer';
 import { MapPin, ArrowRight, ArrowLeft } from 'lucide-react';
@@ -21,7 +22,7 @@ export default function Checkpoint({ checkpoints = [], total_in_transit = 0 }: C
 
             <div className="space-y-6">
                 {/* ── Header ── */}
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6">
+                <div>
                     <Link
                         href="/customer/monitoring-barang"
                         className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors mb-2"
@@ -29,12 +30,10 @@ export default function Checkpoint({ checkpoints = [], total_in_transit = 0 }: C
                         <ArrowLeft size={13} />
                         <span>Buka Monitoring Kargo Lengkap</span>
                     </Link>
-                    <h1 className="text-xl sm:text-2xl font-bold text-[#06283A] tracking-tight">
-                        Transit Checkpoints
-                    </h1>
-                    <p className="text-xs sm:text-sm text-slate-500 mt-1 font-normal">
-                        Distribusi {total_in_transit} pengiriman kargo aktif yang sedang melintasi pos operasional GTD.
-                    </p>
+                    <PageHeader
+                        title="Transit Checkpoints"
+                        subtitle={`Distribusi ${total_in_transit} pengiriman kargo aktif yang sedang melintasi pos operasional GTD.`}
+                    />
                 </div>
 
                 {displayedCheckpoints.length === 0 ? (
