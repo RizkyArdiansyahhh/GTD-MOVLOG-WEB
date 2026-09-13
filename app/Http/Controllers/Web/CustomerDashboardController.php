@@ -206,14 +206,16 @@ class CustomerDashboardController extends Controller
             }
         }
 
-        // Search Filter
+        // Search Filter (LIKE wildcards in user input are escaped so the
+        // keyword is always matched literally).
         if ($request->filled('search')) {
-            $search = '%'.trim((string) $request->search).'%';
+            $escaped = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], trim((string) $request->search));
+            $search = '%'.$escaped.'%';
             $query->where(function ($q) use ($search) {
-                $q->where('assignment_no', 'ILIKE', $search)
-                    ->orWhere('cargo_name', 'ILIKE', $search)
-                    ->orWhere('origin', 'ILIKE', $search)
-                    ->orWhere('destination', 'ILIKE', $search);
+                $q->whereRaw("assignment_no ILIKE ? ESCAPE '\\'", [$search])
+                    ->orWhereRaw("cargo_name ILIKE ? ESCAPE '\\'", [$search])
+                    ->orWhereRaw("origin ILIKE ? ESCAPE '\\'", [$search])
+                    ->orWhereRaw("destination ILIKE ? ESCAPE '\\'", [$search]);
             });
         }
 

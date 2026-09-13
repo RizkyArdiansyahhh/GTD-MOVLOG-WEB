@@ -117,6 +117,8 @@ class GlobalSearchService
             $categoryCounts[$catKey] = [
                 'label' => $catLabel,
                 'count' => $catCount,
+                // Counts reflect the capped fetch above, not a true DB total.
+                'capped' => $catCount >= 50,
             ];
 
             if ($selectedCategory === null || $selectedCategory === '' || $selectedCategory === 'all') {
@@ -186,11 +188,32 @@ class GlobalSearchService
     }
 
     /**
+     * Escape LIKE wildcards so user input is always matched literally.
+     *
+     * Without this, a keyword containing `%` or `_` acts as a wildcard
+     * and can match (or leak the existence of) unrelated rows.
+     */
+    private function escapeLikePattern(string $value): string
+    {
+        return str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value);
+    }
+
+    /**
+     * Build a case-insensitive LIKE pattern with escaped wildcards.
+     *
+     * Must always be paired with `ESCAPE '\'` in the SQL fragment.
+     */
+    private function likePattern(string $keyword): string
+    {
+        return '%'.strtolower($this->escapeLikePattern($keyword)).'%';
+    }
+
+    /**
      * 1. Search Barang / Tracking (ShippingSession)
      */
     private function searchBarang(User $user, string $keyword, int $limit): array
     {
-        $lower = '%'.strtolower($keyword).'%';
+        $lower = $this->likePattern($keyword);
         $query = ShippingSession::with(['customer', 'currentCheckpoint']);
 
         // -- Role Authorization Scoping --
@@ -211,26 +234,27 @@ class GlobalSearchService
 
         // -- Search Filters --
         $query->where(function ($q) use ($lower) {
-            $q->whereRaw('LOWER(assignment_no) LIKE ?', [$lower])
-                ->orWhereRaw('LOWER(cargo_name) LIKE ?', [$lower])
-                ->orWhereRaw('LOWER(origin) LIKE ?', [$lower])
-                ->orWhereRaw('LOWER(destination) LIKE ?', [$lower])
+            $q->whereRaw("LOWER(assignment_no) LIKE ? ESCAPE '\\'", [$lower])
+                ->orWhereRaw("LOWER(cargo_name) LIKE ? ESCAPE '\\'", [$lower])
+                ->orWhereRaw("LOWER(origin) LIKE ? ESCAPE '\\'", [$lower])
+                ->orWhereRaw("LOWER(destination) LIKE ? ESCAPE '\\'", [$lower])
                 ->orWhereHas('customer', function ($cq) use ($lower) {
-                    $cq->whereRaw('LOWER(company_name) LIKE ?', [$lower]);
+                    $cq->whereRaw("LOWER(company_name) LIKE ? ESCAPE '\\'", [$lower]);
                 })
                 ->orWhereHas('currentCheckpoint', function ($cpq) use ($lower) {
-                    $cpq->whereRaw('LOWER(name) LIKE ?', [$lower]);
+                    $cpq->whereRaw("LOWER(name) LIKE ? ESCAPE '\\'", [$lower]);
                 });
         });
 
         $items = $query->orderBy('created_at', 'desc')->limit($limit)->get();
 
         return $items->map(function (ShippingSession $session) use ($user) {
+            // NOTE: ShippingSessionStatus only defines PENDING / IN_TRANSIT /
+            // DELIVERED — there is no CANCELLED case to match.
             $statusLabel = match ($session->status) {
                 ShippingSessionStatus::IN_TRANSIT => 'In Transit',
                 ShippingSessionStatus::DELIVERED => 'Delivered',
                 ShippingSessionStatus::PENDING => 'Pending',
-                ShippingSessionStatus::CANCELLED => 'Cancelled',
                 default => ucfirst((string) ($session->status->value ?? $session->status)),
             };
 
@@ -246,12 +270,15 @@ class GlobalSearchService
                 'category' => 'barang',
                 'category_label' => 'Cargo / Tracking',
                 'title' => $session->cargo_name,
-                'subtitle' => "{$session->assignment_no} Â· {$routeText} Â· {$customerName}",
+                'subtitle' => "{$session->assignment_no} · {$routeText} · {$customerName}",
                 'status' => $statusLabel,
                 'status_type' => strtolower((string) ($session->status->value ?? $session->status)),
+                // Deep-link to the shipment tracking detail when possible.
                 'url' => $user->hasRole(UserRole::Customer->value)
                     ? '/customer/shipment/'.$session->id
-                    : '/monitoring-barang',
+                    : ($session->assignment_no
+                        ? '/monitoring-checkpoint/'.rawurlencode($session->assignment_no)
+                        : '/monitoring-barang'),
                 'metadata' => [
                     'assignment_no' => $session->assignment_no,
                     'cargo_name' => $session->cargo_name,
@@ -268,7 +295,7 @@ class GlobalSearchService
      */
     private function searchSesiPekerja(User $user, string $keyword, int $limit): array
     {
-        $lower = '%'.strtolower($keyword).'%';
+        $lower = $this->likePattern($keyword);
         $query = ShippingSession::with([
             'sessionCheckpoints.picUser',
             'sessionCheckpoints.checkpoint',
@@ -287,13 +314,13 @@ class GlobalSearchService
 
         // -- Search Filters --
         $query->where(function ($q) use ($lower) {
-            $q->whereRaw('LOWER(assignment_no) LIKE ?', [$lower])
-                ->orWhereRaw('LOWER(cargo_name) LIKE ?', [$lower])
+            $q->whereRaw("LOWER(assignment_no) LIKE ? ESCAPE '\\'", [$lower])
+                ->orWhereRaw("LOWER(cargo_name) LIKE ? ESCAPE '\\'", [$lower])
                 ->orWhereHas('sessionCheckpoints', function ($sq) use ($lower) {
                     $sq->whereHas('picUser', function ($uq) use ($lower) {
-                        $uq->whereRaw('LOWER(name) LIKE ?', [$lower]);
+                        $uq->whereRaw("LOWER(name) LIKE ? ESCAPE '\\'", [$lower]);
                     })->orWhereHas('checkpoint', function ($cpq) use ($lower) {
-                        $cpq->whereRaw('LOWER(name) LIKE ?', [$lower]);
+                        $cpq->whereRaw("LOWER(name) LIKE ? ESCAPE '\\'", [$lower]);
                     });
                 });
         });
@@ -322,15 +349,24 @@ class GlobalSearchService
                 default => 'Aktif',
             };
 
+            // status_type drives the badge colour — it must be derived from
+            // the enum, not from comparing the display label.
+            $statusType = match ($session->status) {
+                ShippingSessionStatus::IN_TRANSIT => 'active',
+                ShippingSessionStatus::DELIVERED => 'completed',
+                ShippingSessionStatus::PENDING => 'pending',
+                default => 'active',
+            };
+
             return [
                 'id' => (string) $session->id,
                 'category' => 'sesi',
                 'category_label' => 'Worker Sessions',
-                'title' => "{$session->assignment_no} â€” {$session->cargo_name}",
-                'subtitle' => "Petugas: {$picNames} Â· Checkpoint: {$currentCheckpoint}",
+                'title' => "{$session->assignment_no} — {$session->cargo_name}",
+                'subtitle' => "Petugas: {$picNames} · Checkpoint: {$currentCheckpoint}",
                 'status' => $statusLabel,
-                'status_type' => $statusLabel === 'Aktif' ? 'active' : 'completed',
-                'url' => '/sesi-pekerja',
+                'status_type' => $statusType,
+                'url' => '/sesi-pekerja/'.$session->id,
                 'metadata' => [
                     'session_id' => $session->assignment_no,
                     'cargo' => $session->cargo_name,
@@ -346,8 +382,10 @@ class GlobalSearchService
      */
     private function searchDokumen(User $user, string $keyword, int $limit): array
     {
-        $lower = '%'.strtolower($keyword).'%';
-        $query = Document::with(['documentType', 'shippingSession.customer', 'uploadedBy', 'verifiedBy']);
+        $lower = $this->likePattern($keyword);
+        // NOTE: uploadedBy / verifiedBy are intentionally not eager-loaded —
+        // the mapper below never reads them.
+        $query = Document::with(['documentType', 'shippingSession.customer']);
 
         // -- Role Authorization Scoping --
         // NOTE: documents carry customer_id directly. Filtering via
@@ -360,24 +398,29 @@ class GlobalSearchService
             }
             $query->where('customer_id', $customer->id);
         } elseif ($user->hasRole(UserRole::FieldWorker->value)) {
-            $query->whereHas('shippingSession.sessionCheckpoints', function ($sq) use ($user) {
-                $sq->where('pic_user_id', $user->id);
+            // Field workers see documents of sessions they are assigned to,
+            // plus documents they uploaded themselves (which may not be
+            // linked to a shipping session yet).
+            $query->where(function ($scope) use ($user) {
+                $scope->whereHas('shippingSession.sessionCheckpoints', function ($sq) use ($user) {
+                    $sq->where('pic_user_id', $user->id);
+                })->orWhere('uploaded_by', $user->id);
             });
         }
 
         // -- Search Filters --
         $query->where(function ($q) use ($lower) {
-            $q->whereRaw('LOWER(file_name) LIKE ?', [$lower])
-                ->orWhereRaw('LOWER(remarks) LIKE ?', [$lower])
-                ->orWhereRaw('LOWER(CAST(document_data AS TEXT)) LIKE ?', [$lower])
+            $q->whereRaw("LOWER(file_name) LIKE ? ESCAPE '\\'", [$lower])
+                ->orWhereRaw("LOWER(remarks) LIKE ? ESCAPE '\\'", [$lower])
+                ->orWhereRaw("LOWER(CAST(document_data AS TEXT)) LIKE ? ESCAPE '\\'", [$lower])
                 ->orWhereHas('documentType', function ($tq) use ($lower) {
-                    $tq->whereRaw('LOWER(name) LIKE ?', [$lower]);
+                    $tq->whereRaw("LOWER(name) LIKE ? ESCAPE '\\'", [$lower]);
                 })
                 ->orWhereHas('shippingSession', function ($sq) use ($lower) {
-                    $sq->whereRaw('LOWER(assignment_no) LIKE ?', [$lower])
-                        ->orWhereRaw('LOWER(cargo_name) LIKE ?', [$lower])
+                    $sq->whereRaw("LOWER(assignment_no) LIKE ? ESCAPE '\\'", [$lower])
+                        ->orWhereRaw("LOWER(cargo_name) LIKE ? ESCAPE '\\'", [$lower])
                         ->orWhereHas('customer', function ($cq) use ($lower) {
-                            $cq->whereRaw('LOWER(company_name) LIKE ?', [$lower]);
+                            $cq->whereRaw("LOWER(company_name) LIKE ? ESCAPE '\\'", [$lower]);
                         });
                 });
         });
@@ -394,7 +437,7 @@ class GlobalSearchService
 
             $primaryTitle = $docNumber ? "{$docNumber} ({$typeName})" : $typeName;
             $subtitleParts = array_filter([$cargoName, $sessionNo, $customerName]);
-            $subtitle = implode(' Â· ', $subtitleParts);
+            $subtitle = implode(' · ', $subtitleParts);
             if ($subtitle === '') {
                 $subtitle = $doc->file_name;
             }
@@ -411,8 +454,15 @@ class GlobalSearchService
                 $url = $doc->shipping_session_id
                     ? '/customer/shipment/'.$doc->shipping_session_id
                     : '/customer/monitoring-barang';
+            } elseif ($user->hasRole(UserRole::Supervisor->value)) {
+                // Deep-link to the shipment verification detail when known.
+                $url = $doc->assignment_no_ref
+                    ? '/verifikasi-berkas/'.rawurlencode($doc->assignment_no_ref)
+                    : '/verifikasi-berkas';
             } else {
-                $url = $user->hasRole(UserRole::Supervisor->value) ? '/verifikasi-berkas' : '/submit-berkas';
+                $url = $doc->assignment_no_ref
+                    ? '/submit-berkas/'.rawurlencode($doc->assignment_no_ref)
+                    : '/submit-berkas';
             }
 
             return [
@@ -440,8 +490,11 @@ class GlobalSearchService
      */
     private function searchCheckpoint(User $user, string $keyword, int $limit): array
     {
-        $lower = '%'.strtolower($keyword).'%';
+        $lower = $this->likePattern($keyword);
+        // Only the columns actually used below are selected for the related
+        // sessions — a busy checkpoint must not pull full session rows.
         $query = Checkpoint::with(['shippingSessions' => function ($sq) use ($user) {
+            $sq->select('id', 'current_checkpoint_id', 'customer_id', 'assignment_no', 'cargo_name');
             if ($user->hasRole(UserRole::Customer->value)) {
                 $customer = $this->getCustomerForUser($user);
                 if ($customer) {
@@ -457,11 +510,11 @@ class GlobalSearchService
         }]);
 
         $query->where(function ($q) use ($lower) {
-            $q->whereRaw('LOWER(name) LIKE ?', [$lower])
-                ->orWhereRaw('LOWER(description) LIKE ?', [$lower])
+            $q->whereRaw("LOWER(name) LIKE ? ESCAPE '\\'", [$lower])
+                ->orWhereRaw("LOWER(description) LIKE ? ESCAPE '\\'", [$lower])
                 ->orWhereHas('shippingSessions', function ($sq) use ($lower) {
-                    $sq->whereRaw('LOWER(assignment_no) LIKE ?', [$lower])
-                        ->orWhereRaw('LOWER(cargo_name) LIKE ?', [$lower]);
+                    $sq->whereRaw("LOWER(assignment_no) LIKE ? ESCAPE '\\'", [$lower])
+                        ->orWhereRaw("LOWER(cargo_name) LIKE ? ESCAPE '\\'", [$lower]);
                 });
         });
 
@@ -473,7 +526,7 @@ class GlobalSearchService
 
             $units = $cp->shippingSessions->pluck('cargo_name')->take(2)->implode(', ');
             $desc = $cp->description ?: "Tahap Urutan #{$cp->sequence}";
-            $subtitle = $units ? "{$desc} Â· Unit: {$units}" : "{$desc} Â· Urutan #{$cp->sequence}";
+            $subtitle = $units ? "{$desc} · Unit: {$units}" : "{$desc} · Urutan #{$cp->sequence}";
 
             return [
                 'id' => (string) $cp->id,
@@ -500,7 +553,7 @@ class GlobalSearchService
      */
     private function searchUsers(User $user, string $keyword, int $limit): array
     {
-        $lower = '%'.strtolower($keyword).'%';
+        $lower = $this->likePattern($keyword);
         $query = User::with('roles');
 
         // Supervisor can only view non-admin operational users
@@ -511,11 +564,11 @@ class GlobalSearchService
         }
 
         $query->where(function ($q) use ($lower) {
-            $q->whereRaw('LOWER(name) LIKE ?', [$lower])
-                ->orWhereRaw('LOWER(email) LIKE ?', [$lower])
-                ->orWhereRaw('LOWER(phone) LIKE ?', [$lower])
+            $q->whereRaw("LOWER(name) LIKE ? ESCAPE '\\'", [$lower])
+                ->orWhereRaw("LOWER(email) LIKE ? ESCAPE '\\'", [$lower])
+                ->orWhereRaw("LOWER(phone) LIKE ? ESCAPE '\\'", [$lower])
                 ->orWhereHas('roles', function ($rq) use ($lower) {
-                    $rq->whereRaw('LOWER(name) LIKE ?', [$lower]);
+                    $rq->whereRaw("LOWER(name) LIKE ? ESCAPE '\\'", [$lower]);
                 });
         });
 
@@ -539,10 +592,12 @@ class GlobalSearchService
                 'category' => 'users',
                 'category_label' => 'Users',
                 'title' => $u->name,
-                'subtitle' => "{$roleLabel} Â· {$u->email}".($u->phone ? " Â· {$u->phone}" : ''),
+                'subtitle' => "{$roleLabel} · {$u->email}".($u->phone ? " · {$u->phone}" : ''),
                 'status' => $statusLabel,
                 'status_type' => $u->status === UserStatus::Active ? 'active' : 'inactive',
-                'url' => '/kelola-akun',
+                // Pass the e-mail as search so the target page is pre-filtered
+                // to the clicked account.
+                'url' => '/kelola-akun?search='.rawurlencode($u->email),
                 'metadata' => [
                     'email' => $u->email,
                     'role' => $roleLabel,

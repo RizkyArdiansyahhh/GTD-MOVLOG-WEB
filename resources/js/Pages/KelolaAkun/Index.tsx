@@ -83,24 +83,79 @@ export default function Index() {
     const [roleFilter, setRoleFilter] = useState(filters?.role ?? 'All Roles');
     const [statusFilter, setStatusFilter] = useState(filters?.status ?? 'All Statuses');
     const [currentPage, setCurrentPage] = useState(users?.current_page ?? 1);
+    const [isSearching, setIsSearching] = useState(false);
     const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    // Skips the debounced fetch on first mount — the initial props already
+    // reflect the URL filters, so an immediate request would be redundant.
+    const isFirstFilterRunRef = useRef(true);
+    // Set when a handler already fired its request immediately, so the
+    // state updates it caused don't produce a second (debounced) request.
+    const skipNextFilterEffectRef = useRef(false);
 
-    const fetchFiltered = (params: { search: string; role: string; status: string; page?: string | number }) => {
-        router.get('/kelola-akun', params, { preserveState: true, preserveScroll: true, replace: true });
+    const cancelPendingSearch = () => {
+        if (searchDebounceRef.current) {
+            clearTimeout(searchDebounceRef.current);
+            searchDebounceRef.current = null;
+        }
     };
 
-    // Debounced server search (400ms) to avoid firing a request per keystroke.
+    const fetchFiltered = (params: { search: string; role: string; status: string; page?: string | number }) => {
+        router.get('/kelola-akun', params, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+            onStart: () => setIsSearching(true),
+            onFinish: () => setIsSearching(false),
+        });
+    };
+
+    // Single debounced server search (400ms) for search + role + status.
+    // Collapsing all three filters into one effect guarantees the request
+    // always carries the latest values (no stale closure) and that rapid
+    // changes produce exactly one request.
     useEffect(() => {
         if (!hasServerData) return;
-        if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+        if (isFirstFilterRunRef.current) {
+            isFirstFilterRunRef.current = false;
+            return;
+        }
+        if (skipNextFilterEffectRef.current) {
+            skipNextFilterEffectRef.current = false;
+            return;
+        }
+        cancelPendingSearch();
         searchDebounceRef.current = setTimeout(() => {
             fetchFiltered({ search, role: roleFilter, status: statusFilter });
         }, 400);
         return () => {
-            if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+            cancelPendingSearch();
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [search]);
+    }, [search, roleFilter, statusFilter]);
+
+    // Keep local state in sync with server-provided filters/page so the
+    // browser back/forward buttons and external navigation update the UI.
+    // React bails out when the value is identical, so this never triggers
+    // a redundant fetch loop.
+    const serverPage = users?.current_page;
+    useEffect(() => {
+        setCurrentPage(serverPage ?? 1);
+    }, [serverPage]);
+
+    const serverSearch = filters?.search;
+    useEffect(() => {
+        if (serverSearch !== undefined) setSearch(serverSearch);
+    }, [serverSearch]);
+
+    const serverRole = filters?.role;
+    useEffect(() => {
+        if (serverRole !== undefined) setRoleFilter(serverRole);
+    }, [serverRole]);
+
+    const serverStatus = filters?.status;
+    useEffect(() => {
+        if (serverStatus !== undefined) setStatusFilter(serverStatus);
+    }, [serverStatus]);
 
     // State for Status Confirmation Modal, Delete Confirmation Modal & Toast
     const [modalUser, setModalUser] = useState<KelolaAkunUser | null>(null);
@@ -179,39 +234,47 @@ export default function Index() {
     };
 
     const handleSearchSubmit = () => {
-        if (hasServerData) {
-            router.get('/kelola-akun', { search, role: roleFilter, status: statusFilter }, { preserveState: true, preserveScroll: true });
-        }
+        if (!hasServerData) return;
+        // Flush immediately instead of waiting for the debounce timer,
+        // and cancel the pending timer so only one request fires.
+        cancelPendingSearch();
+        fetchFiltered({ search, role: roleFilter, status: statusFilter });
     };
 
     const handleRoleChange = (value: string) => {
         setRoleFilter(value);
-        if (hasServerData) {
-            router.get('/kelola-akun', { search, role: value, status: statusFilter }, { preserveState: true, preserveScroll: true });
-        }
+        // Server fetch is handled by the debounced effect above.
     };
 
     const handleStatusChange = (value: string) => {
         setStatusFilter(value);
-        if (hasServerData) {
-            router.get('/kelola-akun', { search, role: roleFilter, status: value }, { preserveState: true, preserveScroll: true });
-        }
+        // Server fetch is handled by the debounced effect above.
     };
 
     const handleReset = () => {
+        cancelPendingSearch();
+        // The state updates below would re-trigger the debounced effect
+        // with identical values — skip it since we fetch immediately.
+        skipNextFilterEffectRef.current = true;
         setSearch('');
         setRoleFilter('All Roles');
         setStatusFilter('All Statuses');
         setCurrentPage(1);
         if (hasServerData) {
-            router.get('/kelola-akun', {}, { preserveState: true, preserveScroll: true });
+            fetchFiltered({ search: '', role: 'All Roles', status: 'All Statuses' });
+        } else {
+            skipNextFilterEffectRef.current = false;
         }
     };
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
         if (hasServerData) {
-            router.get('/kelola-akun', { search, role: roleFilter, status: statusFilter, page: String(page) }, { preserveState: true, preserveScroll: true });
+            // An explicit page navigation takes precedence over any
+            // pending debounced filter request (which carries the same
+            // latest filter values anyway).
+            cancelPendingSearch();
+            fetchFiltered({ search, role: roleFilter, status: statusFilter, page: String(page) });
         }
     };
 
@@ -457,6 +520,11 @@ export default function Index() {
                     />
 
                     {/* ── User Table ── */}
+                    {isSearching && (
+                        <p className="text-xs text-slate-400 mb-2" role="status">
+                            Mencari…
+                        </p>
+                    )}
                     <UserTable
                         users={paginatedUsers}
                         onStatusToggleClick={handleStatusToggleClick}
@@ -471,7 +539,7 @@ export default function Index() {
                         totalPages={totalPages}
                         onPageChange={handlePageChange}
                         totalItems={totalItems}
-                        itemsPerPage={ITEMS_PER_PAGE}
+                        itemsPerPage={hasServerData ? ((users as PaginatedUsers).per_page ?? ITEMS_PER_PAGE) : ITEMS_PER_PAGE}
                     />
                 </>
             )}

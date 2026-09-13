@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Head, router } from '@inertiajs/react';
+import React, { useState, useEffect } from 'react';
+import { Head, Link, router } from '@inertiajs/react';
 import {
     Search,
     Package,
@@ -12,9 +12,11 @@ import {
     Layers,
     Filter,
     X,
+    Loader2,
 } from 'lucide-react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { PageHeader } from '@/Components/ui';
+import { HighlightText } from '@/Components/GlobalSearch/GlobalSearchBar';
 import type { FullSearchData, SearchResultItem, SearchCategoryType } from '@/Components/GlobalSearch/types';
 import type { PageProps } from '@/types';
 
@@ -28,30 +30,75 @@ interface SearchPageProps extends PageProps {
 
 export default function SearchIndex({ searchData, filters }: SearchPageProps) {
     const [searchQuery, setSearchQuery] = useState(filters.q || '');
+    const [isNavigating, setIsNavigating] = useState(false);
     const activeCategory = filters.category || 'all';
+
+    // Keep the input in sync with the committed query (category pill
+    // clicks, browser back/forward). This only runs when the
+    // server-provided filter changes, so in-progress typing is untouched.
+    useEffect(() => {
+        setSearchQuery(filters.q || '');
+    }, [filters.q]);
+
+    const navigateSearch = (params: { q?: string; category?: string }) => {
+        setIsNavigating(true);
+        router.get('/search', params, {
+            preserveState: true,
+            preserveScroll: true,
+            onFinish: () => setIsNavigating(false),
+        });
+    };
 
     const handleSearchSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        router.get(
-            '/search',
-            {
-                q: searchQuery,
-                category: activeCategory !== 'all' ? activeCategory : undefined,
-            },
-            { preserveState: true }
-        );
+        if (isNavigating) return;
+        navigateSearch({
+            q: searchQuery,
+            category: activeCategory !== 'all' ? activeCategory : undefined,
+        });
     };
 
     const handleCategoryChange = (categoryKey: string) => {
-        router.get(
-            '/search',
-            {
-                q: searchQuery,
-                category: categoryKey !== 'all' ? categoryKey : undefined,
-            },
-            { preserveState: true }
-        );
+        if (isNavigating) return;
+        // Uses the current input value so the typed keyword is kept when
+        // switching category pills.
+        navigateSearch({
+            q: searchQuery,
+            category: categoryKey !== 'all' ? categoryKey : undefined,
+        });
     };
+
+    const handleClear = () => {
+        setSearchQuery('');
+        // Also navigate so the stale result list is cleared server-side.
+        navigateSearch({});
+    };
+
+    if (!searchData) {
+        return (
+            <DashboardLayout>
+                <Head title="Global Search — GTD MoveLog" />
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-12 text-center">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-red-50 text-red-600 mb-4">
+                        <Search size={28} />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900 mb-1">
+                        Search Unavailable
+                    </h3>
+                    <p className="text-sm text-slate-500 max-w-md mx-auto mb-6">
+                        Data pencarian tidak dapat dimuat. Silakan muat ulang halaman atau coba lagi.
+                    </p>
+                    <button
+                        type="button"
+                        onClick={() => window.location.reload()}
+                        className="px-5 py-2 rounded-xl bg-[#F6C343] hover:bg-[#E0AD2C] font-bold text-[#06283A] text-sm transition-colors shadow-sm"
+                    >
+                        Muat ulang
+                    </button>
+                </div>
+            </DashboardLayout>
+        );
+    }
 
     const getCategoryIcon = (category: SearchCategoryType) => {
         switch (category) {
@@ -159,9 +206,14 @@ export default function SearchIndex({ searchData, filters }: SearchPageProps) {
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6">
                 <form onSubmit={handleSearchSubmit} className="flex gap-2">
                     <div className="flex-1 relative flex items-center bg-slate-50 rounded-xl border border-slate-200 px-3 py-2 focus-within:ring-2 focus-within:ring-[#F6C343] focus-within:border-transparent transition-all">
-                        <Search size={18} className="text-slate-400 mr-2 shrink-0" />
+                        {isNavigating ? (
+                            <Loader2 size={18} className="text-slate-400 mr-2 shrink-0 animate-spin" />
+                        ) : (
+                            <Search size={18} className="text-slate-400 mr-2 shrink-0" />
+                        )}
                         <input
                             type="text"
+                            aria-label="Search keyword"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search tracking ID, unit name, session ID, document number, party name, checkpoint..."
@@ -170,7 +222,8 @@ export default function SearchIndex({ searchData, filters }: SearchPageProps) {
                         {searchQuery && (
                             <button
                                 type="button"
-                                onClick={() => setSearchQuery('')}
+                                onClick={handleClear}
+                                aria-label="Clear search"
                                 className="text-slate-400 hover:text-slate-600 p-1"
                             >
                                 <X size={16} />
@@ -179,7 +232,8 @@ export default function SearchIndex({ searchData, filters }: SearchPageProps) {
                     </div>
                     <button
                         type="submit"
-                        className="px-5 py-2 rounded-xl bg-[#F6C343] hover:bg-[#E0AD2C] font-bold text-[#06283A] text-sm transition-colors shrink-0 shadow-sm"
+                        disabled={isNavigating}
+                        className="px-5 py-2 rounded-xl bg-[#F6C343] hover:bg-[#E0AD2C] font-bold text-[#06283A] text-sm transition-colors shrink-0 shadow-sm disabled:opacity-60"
                     >
                         Cari
                     </button>
@@ -198,6 +252,8 @@ export default function SearchIndex({ searchData, filters }: SearchPageProps) {
                             <button
                                 key={cat.key}
                                 type="button"
+                                aria-pressed={isActive}
+                                disabled={isNavigating}
                                 onClick={() => handleCategoryChange(cat.key)}
                                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all whitespace-nowrap ${
                                     isActive
@@ -223,9 +279,9 @@ export default function SearchIndex({ searchData, filters }: SearchPageProps) {
             {searchData.results && searchData.results.length > 0 ? (
                 <div className="space-y-3">
                     {searchData.results.map((item: SearchResultItem) => (
-                        <div
-                            key={item.id}
-                            onClick={() => router.visit(item.url)}
+                        <Link
+                            key={`${item.category}-${item.id}`}
+                            href={item.url}
                             className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md hover:border-[#F6C343] transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4 group"
                         >
                             <div className="flex items-start gap-3.5 min-w-0">
@@ -242,11 +298,11 @@ export default function SearchIndex({ searchData, filters }: SearchPageProps) {
                                             {item.category_label}
                                         </span>
                                         <h3 className="text-base font-bold text-slate-900 group-hover:text-amber-700 transition-colors truncate">
-                                            {item.title}
+                                            <HighlightText text={item.title} query={searchData.query} />
                                         </h3>
                                     </div>
                                     <p className="text-xs text-slate-500 leading-relaxed">
-                                        {item.subtitle}
+                                        <HighlightText text={item.subtitle} query={searchData.query} />
                                     </p>
 
                                     {/* Metadata tags */}
@@ -276,7 +332,7 @@ export default function SearchIndex({ searchData, filters }: SearchPageProps) {
                                     <ArrowRight size={14} />
                                 </div>
                             </div>
-                        </div>
+                        </Link>
                     ))}
                 </div>
             ) : (
@@ -300,9 +356,10 @@ export default function SearchIndex({ searchData, filters }: SearchPageProps) {
                             <button
                                 key={term}
                                 type="button"
+                                disabled={isNavigating}
                                 onClick={() => {
                                     setSearchQuery(term);
-                                    router.get('/search', { q: term });
+                                    navigateSearch({ q: term });
                                 }}
                                 className="px-2.5 py-1 bg-slate-100 hover:bg-amber-100 hover:text-amber-900 rounded-lg transition-colors font-medium"
                             >

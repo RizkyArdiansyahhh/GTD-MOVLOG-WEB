@@ -29,21 +29,26 @@ const SUGGESTIONS = [
 
 /**
  * Renders text with matching query substrings highlighted with a subtle pale yellow background.
+ *
+ * NOTE: the match test deliberately does NOT use the `g` flag. A global
+ * regex is stateful (`lastIndex` advances on every `.test()` call), which
+ * previously caused every second highlight to silently disappear.
  */
-function HighlightText({ text, query }: { text: string; query: string }) {
+export function HighlightText({ text, query }: { text: string; query: string }) {
     if (!query.trim() || !text) {
         return <>{text}</>;
     }
 
     const trimmedQuery = query.trim();
     const escapedQuery = trimmedQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex = new RegExp(`(${escapedQuery})`, 'gi');
-    const parts = text.split(regex);
+    const splitRegex = new RegExp(`(${escapedQuery})`, 'gi');
+    const matchRegex = new RegExp(`^${escapedQuery}$`, 'i');
+    const parts = text.split(splitRegex);
 
     return (
         <>
             {parts.map((part, i) =>
-                regex.test(part) ? (
+                matchRegex.test(part) ? (
                     <mark
                         key={i}
                         className="bg-[#FEF08A] text-slate-950 font-semibold px-0.5 rounded-[2px]"
@@ -63,6 +68,7 @@ export default function GlobalSearchBar() {
     const [isOpen, setIsOpen] = useState(false);
     const [query, setQuery] = useState('');
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [results, setResults] = useState<QuickSearchResponse | null>(null);
     const [recentSearches, setRecentSearches] = useState<string[]>([]);
     const [selectedIndex, setSelectedIndex] = useState<number>(-1);
@@ -73,6 +79,9 @@ export default function GlobalSearchBar() {
     const dropdownRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
+    // Tracks the query of the most recently issued request so stale
+    // responses (or responses arriving after clear) are ignored.
+    const latestQueryRef = useRef<string>('');
     const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
     // Load recent searches from localStorage
@@ -80,26 +89,50 @@ export default function GlobalSearchBar() {
         try {
             const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) {
-                setRecentSearches(JSON.parse(saved));
+                const parsed: unknown = JSON.parse(saved);
+                if (Array.isArray(parsed)) {
+                    setRecentSearches(
+                        parsed.filter((s): s is string => typeof s === 'string').slice(0, MAX_RECENTS)
+                    );
+                }
             }
         } catch {
             // Ignore storage errors
         }
     }, []);
 
+    // Abort any in-flight request on unmount.
+    useEffect(() => {
+        return () => {
+            abortControllerRef.current?.abort();
+        };
+    }, []);
+
+    // Lock background scroll while the mobile search modal is open.
+    useEffect(() => {
+        if (!isMobileModalOpen) return;
+        const prev = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = prev;
+        };
+    }, [isMobileModalOpen]);
+
     const saveRecentSearch = (text: string) => {
         const trimmed = text.trim();
         if (!trimmed) return;
-        try {
+        setRecentSearches((prev) => {
             const updated = [
                 trimmed,
-                ...recentSearches.filter((s) => s.toLowerCase() !== trimmed.toLowerCase()),
+                ...prev.filter((s) => s.toLowerCase() !== trimmed.toLowerCase()),
             ].slice(0, MAX_RECENTS);
-            setRecentSearches(updated);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-        } catch {
-            // Ignore
-        }
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+            } catch {
+                // Ignore storage errors
+            }
+            return updated;
+        });
     };
 
     const clearRecentSearches = (e: React.MouseEvent) => {
@@ -134,16 +167,18 @@ export default function GlobalSearchBar() {
         if (selectedIndex >= 0 && itemRefs.current[selectedIndex]) {
             itemRefs.current[selectedIndex]?.scrollIntoView({
                 block: 'nearest',
-                behavior: 'smooth',
+                behavior: 'auto',
             });
         }
     }, [selectedIndex]);
 
     // Fetch quick search results with debounce and abort controller
     const fetchResults = useCallback(async (searchQuery: string) => {
-        if (!searchQuery.trim()) {
+        const trimmed = searchQuery.trim();
+        if (!trimmed) {
             setResults(null);
             setLoading(false);
+            setError(null);
             return;
         }
 
@@ -153,11 +188,13 @@ export default function GlobalSearchBar() {
 
         const controller = new AbortController();
         abortControllerRef.current = controller;
+        latestQueryRef.current = trimmed;
 
         setLoading(true);
+        setError(null);
 
         try {
-            const res = await fetch(`/global-search/quick?q=${encodeURIComponent(searchQuery)}`, {
+            const res = await fetch(`/global-search/quick?q=${encodeURIComponent(trimmed)}`, {
                 signal: controller.signal,
                 headers: {
                     Accept: 'application/json',
@@ -165,33 +202,57 @@ export default function GlobalSearchBar() {
                 },
             });
 
-            if (res.ok) {
-                const data: QuickSearchResponse = await res.json();
-                setResults(data);
-                setSelectedIndex(0); // Automatically select first item for keyboard-first experience
+            if (controller.signal.aborted) return;
+
+            if (!res.ok) {
+                throw new Error(`Search request failed with status ${res.status}`);
             }
+
+            const data: QuickSearchResponse = await res.json();
+            // Ignore responses that no longer belong to the latest query.
+            if (latestQueryRef.current !== trimmed) return;
+            setResults(data);
+            // Keep keyboard selection empty so Enter defaults to "view all
+            // results". Arrow keys / hover select an item explicitly.
+            setSelectedIndex(-1);
         } catch (err: any) {
-            if (err.name !== 'AbortError') {
-                console.error('Search request error:', err);
+            if (err?.name === 'AbortError' || controller.signal.aborted) {
+                return;
+            }
+            console.error('Search request error:', err);
+            if (latestQueryRef.current === trimmed) {
+                setError('Pencarian gagal. Periksa koneksi lalu coba lagi.');
             }
         } finally {
-            setLoading(false);
+            // An aborted request must not clear the loading state of its successor.
+            if (!controller.signal.aborted && latestQueryRef.current === trimmed) {
+                setLoading(false);
+            }
         }
     }, []);
 
-    // Debounce query changes
+    // Debounce query changes (300ms) and reset keyboard selection so Enter
+    // never navigates to a stale item from the previous result list.
     useEffect(() => {
         const trimmed = query.trim();
         if (!trimmed) {
+            latestQueryRef.current = '';
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
             setResults(null);
             setLoading(false);
+            setError(null);
             setSelectedIndex(-1);
             return;
         }
 
+        setSelectedIndex(-1);
+        setError(null);
+
         const timer = setTimeout(() => {
             fetchResults(trimmed);
-        }, 180);
+        }, 300);
 
         return () => clearTimeout(timer);
     }, [query, fetchResults]);
@@ -235,10 +296,22 @@ export default function GlobalSearchBar() {
     }, []);
 
     const handleSelectResult = (item: SearchResultItem) => {
-        saveRecentSearch(query || item.title);
+        // Save the actual record title, not the raw (possibly partial) typed query.
+        saveRecentSearch(item.title);
         setIsOpen(false);
         setIsMobileModalOpen(false);
         router.visit(item.url);
+    };
+
+    const handleClearSearch = () => {
+        latestQueryRef.current = '';
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+        }
+        setQuery('');
+        setResults(null);
+        setError(null);
+        setSelectedIndex(-1);
     };
 
     const handleViewAllResults = (customQuery?: string) => {
@@ -305,7 +378,7 @@ export default function GlobalSearchBar() {
     };
 
     // Shared list content rendering (clean flat list with subtle dividers & headers)
-    const renderSearchResultsList = () => {
+    const renderSearchResultsList = (listId = 'gtd-global-search-listbox') => {
         const trimmed = query.trim();
 
         // 1. Initial State: Recent searches & Suggestions
@@ -333,7 +406,6 @@ export default function GlobalSearchBar() {
                                         type="button"
                                         onClick={() => {
                                             setQuery(item);
-                                            fetchResults(item);
                                         }}
                                         className="flex items-center gap-1.5 px-3 py-1 text-xs text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-md border border-slate-200/70 transition-colors"
                                     >
@@ -356,7 +428,6 @@ export default function GlobalSearchBar() {
                                     type="button"
                                     onClick={() => {
                                         setQuery(item);
-                                        fetchResults(item);
                                     }}
                                     className="text-left px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors flex items-center justify-between group"
                                 >
@@ -370,8 +441,10 @@ export default function GlobalSearchBar() {
             );
         }
 
-        // 2. Loading state
-        if (loading && (!results || results.query !== trimmed)) {
+        // 2. Pending / loading state. This covers the debounce wait, the
+        // in-flight request, and any query mismatch — a stale result list
+        // for a previous query is never shown as if it were current.
+        if (!error && (!results || results.query !== trimmed)) {
             return (
                 <div className="py-12 flex flex-col items-center justify-center text-center">
                     <Loader2 size={20} className="animate-spin text-slate-400 mb-2" />
@@ -380,13 +453,40 @@ export default function GlobalSearchBar() {
             );
         }
 
-        // 3. Results view: Flat list with section headers and thin dividers
-        if (results && results.total_count > 0) {
+        // 3. Error state (kept separate from empty state so a network
+        // failure is never misreported as "no results").
+        if (error && (!results || results.query !== trimmed)) {
+            return (
+                <div className="py-10 px-6 text-center">
+                    <p className="text-sm font-semibold text-slate-800">
+                        {error}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto leading-relaxed">
+                        Hasil untuk &ldquo;{trimmed}&rdquo; belum dapat dimuat.
+                    </p>
+                    <button
+                        type="button"
+                        onClick={() => fetchResults(trimmed)}
+                        className="mt-4 px-4 py-2 text-xs font-semibold text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg border border-slate-200 transition-colors"
+                    >
+                        Coba lagi
+                    </button>
+                </div>
+            );
+        }
+
+        // 4. Results view: Flat list with section headers and thin dividers
+        if (results && results.query === trimmed && results.total_count > 0) {
             let currentIndexCounter = 0;
 
             return (
                 <div className="flex flex-col">
-                    <div className="max-h-[380px] overflow-y-auto divide-y divide-slate-100 scroll-smooth">
+                    <div
+                        id={listId}
+                        role="listbox"
+                        aria-label="Hasil pencarian"
+                        className="max-h-[380px] overflow-y-auto divide-y divide-slate-100 scroll-smooth"
+                    >
                         {Object.entries(results.categories).map(([catKey, categoryGroup]) => {
                             if (!categoryGroup.items || categoryGroup.items.length === 0) return null;
 
@@ -410,7 +510,10 @@ export default function GlobalSearchBar() {
 
                                             return (
                                                 <div
-                                                    key={item.id}
+                                                    key={`${item.category}-${item.id}`}
+                                                    id={`${listId}-option-${itemIndex}`}
+                                                    role="option"
+                                                    aria-selected={isSelected}
                                                     ref={(el) => {
                                                         itemRefs.current[itemIndex] = el;
                                                     }}
@@ -463,7 +566,9 @@ export default function GlobalSearchBar() {
             );
         }
 
-        // 4. Empty state: Simple & Clean
+        // 5. Empty state: Simple & Clean (only reachable when the result
+        // set actually belongs to the current query, or after an error
+        // was dismissed by typing a new query).
         return (
             <div className="py-10 px-6 text-center">
                 <p className="text-sm font-semibold text-slate-800">
@@ -498,6 +603,12 @@ export default function GlobalSearchBar() {
                 <input
                     ref={inputRef}
                     type="text"
+                    role="combobox"
+                    aria-label="Global search"
+                    aria-expanded={isOpen}
+                    aria-controls="gtd-global-search-listbox"
+                    aria-autocomplete="list"
+                    aria-activedescendant={selectedIndex >= 0 ? `gtd-global-search-listbox-option-${selectedIndex}` : undefined}
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onFocus={() => setIsOpen(true)}
@@ -509,8 +620,7 @@ export default function GlobalSearchBar() {
                     <button
                         type="button"
                         onClick={() => {
-                            setQuery('');
-                            setResults(null);
+                            handleClearSearch();
                             inputRef.current?.focus();
                         }}
                         className="text-slate-400 hover:text-slate-600 transition-colors p-0.5"
@@ -520,7 +630,7 @@ export default function GlobalSearchBar() {
                     </button>
                 ) : (
                     <kbd className="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-slate-400 bg-white/80 rounded border border-slate-200 select-none shadow-2xs">
-                        ⌘K
+                        Ctrl K
                     </kbd>
                 )}
             </div>
@@ -549,7 +659,7 @@ export default function GlobalSearchBar() {
 
                     {/* Compact Integrated Keyboard Navigation Footer */}
                     <div className="px-4 py-2.5 bg-slate-50/90 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 select-none">
-                        {results && results.total_count > 0 ? (
+                        {results && results.query === query.trim() && results.total_count > 0 ? (
                             <button
                                 type="button"
                                 onClick={() => handleViewAllResults()}
@@ -591,7 +701,12 @@ export default function GlobalSearchBar() {
 
             {/* ── Mobile Unified Search Modal Dialog ── */}
             {isMobileModalOpen && (
-                <div className="fixed inset-0 z-50 md:hidden flex flex-col bg-white animate-in fade-in duration-100">
+                <div
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Global search"
+                    className="fixed inset-0 z-50 md:hidden flex flex-col bg-white animate-in fade-in duration-100"
+                >
                     <div className="flex items-center gap-2 p-3 border-b border-slate-200 bg-white">
                         <div className="flex-1 flex items-center gap-2 bg-slate-100 rounded-lg px-3 py-2">
                             {loading ? (
@@ -602,6 +717,12 @@ export default function GlobalSearchBar() {
                             <input
                                 ref={mobileInputRef}
                                 type="text"
+                                role="combobox"
+                                aria-label="Global search"
+                                aria-expanded={isMobileModalOpen}
+                                aria-controls="gtd-global-search-listbox-mobile"
+                                aria-autocomplete="list"
+                                aria-activedescendant={selectedIndex >= 0 ? `gtd-global-search-listbox-mobile-option-${selectedIndex}` : undefined}
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
                                 onKeyDown={handleKeyDown}
@@ -611,7 +732,8 @@ export default function GlobalSearchBar() {
                             {query && (
                                 <button
                                     type="button"
-                                    onClick={() => setQuery('')}
+                                    onClick={handleClearSearch}
+                                    aria-label="Clear search"
                                     className="text-slate-400 hover:text-slate-600"
                                 >
                                     <X size={16} />
@@ -628,10 +750,10 @@ export default function GlobalSearchBar() {
                     </div>
 
                     <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
-                        {renderSearchResultsList()}
+                        {renderSearchResultsList('gtd-global-search-listbox-mobile')}
                     </div>
 
-                    {results && results.total_count > 0 && (
+                    {results && results.query === query.trim() && results.total_count > 0 && (
                         <div className="p-3 bg-slate-50 border-t border-slate-200">
                             <button
                                 type="button"

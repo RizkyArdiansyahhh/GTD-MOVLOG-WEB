@@ -40,13 +40,15 @@ class ShippingSessionRepository extends BaseRepository implements ShippingSessio
             ->when($customerId, fn (Builder $q) => $q->where('customer_id', $customerId))
             ->when($status, fn (Builder $q) => $q->whereRaw('LOWER(status::text) = ?', [strtolower($status)]))
             ->when($search, function (Builder $q) use ($search) {
-                $term = '%' . $search . '%';
+                // Escape LIKE wildcards so the keyword is matched literally.
+                $escaped = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+                $term = '%'.$escaped.'%';
                 $q->where(function (Builder $sub) use ($term) {
-                    $sub->where('assignment_no', 'ilike', $term)
-                        ->orWhere('cargo_name', 'ilike', $term)
-                        ->orWhere('origin', 'ilike', $term)
-                        ->orWhere('destination', 'ilike', $term)
-                        ->orWhereHas('customer', fn (Builder $c) => $c->where('company_name', 'ilike', $term));
+                    $sub->whereRaw("assignment_no ILIKE ? ESCAPE '\\'", [$term])
+                        ->orWhereRaw("cargo_name ILIKE ? ESCAPE '\\'", [$term])
+                        ->orWhereRaw("origin ILIKE ? ESCAPE '\\'", [$term])
+                        ->orWhereRaw("destination ILIKE ? ESCAPE '\\'", [$term])
+                        ->orWhereHas('customer', fn (Builder $c) => $c->whereRaw("company_name ILIKE ? ESCAPE '\\'", [$term]));
                 });
             })
             ->orderBy($sortBy, $sortDirection);

@@ -68,6 +68,7 @@ interface TrendMeta {
     year: number;
     month: number | null;
     years: number[];
+    filtered?: boolean;
 }
 
 interface DashboardProps extends PageProps {
@@ -141,35 +142,45 @@ export default function Index(props: DashboardProps) {
     function pushTrend(mode: string, year: number, month: number) {
         const params: Record<string, number | string> = { trend_mode: mode, trend_year: year };
         if (mode === 'harian') params.trend_month = month;
-        router.get('/', params, { preserveScroll: true, preserveState: true, only: ['shipment_trends', 'trend_meta'] });
+        router.get('/', params, { preserveScroll: true, preserveState: true, only: ['shipment_trends', 'trend_meta', 'operational_kpis', 'checkpoint_pipeline', 'operational_pipeline'] });
     }
+
+    const isFiltered = meta.filtered === true;
+    const scopeLabel =
+        !isFiltered
+            ? 'All-time'
+            : meta.mode === 'harian' && meta.month
+                ? `${MONTH_NAMES[meta.month - 1]} ${meta.year}`
+                : meta.mode === 'tahunan'
+                    ? 'all years'
+                    : `${meta.year}`;
 
     const kpiCards = [
         {
             label: 'Active Shipments',
             value: (kpis?.active_shipments ?? 0).toLocaleString('en-US'),
-            sub: 'sessions in transit',
+            sub: `sessions in transit · ${scopeLabel}`,
             icon: Truck,
             tile: 'bg-blue-50 text-blue-600',
         },
         {
             label: 'Document Verification Queue',
             value: (kpis?.pending_assignments ?? 0).toLocaleString('en-US'),
-            sub: `${kpis?.pending_documents ?? 0} verified documents`,
+            sub: `${kpis?.pending_documents ?? 0} pending documents · ${scopeLabel}`,
             icon: FileCheck2,
             tile: 'bg-amber-50 text-amber-600',
         },
         {
             label: 'Total Cargo Managed',
             value: (kpis?.total_quantity ?? 0).toLocaleString('en-US'),
-            sub: kpis?.quantity_unit ? `primary unit: ${kpis.quantity_unit}` : 'all sessions',
+            sub: kpis?.quantity_unit ? `primary unit: ${kpis.quantity_unit} · ${scopeLabel}` : `all sessions · ${scopeLabel}`,
             icon: Package,
             tile: 'bg-purple-50 text-purple-600',
         },
         {
             label: 'Delivery Rate',
             value: `${kpis?.delivery_rate ?? 0}%`,
-            sub: `${kpis?.delivered_count ?? 0} of ${kpis?.total_count ?? 0} sessions`,
+            sub: `${kpis?.delivered_count ?? 0} of ${kpis?.total_count ?? 0} sessions · ${scopeLabel}`,
             icon: CheckCircle2,
             tile: 'bg-emerald-50 text-emerald-600',
         },
@@ -300,7 +311,7 @@ export default function Index(props: DashboardProps) {
 
                 {/* ── Pipeline + feed pendek ── */}
                 <motion.div {...fadeUp} transition={{ duration: 0.25, delay: 0.15 }} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <CheckpointPipelineChart data={props.checkpoint_pipeline ?? []} />
+                    <CheckpointPipelineChart data={props.checkpoint_pipeline ?? []} scopeLabel={scopeLabel} isFiltered={isFiltered} />
                     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
                         <h2 className="text-sm font-bold text-[#06283A]">Live Activity Feed</h2>
                         <p className="text-xs text-slate-500 mt-0.5 mb-2">Field reports, verifications & completed stages</p>

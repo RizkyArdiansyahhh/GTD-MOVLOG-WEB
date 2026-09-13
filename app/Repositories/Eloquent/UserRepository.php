@@ -48,10 +48,14 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
      */
     public function search(string $keyword, int $perPage = 15): LengthAwarePaginator
     {
+        // Escape LIKE wildcards so the keyword is matched literally.
+        $escaped = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $keyword);
+        $pattern = "%{$escaped}%";
+
         return $this->model->newQuery()
-            ->where(function ($query) use ($keyword) {
-                $query->where('name', 'ILIKE', "%{$keyword}%")
-                    ->orWhere('email', 'ILIKE', "%{$keyword}%");
+            ->where(function ($query) use ($pattern) {
+                $query->whereRaw("name ILIKE ? ESCAPE '\\'", [$pattern])
+                    ->orWhereRaw("email ILIKE ? ESCAPE '\\'", [$pattern]);
             })
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
@@ -66,10 +70,11 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
 
         $search = trim((string) ($filters['search'] ?? ''));
         if ($search !== '') {
-            $keyword = strtolower($search);
+            // Escape LIKE wildcards so the keyword is matched literally.
+            $keyword = strtolower(str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search));
             $query->where(function ($q) use ($keyword) {
-                $q->whereRaw('LOWER(name) LIKE ?', ["%{$keyword}%"])
-                    ->orWhereRaw('LOWER(email) LIKE ?', ["%{$keyword}%"]);
+                $q->whereRaw("LOWER(name) LIKE ? ESCAPE '\\'", ["%{$keyword}%"])
+                    ->orWhereRaw("LOWER(email) LIKE ? ESCAPE '\\'", ["%{$keyword}%"]);
             });
         }
 
