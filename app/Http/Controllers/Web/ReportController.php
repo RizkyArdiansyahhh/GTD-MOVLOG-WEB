@@ -12,9 +12,11 @@ use App\Models\Customer;
 use App\Services\ReportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Response as HttpResponse;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Activitylog\Models\Activity;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -78,15 +80,67 @@ class ReportController extends Controller
     }
 
     /**
-     * Export the report and trigger a file download.
+     * Export the report in two steps: generate the file to temporary
+     * storage, then return a short-lived download token. The file is
+     * only downloaded when the user hits GET /laporan/download/{token}.
      */
-    public function export(GenerateReportRequest $request): HttpResponse|BinaryFileResponse
+    public function export(GenerateReportRequest $request): JsonResponse
     {
-        if ($request->validated()['format'] === 'pdf') {
-            return $this->exportPdf($request);
+        $summary = $this->reportService->generateSummary($request);
+        $validated = $request->validated();
+        $format = $validated['format'] === 'pdf' ? 'pdf' : 'excel';
+
+        $filePath = $format === 'pdf'
+            ? $this->generatePdfFile($summary)
+            : $this->generateExcelFile($request);
+
+        $fileName = basename($filePath);
+        $fileSizeBytes = $this->storedFileSize($filePath);
+
+        // Logged only after the file was generated without exception.
+        $this->logExportHistory($request, $format, $fileName, $fileSizeBytes);
+
+        $downloadToken = (string) Str::uuid();
+        Cache::put(
+            "report-download:{$downloadToken}",
+            ['path' => $filePath, 'name' => $fileName, 'format' => $format],
+            now()->addMinutes(10),
+        );
+
+        return response()->json([
+            'download_token' => $downloadToken,
+            'download_url'   => url("/laporan/download/{$downloadToken}"),
+            'file_name'      => $fileName,
+            'file_size'      => $fileSizeBytes !== null ? $this->formatBytes($fileSizeBytes) : null,
+            'format'         => $format,
+            'total_sessions' => $summary['total_sessions'] ?? 0,
+        ]);
+    }
+
+    /**
+     * Download a previously exported file by token.
+     * The file is deleted after the first successful download.
+     */
+    public function download(string $token): BinaryFileResponse
+    {
+        $cached = Cache::get("report-download:{$token}");
+        abort_unless($cached, 404);
+
+        if (is_string($cached)) {
+            $filePath = $cached;
+            $fileName = basename($cached);
+        } else {
+            $cached = (array) $cached;
+            $filePath = $cached['path'] ?? null;
+            $fileName = $cached['name'] ?? ($filePath !== null ? basename($filePath) : null);
         }
 
-        return $this->exportExcel($request);
+        abort_unless(is_string($filePath) && is_string($fileName), 404);
+        abort_unless(Storage::disk('local')->exists($filePath), 404);
+
+        $absolutePath = Storage::disk('local')->path($filePath);
+
+        return response()->download($absolutePath, $fileName)->deleteFileAfterSend(true);
     }
 
     // -------------------------------------------------------------------------
@@ -115,29 +169,26 @@ class ReportController extends Controller
 
     /**
      * Narrative PDF (portrait A4, no tables — divs/paragraphs only).
-     * Dompdf Pdf::download() returns Illuminate\Http\Response.
+     * Saved to temporary local storage; returns the relative path.
      */
-    private function exportPdf(GenerateReportRequest $request): HttpResponse
+    private function generatePdfFile(array $summary): string
     {
-        $summary = $this->reportService->generateSummary($request);
-
         $pdf = Pdf::loadView('reports.summary-pdf', ['data' => $summary])
             ->setPaper('a4', 'portrait');
 
         $filename = 'GTD_Laporan_Pengiriman_' . now()->format('Y-m-d_His') . '.pdf';
+        $relativePath = "temp-reports/{$filename}";
 
-        $response = $pdf->download($filename);
+        Storage::disk('local')->put($relativePath, $pdf->output());
 
-        // Logged only after the PDF rendered without exception.
-        $this->logExportHistory($request, 'pdf', $filename, $this->responseFileSize($response));
-
-        return $response;
+        return $relativePath;
     }
 
     /**
-     * Single-table Excel export streamed via chunked query (chunk 500).
+     * Multi-sheet Excel export saved to temporary local storage;
+     * returns the relative path.
      */
-    private function exportExcel(GenerateReportRequest $request): BinaryFileResponse
+    private function generateExcelFile(GenerateReportRequest $request): string
     {
         $validated = $request->validated();
 
@@ -148,8 +199,9 @@ class ReportController extends Controller
         }
 
         $filename = 'GTD_Laporan_Pengiriman_' . now()->format('Y-m-d_His') . '.xlsx';
+        $relativePath = "temp-reports/{$filename}";
 
-        $response = Excel::download(
+        Excel::store(
             new ShipmentReportExport(
                 $validated['start_date'],
                 $validated['end_date'],
@@ -159,13 +211,11 @@ class ReportController extends Controller
                 $validated['sort_by'] ?? 'created_at',
                 $validated['sort_direction'] ?? 'desc',
             ),
-            $filename,
+            $relativePath,
+            'local',
         );
 
-        // Logged only after the workbook built without exception.
-        $this->logExportHistory($request, 'excel', $filename, $this->responseFileSize($response));
-
-        return $response;
+        return $relativePath;
     }
 
     // -------------------------------------------------------------------------
@@ -226,25 +276,13 @@ class ReportController extends Controller
     }
 
     /**
-     * Best-effort file size of an already-built download response.
+     * Best-effort file size of a file stored on the local disk.
      */
-    private function responseFileSize(HttpResponse|BinaryFileResponse $response): ?int
+    private function storedFileSize(string $relativePath): ?int
     {
         try {
-            if ($response instanceof BinaryFileResponse && method_exists($response, 'getFile')) {
-                $path = $response->getFile()->getPathname();
-                if (is_string($path) && is_file($path)) {
-                    $size = filesize($path);
-
-                    return $size === false ? null : $size;
-                }
-
-                return null;
-            }
-
-            $content = $response->getContent();
-            if (is_string($content)) {
-                return strlen($content);
+            if (Storage::disk('local')->exists($relativePath)) {
+                return Storage::disk('local')->size($relativePath);
             }
         } catch (\Throwable) {
             // History must never break the export itself.

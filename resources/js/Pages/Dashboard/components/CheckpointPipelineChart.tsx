@@ -18,19 +18,19 @@ export default function CheckpointPipelineChart({ data = [] }: CheckpointPipelin
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col justify-between">
             <div>
                 <div className="flex items-center justify-between mb-1">
-                    <h2 className="text-sm font-semibold text-[#06283A]">Sebaran Pengiriman per Checkpoint</h2>
+                    <h2 className="text-sm font-semibold text-[#06283A]">Shipments by Checkpoint</h2>
                     <span className="text-xs text-slate-500 font-medium">
-                        {totalActive} sesi aktif
+                        {totalActive} active sessions
                     </span>
                 </div>
                 <p className="text-xs text-slate-500 mb-4">
-                    Jumlah sesi yang sedang aktif di tiap tahap saat ini
+                    Sessions currently active at each stage
                 </p>
             </div>
 
             {!hasData ? (
                 <div className="h-[220px] flex items-center justify-center text-xs text-slate-400">
-                    Belum ada data checkpoint
+                    No checkpoint data yet
                 </div>
             ) : (
                 <div className="w-full h-[220px]">
@@ -59,8 +59,8 @@ export default function CheckpointPipelineChart({ data = [] }: CheckpointPipelin
                                     color: '#06283A',
                                 }}
                                 formatter={(value: any) => [
-                                    `${value ?? 0} sesi aktif`,
-                                    'Jumlah',
+                                    `${value ?? 0} active sessions`,
+                                    'Count',
                                 ]}
                             />
                             <Bar

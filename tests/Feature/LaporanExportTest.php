@@ -125,8 +125,15 @@ class LaporanExportTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-        $response->assertHeader('Content-Type', 'application/pdf');
-        $this->assertTrue(str_contains((string) $response->headers->get('Content-Disposition'), 'GTD_Laporan_'));
+        $response->assertJsonStructure(['download_token', 'download_url', 'file_name', 'format', 'total_sessions']);
+        $this->assertStringContainsString('GTD_Laporan_', (string) $response->json('file_name'));
+
+        // Step 2: manual download via token returns the PDF (not auto-downloaded).
+        $token = $response->json('download_token');
+        $download = $this->actingAs($staff)->get("/laporan/download/{$token}");
+        $download->assertStatus(200);
+        $download->assertHeader('Content-Type', 'application/pdf');
+        $this->assertTrue(str_contains((string) $download->headers->get('Content-Disposition'), 'GTD_Laporan_'));
     }
 
     public function test_staff_can_export_report_as_excel(): void
@@ -159,7 +166,13 @@ class LaporanExportTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-        $disposition = (string) $response->headers->get('Content-Disposition');
+        $response->assertJsonStructure(['download_token', 'download_url', 'file_name', 'format', 'total_sessions']);
+
+        // Step 2: manual download via token returns the workbook.
+        $token = $response->json('download_token');
+        $download = $this->actingAs($staff)->get("/laporan/download/{$token}");
+        $download->assertStatus(200);
+        $disposition = (string) $download->headers->get('Content-Disposition');
         $this->assertTrue(str_contains($disposition, 'GTD_Laporan_') && str_contains($disposition, '.xlsx'));
     }
 

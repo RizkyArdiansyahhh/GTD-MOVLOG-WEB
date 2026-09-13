@@ -163,10 +163,14 @@ export const ExportProcessing: React.FC<ExportProcessingProps> = ({
 interface ExportSuccessProps {
     result: ExportResult;
     periodLabel: string;
+    formatLabel?: string;
+    totalSessions?: number;
     onReset: () => void;
 }
 
-export const ExportSuccess: React.FC<ExportSuccessProps> = ({ result, periodLabel, onReset }) => {
+export const ExportSuccess: React.FC<ExportSuccessProps> = ({ result, periodLabel, formatLabel, totalSessions, onReset }) => {
+    const formatDisplay = formatLabel ?? result.format?.toUpperCase() ?? '';
+    const sessionCount = totalSessions ?? result.totalSessions;
     const isPdf = result.fileName.toLowerCase().endsWith('.pdf');
 
     const FileIcon = isPdf ? (
@@ -231,11 +235,35 @@ export const ExportSuccess: React.FC<ExportSuccessProps> = ({ result, periodLabe
                     margin: 0,
                     marginBottom: 8,
                 }}>
-                    Report Ready for Download
+                    Report Ready to Download
                 </h2>
-                <p style={{ fontSize: 13, color: '#6B7280', margin: 0, marginBottom: 28, lineHeight: 1.6 }}>
+                <p style={{ fontSize: 13, color: '#6B7280', margin: 0, marginBottom: 20, lineHeight: 1.6 }}>
                     Export data for period {periodLabel} is ready for download.
                 </p>
+
+                {/* Summary Info: format, periode, jumlah sesi */}
+                <div style={{
+                    background: '#FFF8EC',
+                    borderRadius: 8,
+                    padding: '14px 16px',
+                    marginBottom: 20,
+                    display: 'flex',
+                    gap: 24,
+                    flexWrap: 'wrap',
+                    justifyContent: 'center',
+                    textAlign: 'left',
+                }}>
+                    {[
+                        ...(formatDisplay ? [{ label: 'Format', value: formatDisplay }] : []),
+                        { label: 'Periode', value: periodLabel },
+                        ...(sessionCount !== undefined ? [{ label: 'Jumlah Sesi', value: String(sessionCount) }] : []),
+                    ].map(({ label, value }) => (
+                        <div key={label}>
+                            <p style={{ fontSize: 10, color: '#B7791F', fontWeight: 600, margin: 0, marginBottom: 2 }}>{label}</p>
+                            <p style={{ fontSize: 12, color: '#06283A', fontWeight: 600, margin: 0 }}>{value}</p>
+                        </div>
+                    ))}
+                </div>
 
                 {/* File Card */}
                 <div style={{
@@ -254,7 +282,6 @@ export const ExportSuccess: React.FC<ExportSuccessProps> = ({ result, periodLabe
                     <p style={{ fontSize: 12, color: '#6B7280', margin: 0 }}>{result.fileSize}</p>
                     <a
                         href={result.downloadUrl}
-                        download={result.fileName}
                         style={{
                             marginTop: 4,
                             display: 'inline-flex',
@@ -273,14 +300,19 @@ export const ExportSuccess: React.FC<ExportSuccessProps> = ({ result, periodLabe
                         <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 4v11" />
                         </svg>
-                        Download Now
+                        Download
                     </a>
                 </div>
 
                 {/* Footer Actions */}
-                <div style={{ display: 'flex', justifyContent: 'center', gap: 24 }}>
-                    <button
-                        onClick={onReset}
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <a
+                        href="/laporan"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            onReset();
+                            window.location.href = '/laporan';
+                        }}
                         style={{
                             background: 'none',
                             border: 'none',
@@ -291,21 +323,8 @@ export const ExportSuccess: React.FC<ExportSuccessProps> = ({ result, periodLabe
                             textDecoration: 'underline',
                         }}
                     >
-                        Back to Dashboard
-                    </button>
-                    <button
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            fontSize: 13,
-                            color: '#B7791F',
-                            fontWeight: 600,
-                            textDecoration: 'underline',
-                        }}
-                    >
-                        View Report History
-                    </button>
+                        Back to Reports
+                    </a>
                 </div>
             </div>
         </div>

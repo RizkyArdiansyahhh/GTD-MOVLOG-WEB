@@ -59,7 +59,9 @@ export const laporanService = {
     },
 
     /**
-     * Trigger an export (PDF or Excel) and auto-download the resulting file.
+     * Trigger an export (PDF or Excel). Returns a download token —
+     * the file is NOT auto-downloaded; the caller shows a
+     * "Ready to Download" state and only downloads on user click.
      */
     async export(
         format: ExportFormat,
@@ -84,39 +86,30 @@ export const laporanService = {
         onProgress(50);
 
         try {
-            const response = await axios.post<Blob>('/laporan/export', body, {
-                responseType: 'blob',
-            });
+            const response = await axios.post<{
+                download_token: string;
+                download_url: string;
+                file_name: string;
+                file_size: string | null;
+                format: string;
+                total_sessions: number;
+            }>('/laporan/export', body);
 
             onProgress(80);
-            const blob: Blob = response.data;
-            const contentDisposition =
-                response.headers['content-disposition'] ?? response.headers['Content-Disposition'] ?? '';
-            const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-            const ext = format === 'pdf' ? '.pdf' : '.xlsx';
-            const fileName = match?.[1]?.replace(/['"]/g, '') ?? `GTD_Laporan_${dateFrom}_sd_${dateTo}${ext}`;
 
-            const downloadUrl = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = downloadUrl;
-            a.download = fileName;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-
-            // Delay revocation so asynchronous download stream and manual download button work reliably
-            setTimeout(() => {
-                window.URL.revokeObjectURL(downloadUrl);
-            }, 60000);
+            const data = response.data;
+            const downloadUrl = data.download_url ?? `/laporan/download/${data.download_token}`;
 
             onProgress(100);
 
-            const sizeKb = (blob.size / 1024).toFixed(1);
-            const fileSize = blob.size > 1024 * 1024
-                ? `${(blob.size / (1024 * 1024)).toFixed(2)} MB`
-                : `${sizeKb} KB`;
-
-            return { fileName, fileSize, downloadUrl };
+            return {
+                fileName: data.file_name,
+                fileSize: data.file_size ?? '-',
+                downloadUrl,
+                downloadToken: data.download_token,
+                format: data.format,
+                totalSessions: data.total_sessions,
+            };
         } catch (err: unknown) {
             onProgress(0);
             if (axios.isAxiosError(err)) {

@@ -17,9 +17,15 @@ export interface ShipmentTrendItem {
 
 interface ShipmentTrendChartProps {
     data?: ShipmentTrendItem[];
+    /** Overrides the header badge, e.g. "12 total sessions · 2026". */
+    badgeText?: string;
+    /** Unit shown after the average, e.g. "shipments/day". */
+    avgUnit?: string;
+    /** Overrides the footer right note, e.g. "2026 · monthly". */
+    footerNote?: string;
 }
 
-export default function ShipmentTrendChart({ data = [] }: ShipmentTrendChartProps) {
+export default function ShipmentTrendChart({ data = [], badgeText, avgUnit = 'shipments/month', footerNote = 'Last 6 months' }: ShipmentTrendChartProps) {
     const hasData = data.length > 0;
     const totalShipments = data.reduce((acc, item) => acc + (item.total || 0), 0);
     const avgPerMonth = data.length > 0 ? (totalShipments / data.length).toFixed(1) : '0';
@@ -29,20 +35,20 @@ export default function ShipmentTrendChart({ data = [] }: ShipmentTrendChartProp
             <div>
                 <div className="flex items-center justify-between mb-1">
                     <h2 className="text-sm font-semibold text-[#06283A]">
-                        Tren Volume Pengiriman
+                        Shipment Volume Trend
                     </h2>
                     <span className="text-xs text-slate-500 font-medium bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200/60">
-                        {totalShipments} total sesi (6 bln)
+                        {badgeText ?? `${totalShipments} total sessions (6 mo)`}
                     </span>
                 </div>
                 <p className="text-xs text-slate-500 mb-4">
-                    Grafik jumlah sesi pengiriman logistik per bulan
+                    Monthly logistics shipment volume
                 </p>
             </div>
 
             {!hasData ? (
                 <div className="h-[220px] flex items-center justify-center text-xs text-slate-400">
-                    Belum ada data riwayat pengiriman
+                    No shipment history yet
                 </div>
             ) : (
                 <div className="w-full h-[220px]">
@@ -78,7 +84,7 @@ export default function ShipmentTrendChart({ data = [] }: ShipmentTrendChartProp
                                     color: '#06283A',
                                 }}
                                 formatter={(value: any) => [
-                                    `${value ?? 0} sesi pengiriman`,
+                                    `${value ?? 0} shipments`,
                                     'Volume',
                                 ]}
                             />
@@ -94,8 +100,8 @@ export default function ShipmentTrendChart({ data = [] }: ShipmentTrendChartProp
             )}
 
             <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-                <span>Rata-rata: {avgPerMonth} pengiriman/bulan</span>
-                <span>Periode 6 bulan terakhir</span>
+                <span>Rata-rata: {avgPerMonth} {avgUnit}</span>
+                <span>{footerNote}</span>
             </div>
         </div>
     );

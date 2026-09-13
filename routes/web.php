@@ -6,6 +6,7 @@ use App\Http\Controllers\Web\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Web\Customer\NotificationController as CustomerNotificationController;
 use App\Http\Controllers\Web\Customer\ProfileController as CustomerProfileController;
 use App\Http\Controllers\Web\CustomerDashboardController;
+use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\GlobalSearchController;
 use App\Http\Controllers\Web\KelolaAkunController;
 use App\Http\Controllers\Web\ReportController;
@@ -18,11 +19,6 @@ use App\Http\Controllers\Web\SubmitBerkasController;
 use App\Http\Controllers\Web\SupportController;
 use App\Http\Controllers\Web\UserController;
 use App\Http\Controllers\Web\VerifikasiBerkasController;
-use App\Enums\ShippingSessionStatus;
-use App\Models\Checkpoint;
-use App\Models\ShippingSession;
-use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -63,25 +59,8 @@ Route::get('/system-guide', [SupportController::class, 'systemGuide'])
 // ============================
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    // Dashboard (Admin / Staff / Customer Redirect)
-    Route::get('/', function (Request $request) {
-        if ($request->user()?->hasRole('customer')) {
-            return redirect()->route('customer.dashboard');
-        }
-
-        $stats = [
-            'total_users' => User::count(),
-            'total_shipments' => ShippingSession::count(),
-            'active_drivers' => User::whereHas('roles', fn ($q) => $q->where('name', 'field-worker'))->count(),
-            'pending_deliveries' => ShippingSession::whereIn('status', [ShippingSessionStatus::IN_TRANSIT->value, ShippingSessionStatus::PENDING->value])->count(),
-        ];
-
-        return Inertia::render('Dashboard/Index', [
-            'stats' => $stats,
-            'recentSessions' => ShippingSession::with(['customer', 'currentCheckpoint'])->latest()->take(5)->get(),
-            'masterCheckpoints' => Checkpoint::orderBy('sequence')->get(),
-        ]);
-    })->name('dashboard');
+    // Dashboard (operational control tower — see DashboardController)
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/dashboard', fn () => redirect()->route('dashboard'));
 
@@ -214,6 +193,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('laporan.preview');
         Route::post('laporan/export', [ReportController::class, 'export'])
             ->name('laporan.export');
+        Route::get('laporan/download/{token}', [ReportController::class, 'download'])
+            ->name('laporan.download');
         Route::get('laporan/history', [ReportController::class, 'history'])
             ->name('laporan.history');
         Route::get('reports', [ReportController::class, 'index'])

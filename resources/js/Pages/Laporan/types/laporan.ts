@@ -41,6 +41,9 @@ export interface ExportResult {
     fileName: string;
     fileSize: string;
     downloadUrl: string;
+    downloadToken: string;
+    format?: string;
+    totalSessions?: number;
 }
 
 /** Filters sent to /laporan/preview and /laporan/export */

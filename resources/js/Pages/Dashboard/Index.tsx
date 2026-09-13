@@ -1,191 +1,347 @@
-import { Head, usePage } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
+import { Head, router, usePage } from '@inertiajs/react';
+import { motion } from 'framer-motion';
 import DashboardLayout from '@/Layouts/DashboardLayout';
-import { PageHeader } from '@/Components/ui';
+import CheckpointPipelineChart from './components/CheckpointPipelineChart';
+import ShipmentTrendChart from './components/ShipmentTrendChart';
 import type { PageProps } from '@/types';
-import { Users, Package, Truck, Clock, ArrowUpRight } from 'lucide-react';
+import {
+    CheckCircle2,
+    ClipboardCheck,
+    FileCheck2,
+    Package,
+    RefreshCw,
+    Truck,
+} from 'lucide-react';
 
-interface DashboardStats {
-    total_users?: number;
-    total_shipments?: number;
-    active_drivers?: number;
-    pending_deliveries?: number;
+/* ── Backend prop shapes (DashboardController) ─────────────────── */
+interface OperationalKpis {
+    active_shipments: number;
+    pending_documents: number;
+    pending_assignments: number;
+    active_movements: number;
+    total_quantity: number;
+    quantity_unit: string | null;
+    delivered_count: number;
+    total_count: number;
+    delivery_rate: number;
 }
 
-interface RecentSession {
-    id: string | number;
-    assignment_no?: string;
-    cargo_name?: string;
-    origin?: string | null;
-    destination?: string | null;
-    status?: string;
-    created_at?: string;
-    customer?: { id: string | number; company_name: string } | null;
-    current_checkpoint?: { id: number; name: string } | null;
+interface PipelineStage {
+    id: number;
+    name: string;
+    sequence: number;
+    count: number;
+}
+
+interface OperationalShipment {
+    id: string;
+    assignment_no: string;
+    cargo_name: string;
+    total_quantity: number | null;
+    unit: string;
+    units_total: number;
+    customer_name: string | null;
+    origin: string | null;
+    destination: string | null;
+    status: string;
+    current_checkpoint_id: number | null;
+    current_checkpoint: string | null;
+    progress_pct: number;
+    finished_stages: number;
+    total_stages: number;
+    active_movements: string[];
+    updated_at: string | null;
+}
+
+interface FeedItem {
+    kind: string;
+    title: string;
+    actor: string | null;
+    at: string | null;
+    ref: string | null;
+    status: string | null;
+}
+
+interface TrendMeta {
+    mode: string;
+    year: number;
+    month: number | null;
+    years: number[];
 }
 
 interface DashboardProps extends PageProps {
-    stats?: DashboardStats;
-    recentSessions?: RecentSession[];
+    stats?: { total_users?: number; total_shipments?: number; in_transit_shipments?: number; pending_shipments?: number };
+    recentSessions?: unknown[];
+    masterCheckpoints?: { id: number; name: string; sequence: number }[];
+    shipment_trends?: { month: string; year?: number; total: number }[];
+    trend_meta?: TrendMeta;
+    checkpoint_pipeline?: { name: string; count: number }[];
+    operational_kpis?: OperationalKpis;
+    operational_pipeline?: PipelineStage[];
+    operational_shipments?: OperationalShipment[];
+    operational_feed?: FeedItem[];
+    operational_alerts?: { pending_documents: number; pending_assignments: number; unassigned_sessions: unknown[]; unassigned_count: number };
 }
 
-export default function Index({ stats, recentSessions = [] }: DashboardProps) {
-    const { auth } = usePage<PageProps>().props;
+/* ── Small helpers ─────────────────────────────────────────────── */
+function roleLabel(roles: string[] = []): string {
+    const r = roles.map((x) => x.toLowerCase());
+    if (r.includes('super-admin')) return 'Super Admin';
+    if (r.includes('supervisor')) return 'Supervisor';
+    if (r.includes('staff')) return 'Staff';
+    if (r.includes('field-worker')) return 'Field Worker';
+    return 'User';
+}
 
-    const statCards = [
+function timeAgo(iso: string | null): string {
+    if (!iso) return '-';
+    const s = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
+    if (s < 60) return 'just now';
+    const m = Math.floor(s / 60);
+    if (m < 60) return `${m} min ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    const d = Math.floor(h / 24);
+    if (d < 30) return `${d}d ago`;
+    return new Date(iso).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+const TREND_MODES = [
+    { value: 'harian', label: 'Daily' },
+    { value: 'bulanan', label: 'Monthly' },
+    { value: 'tahunan', label: 'Yearly' },
+] as const;
+
+const fadeUp = {
+    initial: { opacity: 0, y: 10 },
+    animate: { opacity: 1, y: 0 },
+};
+
+export default function Index(props: DashboardProps) {
+    const { auth } = usePage<PageProps>().props;
+    const kpis = props.operational_kpis;
+    const feed = props.operational_feed ?? [];
+
+    const now = new Date();
+    const meta: TrendMeta = props.trend_meta ?? { mode: 'bulanan', year: now.getFullYear(), month: null, years: [now.getFullYear()] };
+    const [trendMode, setTrendMode] = useState(meta.mode);
+    const [trendYear, setTrendYear] = useState(meta.year);
+    const [trendMonth, setTrendMonth] = useState(meta.month ?? now.getMonth() + 1);
+
+    useEffect(() => {
+        setTrendMode(meta.mode);
+        setTrendYear(meta.year);
+        if (meta.month !== null && meta.month !== undefined) setTrendMonth(meta.month);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [props.trend_meta]);
+
+    function pushTrend(mode: string, year: number, month: number) {
+        const params: Record<string, number | string> = { trend_mode: mode, trend_year: year };
+        if (mode === 'harian') params.trend_month = month;
+        router.get('/', params, { preserveScroll: true, preserveState: true, only: ['shipment_trends', 'trend_meta'] });
+    }
+
+    const kpiCards = [
         {
-            label: 'Total User Accounts',
-            value: stats?.total_users ?? 0,
-            icon: Users,
-            color: 'bg-blue-50 text-blue-600',
-        },
-        {
-            label: 'Total Shipments',
-            value: stats?.total_shipments ?? 0,
-            icon: Package,
-            color: 'bg-amber-50 text-amber-600',
-        },
-        {
-            label: 'Active Drivers',
-            value: stats?.active_drivers ?? 0,
+            label: 'Active Shipments',
+            value: (kpis?.active_shipments ?? 0).toLocaleString('en-US'),
+            sub: 'sessions in transit',
             icon: Truck,
-            color: 'bg-emerald-50 text-emerald-600',
+            tile: 'bg-blue-50 text-blue-600',
         },
         {
-            label: 'Pending Shipments',
-            value: stats?.pending_deliveries ?? 0,
-            icon: Clock,
-            color: 'bg-purple-50 text-purple-600',
+            label: 'Document Verification Queue',
+            value: (kpis?.pending_assignments ?? 0).toLocaleString('en-US'),
+            sub: `${kpis?.pending_documents ?? 0} verified documents`,
+            icon: FileCheck2,
+            tile: 'bg-amber-50 text-amber-600',
+        },
+        {
+            label: 'Total Cargo Managed',
+            value: (kpis?.total_quantity ?? 0).toLocaleString('en-US'),
+            sub: kpis?.quantity_unit ? `primary unit: ${kpis.quantity_unit}` : 'all sessions',
+            icon: Package,
+            tile: 'bg-purple-50 text-purple-600',
+        },
+        {
+            label: 'Delivery Rate',
+            value: `${kpis?.delivery_rate ?? 0}%`,
+            sub: `${kpis?.delivered_count ?? 0} of ${kpis?.total_count ?? 0} sessions`,
+            icon: CheckCircle2,
+            tile: 'bg-emerald-50 text-emerald-600',
         },
     ];
 
-    const getStatusBadge = (status?: string) => {
-        const s = (status || '').toLowerCase();
-        if (s === 'delivered' || s === 'completed' || s === 'selesai') {
-            return (
-                <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 font-medium border border-emerald-100">
-                    Selesai
-                </span>
-            );
-        }
-        if (s === 'in_transit' || s === 'in_progress') {
-            return (
-                <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 font-medium border border-blue-100">
-                    Dalam Perjalanan
-                </span>
-            );
-        }
-        return (
-            <span className="px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 font-medium border border-amber-100">
-                {status || 'Pending'}
-            </span>
-        );
-    };
+    const trends = props.shipment_trends ?? [];
+    const trendTotal = trends.reduce((acc, t) => acc + (t.total || 0), 0);
+    const trendBadge =
+        meta.mode === 'harian' && meta.month
+            ? `${trendTotal} sessions · ${MONTH_NAMES[meta.month - 1]} ${meta.year}`
+            : meta.mode === 'tahunan'
+                ? `${trendTotal} sessions · all years`
+                : `${trendTotal} sessions · ${meta.year}`;
+    const trendAvgUnit = meta.mode === 'harian' ? 'shipments/day' : meta.mode === 'tahunan' ? 'shipments/year' : 'shipments/month';
+    const trendFooter =
+        meta.mode === 'harian' && meta.month
+            ? `${MONTH_NAMES[meta.month - 1]} ${meta.year} · daily`
+            : meta.mode === 'tahunan'
+                ? 'Per year · all periods'
+                : `${meta.year} · monthly`;
+
+    const selectClass =
+        'text-xs font-medium text-slate-600 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-[#F6C343] focus:border-transparent cursor-pointer';
 
     return (
         <DashboardLayout title="Dashboard">
             <Head title="Dashboard" />
 
-            <div className="flex flex-col gap-6">
-                <PageHeader
-                    title={`Welcome, ${auth.user?.name ?? 'User'} 👋`}
-                    subtitle="Sistem Informasi Monitoring Operational Logistics (GTD-MOVLOG)"
-                    actions={
-                        <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-200/60">
+            <div className="flex flex-col gap-5">
+                {/* ── Executive Welcome Bar ── */}
+                <motion.div
+                    {...fadeUp}
+                    transition={{ duration: 0.25 }}
+                    className="bg-white rounded-xl border border-slate-200 shadow-sm px-5 py-4 flex flex-wrap items-center gap-x-5 gap-y-3"
+                >
+                    <div className="min-w-0">
+                        <h1 className="text-xl font-bold tracking-tight text-[#06283A] truncate">
+                            Dashboard
+                        </h1>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                            {roleLabel(auth.user?.roles)} · <span className="font-medium text-slate-600">Operational Control Center Active</span>
+                        </p>
+                    </div>
+                    <div className="ms-auto flex items-center gap-3">
+                        <span className="hidden sm:inline-flex items-center gap-2 text-xs text-slate-500 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200/70">
                             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                            <span>System Operating Normally</span>
-                        </div>
-                    }
-                />
+                            Data synced
+                        </span>
+                        <button
+                            type="button"
+                            onClick={() => router.reload()}
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#06283A] bg-[#F6C343] hover:bg-[#E0AD2C] rounded-lg px-3 py-2 transition-colors"
+                        >
+                            <RefreshCw size={13} />
+                            Refresh
+                        </button>
+                    </div>
+                </motion.div>
 
-                {/* ── Stat Cards Grid ── */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {statCards.map((card, i) => {
+                {/* ── Operational Command Deck ── */}
+                <motion.div {...fadeUp} transition={{ duration: 0.25, delay: 0.05 }} className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {kpiCards.map((card) => {
                         const Icon = card.icon;
                         return (
-                            <div
-                                key={i}
-                                className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between"
-                            >
-                                <div className="flex items-center justify-between">
-                                    <span className="text-xs font-medium text-slate-500">{card.label}</span>
-                                    <div className={`w-10 h-10 rounded-xl ${card.color} flex items-center justify-center`}>
-                                        <Icon size={20} strokeWidth={2} />
+                            <div key={card.label} className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm flex flex-col justify-between min-h-[118px]">
+                                <div className="flex items-center justify-between gap-2">
+                                    <span className="text-[11px] font-medium text-slate-500 leading-tight">{card.label}</span>
+                                    <div className={`w-9 h-9 rounded-xl ${card.tile} flex items-center justify-center shrink-0`}>
+                                        <Icon size={18} strokeWidth={2} />
                                     </div>
                                 </div>
-                                <div className="mt-4 flex items-baseline justify-between">
-                                    <span className="text-2xl font-bold text-[#06283A]">
-                                        {card.value.toLocaleString()}
-                                    </span>
+                                <div className="mt-2">
+                                    <span className="text-2xl font-bold text-[#06283A]">{card.value}</span>
+                                    <p className="text-[11px] text-slate-400 mt-0.5">{card.sub}</p>
                                 </div>
                             </div>
                         );
                     })}
-                </div>
+                </motion.div>
 
-                {/* ── Dashboard Quick Sections ── */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Ringkasan Activity */}
-                    <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="font-semibold text-[#06283A]">Recent Shipment Activity</h2>
+                {/* ── Volume trend + period filter ── */}
+                <motion.div {...fadeUp} transition={{ duration: 0.25, delay: 0.1 }}>
+                    <div className="flex flex-wrap items-center gap-2 mb-2.5">
+                        <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 shadow-sm">
+                            {TREND_MODES.map((m) => (
+                                <button
+                                    key={m.value}
+                                    type="button"
+                                    onClick={() => pushTrend(m.value, trendYear, trendMonth)}
+                                    className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${trendMode === m.value ? 'bg-[#06283A] text-white shadow-sm' : 'text-slate-500 hover:text-[#06283A]'
+                                        }`}
+                                >
+                                    {m.label}
+                                </button>
+                            ))}
                         </div>
-                        {recentSessions.length > 0 ? (
-                            <div className="space-y-3">
-                                {recentSessions.map((session) => (
-                                    <div
-                                        key={session.id}
-                                        className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs"
-                                    >
-                                        <div>
-                                            <p className="font-semibold text-slate-800">
-                                                {session.assignment_no ? `Sesi #${session.assignment_no}` : `Sesi #${session.id}`}
-                                                {session.cargo_name ? ` • ${session.cargo_name}` : ''}
-                                            </p>
-                                            <p className="text-slate-500 mt-0.5">
-                                                {session.origin || '-'} → {session.destination || '-'}
-                                                {session.current_checkpoint?.name ? ` • ${session.current_checkpoint.name}` : ''}
-                                            </p>
-                                        </div>
-                                        <div>{getStatusBadge(session.status)}</div>
-                                    </div>
+                        {trendMode !== 'tahunan' && (
+                            <select
+                                value={trendYear}
+                                onChange={(e) => pushTrend(trendMode, Number(e.target.value), trendMonth)}
+                                className={selectClass}
+                                aria-label="Select year"
+                            >
+                                {meta.years.map((y) => (
+                                    <option key={y} value={y}>
+                                        {y}
+                                    </option>
                                 ))}
-                            </div>
-                        ) : (
-                            <div className="p-6 text-center text-xs text-slate-400 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
-                                Belum ada aktivitas sesi pengiriman terbaru.
-                            </div>
+                            </select>
+                        )}
+                        {trendMode === 'harian' && (
+                            <select
+                                value={trendMonth}
+                                onChange={(e) => pushTrend(trendMode, trendYear, Number(e.target.value))}
+                                className={selectClass}
+                                aria-label="Select month"
+                            >
+                                {MONTH_NAMES.map((name, i) => (
+                                    <option key={name} value={i + 1}>
+                                        {name}
+                                    </option>
+                                ))}
+                            </select>
                         )}
                     </div>
+                    <ShipmentTrendChart data={trends} badgeText={trendBadge} avgUnit={trendAvgUnit} footerNote={trendFooter} />
+                </motion.div>
 
-                    {/* Quick Access */}
-                    <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
-                        <div>
-                            <h2 className="font-semibold text-[#06283A] mb-4">Quick Navigation</h2>
-                            <div className="grid grid-cols-2 gap-3">
-                                <a
-                                    href="/monitoring-barang"
-                                    className="p-4 rounded-xl border border-slate-200/80 hover:border-[#F6C343] hover:bg-amber-50/30 transition-all flex items-center justify-between group"
-                                >
-                                    <div>
-                                        <p className="text-xs font-semibold text-[#06283A] group-hover:text-amber-700">Cargo Monitoring</p>
-                                        <p className="text-[11px] text-slate-400 mt-0.5">Track cargo status</p>
-                                    </div>
-                                    <ArrowUpRight size={16} className="text-slate-400 group-hover:text-amber-600" />
-                                </a>
-                                <a
-                                    href="/laporan"
-                                    className="p-4 rounded-xl border border-slate-200/80 hover:border-[#F6C343] hover:bg-amber-50/30 transition-all flex items-center justify-between group"
-                                >
-                                    <div>
-                                        <p className="text-xs font-semibold text-[#06283A] group-hover:text-amber-700">Reports</p>
-                                        <p className="text-[11px] text-slate-400 mt-0.5">Download report data</p>
-                                    </div>
-                                    <ArrowUpRight size={16} className="text-slate-400 group-hover:text-amber-600" />
-                                </a>
-                            </div>
-                        </div>
+                {/* ── Pipeline + feed pendek ── */}
+                <motion.div {...fadeUp} transition={{ duration: 0.25, delay: 0.15 }} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <CheckpointPipelineChart data={props.checkpoint_pipeline ?? []} />
+                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+                        <h2 className="text-sm font-bold text-[#06283A]">Live Activity Feed</h2>
+                        <p className="text-xs text-slate-500 mt-0.5 mb-2">Field reports, verifications & completed stages</p>
+                        {feed.length === 0 ? (
+                            <p className="text-xs text-slate-400 bg-slate-50/60 border border-dashed border-slate-200 rounded-xl p-4 text-center">
+                                No operational activity recorded yet.
+                            </p>
+                        ) : (
+                            <ul className="divide-y divide-slate-100">
+                                {feed.slice(0, 5).map((item, i) => (
+                                    <li key={`${item.kind}-${item.at}-${i}`} className="py-2 flex items-start gap-3">
+                                        <span
+                                            className={`mt-0.5 w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${item.kind === 'verification'
+                                                ? 'bg-emerald-50 text-emerald-600'
+                                                : item.kind === 'stage'
+                                                    ? 'bg-blue-50 text-blue-600'
+                                                    : 'bg-amber-50 text-amber-600'
+                                                }`}
+                                        >
+                                            {item.kind === 'verification' ? (
+                                                <ClipboardCheck size={14} />
+                                            ) : item.kind === 'stage' ? (
+                                                <CheckCircle2 size={14} />
+                                            ) : (
+                                                <FileCheck2 size={14} />
+                                            )}
+                                        </span>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="text-xs font-semibold text-slate-700 leading-snug">{item.title}</p>
+                                            <p className="text-[11px] text-slate-400 mt-0.5">
+                                                {item.actor ?? 'System'}
+                                                {item.ref ? <> · <span className="font-mono font-medium">{item.ref}</span></> : null}
+                                                <> · {timeAgo(item.at)}</>
+                                            </p>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </div>
-                </div>
+                </motion.div>
             </div>
         </DashboardLayout>
     );

@@ -97,6 +97,8 @@ export default function LaporanIndex({ customers = [], statuses = [] }: Props) {
                     <ExportSuccess
                         result={exportResult}
                         periodLabel={periodLabel}
+                        formatLabel={formatLabel}
+                        totalSessions={exportResult.totalSessions ?? summary?.total_sessions}
                         onReset={handleReset}
                     />
                 </div>
