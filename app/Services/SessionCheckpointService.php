@@ -11,6 +11,7 @@ use App\Exceptions\BusinessException;
 use App\Models\Checkpoint;
 use App\Models\SessionCheckpoint;
 use App\Models\ShippingSession;
+use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -118,9 +119,21 @@ class SessionCheckpointService extends BaseService
             );
         }
 
+        $previousPicId = $sessionCheckpoint->pic_user_id;
+
         $sessionCheckpoint->update([
             'pic_user_id' => $picUserId,
         ]);
+
+        // Internal notification: tell the newly assigned PIC directly.
+        // Re-assigning to the same person does not notify again.
+        if ($previousPicId !== $picUserId) {
+            $assignee = User::query()->find($picUserId);
+            if ($assignee instanceof User) {
+                $sessionCheckpoint->loadMissing(['checkpoint', 'shippingSession']);
+                app(InternalNotificationService::class)->notifyStageAssigned($sessionCheckpoint, $assignee);
+            }
+        }
     }
 
     /**
@@ -218,6 +231,17 @@ class SessionCheckpointService extends BaseService
                     'status' => ShippingSessionStatus::DELIVERED,
                 ]);
             }
+
+            // Internal notification: exactly one per completion, for the
+            // monitors + the next stage PIC (if any). Placed here rather
+            // than the observer so the next checkpoint (sequence logic
+            // owned by this service) is known.
+            $lockedCheckpoint->loadMissing(['checkpoint', 'shippingSession']);
+            app(InternalNotificationService::class)->notifyStageCompleted(
+                $session,
+                $lockedCheckpoint,
+                $nextSessionCheckpoint,
+            );
         });
     }
 }

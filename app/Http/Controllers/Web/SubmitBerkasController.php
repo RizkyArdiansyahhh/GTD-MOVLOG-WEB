@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveDocumentStepRequest;
 use App\Http\Requests\StoreCustomerRequest;
+use App\Enums\DocumentStatus;
 use App\Models\Customer;
+use App\Models\Document;
 use App\Services\CustomerService;
 use App\Services\DocumentSubmissionService;
+use App\Services\InternalNotificationService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -94,6 +97,17 @@ class SubmitBerkasController extends Controller
    public function finalize(string $assignmentNoRef)
     {
         $this->documentSubmissionService->submitFinal($assignmentNoRef);
+
+        // Internal notification: submitFinal() uses a mass update that
+        // bypasses Eloquent observers, so notify verifiers explicitly.
+        // (Single-model DRAFT->PENDING transitions are covered by
+        // DocumentObserver instead.)
+        $pendingCount = Document::query()
+            ->where('assignment_no_ref', $assignmentNoRef)
+            ->where('status', DocumentStatus::PENDING->value)
+            ->count();
+        app(InternalNotificationService::class)->notifyDocumentSubmitted($assignmentNoRef, $pendingCount);
+
         return redirect()
             ->route('submit-berkas.index')
             ->with('success', "Seluruh berkas assignment {$assignmentNoRef} berhasil disimpan.");

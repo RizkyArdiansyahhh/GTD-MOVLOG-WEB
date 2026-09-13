@@ -8,6 +8,7 @@ use App\Http\Controllers\Web\Customer\ProfileController as CustomerProfileContro
 use App\Http\Controllers\Web\CustomerDashboardController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\GlobalSearchController;
+use App\Http\Controllers\Web\Internal\NotificationController as InternalNotificationController;
 use App\Http\Controllers\Web\KelolaAkunController;
 use App\Http\Controllers\Web\ReportController;
 use App\Http\Controllers\Web\MonitoringBarangController;
@@ -153,6 +154,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // --- Internal Operational Routes (Super Admin, Staff, Supervisor) ---
     Route::middleware('role:super-admin|staff|supervisor')->group(function () {
+        // Internal Notifications (bell in Navbar)
+        Route::get('notifications', [InternalNotificationController::class, 'index'])
+            ->name('notifications.index');
+        Route::post('notifications/{id}/read', [InternalNotificationController::class, 'markAsRead'])
+            ->name('notifications.read');
+        Route::post('notifications/read-all', [InternalNotificationController::class, 'markAllAsRead'])
+            ->name('notifications.read-all');
+
         // Monitoring Barang
         Route::get('monitoring-barang', [MonitoringBarangController::class, 'index'])
             ->name('monitoring-barang.index');

@@ -7,6 +7,7 @@ namespace App\Observers;
 use App\Events\DocumentVerified;
 use App\Models\Document;
 use App\Notifications\DocumentVerifiedNotification;
+use App\Services\InternalNotificationService;
 use Illuminate\Support\Facades\Notification;
 
 class DocumentObserver
@@ -34,6 +35,34 @@ class DocumentObserver
                     Notification::send($users, new DocumentVerifiedNotification($document, $session));
                 }
             }
+
+            if (in_array($statusUpper, ['REJECTED'], true)) {
+                // Internal only: tell the submitter + verifier peers that
+                // rework is needed. Customers are never notified of rejections.
+                app(InternalNotificationService::class)->notifyDocumentRejected($document);
+            }
+
+            if ($statusUpper === 'PENDING' && in_array($this->originalStatusUpper($document), ['DRAFT', 'REJECTED'], true)) {
+                // Internal only: single-model transition into the verification
+                // queue. (Bulk submit via submitFinal() uses a mass update that
+                // bypasses observers — that path notifies explicitly from
+                // SubmitBerkasController::finalize.)
+                $assignmentNoRef = (string) ($document->assignment_no_ref ?? '');
+                $pendingCount = Document::query()
+                    ->where('assignment_no_ref', $assignmentNoRef)
+                    ->where('status', \App\Enums\DocumentStatus::PENDING->value)
+                    ->count();
+
+                app(InternalNotificationService::class)->notifyDocumentSubmitted($assignmentNoRef, $pendingCount);
+            }
         }
+    }
+
+    private function originalStatusUpper(Document $document): string
+    {
+        $original = $document->getOriginal('status');
+        $statusVal = is_object($original) ? ($original->value ?? (string) $original) : (string) $original;
+
+        return strtoupper($statusVal);
     }
 }

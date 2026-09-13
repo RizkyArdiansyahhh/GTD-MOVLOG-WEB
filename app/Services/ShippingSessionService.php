@@ -112,6 +112,13 @@ class ShippingSessionService
             $this->sessionCheckpointService->createCheckpointsForSession($session);
         });
 
+        // Internal notification: the new session is ready in the
+        // sesi-pekerja queue. Idempotent — only fires when a session
+        // was actually created (null when already exists/incomplete).
+        if ($session instanceof ShippingSession) {
+            app(InternalNotificationService::class)->notifySessionReady($session);
+        }
+
         return $session;
     }
 }
