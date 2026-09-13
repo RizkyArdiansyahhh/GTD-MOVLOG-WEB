@@ -20,6 +20,7 @@ import {
     Truck,
 } from 'lucide-react';
 import Toast from '@/Components/Toast';
+import { PageTransition } from '@/Components/ui';
 import type { PageProps, CustomerNotificationItem } from '@/types';
 
 interface CustomerLayoutProps {
@@ -27,11 +28,19 @@ interface CustomerLayoutProps {
     title?: string;
 }
 
-const navLinks = [
+interface CustomerNavLink {
+    href: string;
+    label: string;
+    icon: typeof LayoutDashboard;
+    /** Additional paths that should highlight this tab (detail pages / aliases). */
+    aliases?: string[];
+}
+
+const navLinks: CustomerNavLink[] = [
     { href: '/customer/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/customer/monitoring-barang', label: 'Cargo Monitoring', icon: PackageSearch },
+    { href: '/customer/monitoring-barang', label: 'Cargo Monitoring', icon: PackageSearch, aliases: ['/customer/shipment'] },
     { href: '/customer/checkpoints', label: 'Checkpoint', icon: MapPin },
-    { href: '/customer/pusat-bantuan', label: 'Help Center', icon: LifeBuoy },
+    { href: '/customer/pusat-bantuan', label: 'Help Center', icon: LifeBuoy, aliases: ['/customer/panduan', '/customer/help-center', '/customer/system-guide'] },
 ];
 
 export default function CustomerLayout({ children }: CustomerLayoutProps) {
@@ -106,12 +115,29 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
         };
     }, [profileOpen, notifOpen]);
 
+    // Normalize a URL/path for active-state comparison:
+    // strips query string + hash and removes trailing slashes (except root).
+    const normalizePath = (raw: string): string => {
+        if (!raw) return '/';
+        let path = raw.split(/[?#]/)[0];
+        if (!path.startsWith('/')) path = `/${path}`;
+        if (path.length > 1) path = path.replace(/\/+$/, '');
+        return path || '/';
+    };
+
     const isActive = (href: string) => {
         if (!url) return false;
-        if (href === '/customer/dashboard') {
-            return url === '/customer/dashboard' || url === '/customer' || url === '/';
+        const current = normalizePath(url);
+        const target = normalizePath(href);
+        if (target === '/customer/dashboard') {
+            return current === '/customer/dashboard' || current === '/customer' || current === '/';
         }
-        return url.startsWith(href);
+        return current === target || current.startsWith(`${target}/`);
+    };
+
+    const isNavActive = (item: CustomerNavLink) => {
+        if (isActive(item.href)) return true;
+        return item.aliases?.some((alias) => isActive(alias)) ?? false;
     };
 
     const handleSearch = (e: React.FormEvent) => {
@@ -219,7 +245,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
                     {/* Inline Horizontal Menu Tabs */}
                     <nav className="hidden md:flex items-center gap-8">
                         {navLinks.map((item) => {
-                            const active = isActive(item.href);
+                            const active = isNavActive(item);
                             return (
                                 <Link
                                     key={item.href}
@@ -457,7 +483,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
                 {/* Mobile Navigation Tabs */}
                 <div className="md:hidden flex items-center justify-around bg-white rounded-xl border border-slate-200 mt-2 py-2 px-3 shadow-xs">
                     {navLinks.map((item) => {
-                        const active = isActive(item.href);
+                        const active = isNavActive(item);
                         const Icon = item.icon;
                         return (
                             <Link
@@ -516,7 +542,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
 
             {/* Main Content */}
             <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 w-full">
-                {children}
+                <PageTransition>{children}</PageTransition>
             </main>
 
             {/* Footer */}

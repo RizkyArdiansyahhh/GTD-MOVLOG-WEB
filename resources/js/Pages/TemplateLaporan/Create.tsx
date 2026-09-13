@@ -22,18 +22,18 @@ export default function TemplateLaporanCreate({ checkpoints = [] }: CreateProps)
         applies_to_report_type: 'movement',
         fields: [
             {
-                field_name: 'Kondisi Muatan',
+                field_name: 'Cargo Condition',
                 field_key: 'kondisi_muatan',
-                label: 'Kondisi Muatan',
+                label: 'Cargo Condition',
                 field_type: 'text',
                 required: true,
                 options: null,
                 sort_order: 1,
             },
             {
-                field_name: 'Foto Bukti Operasional',
+                field_name: 'Operational Proof Photo',
                 field_key: 'foto_bukti_operasional',
-                label: 'Foto Bukti Operasional',
+                label: 'Operational Proof Photo',
                 field_type: 'photo',
                 required: true,
                 options: null,
@@ -45,7 +45,7 @@ export default function TemplateLaporanCreate({ checkpoints = [] }: CreateProps)
     const addField = (type: 'text' | 'photo') => {
         const nextOrder = data.fields.length + 1;
         const newField: TemplateFieldItem = {
-            field_name: type === 'photo' ? `Foto Bukti ${nextOrder}` : `Field ${nextOrder}`,
+            field_name: type === 'photo' ? `Proof Photo ${nextOrder}` : `Field ${nextOrder}`,
             field_key: '',
             label: '',
             field_type: type,
@@ -65,7 +65,7 @@ export default function TemplateLaporanCreate({ checkpoints = [] }: CreateProps)
 
     const removeField = (index: number) => {
         if (data.fields.length <= 1) {
-            alert('Minimal 1 field atau foto wajib dipertahankan.');
+            alert('At least 1 field or photo must be kept.');
             return;
         }
         const updated = data.fields.filter((_, idx) => idx !== index);
@@ -81,7 +81,7 @@ export default function TemplateLaporanCreate({ checkpoints = [] }: CreateProps)
 
     return (
         <DashboardLayout>
-            <Head title="Tambah Template Laporan - GTD Logistics" />
+            <Head title="Add Report Template - GTD Logistics" />
 
             <div className="w-full max-w-4xl mx-auto space-y-4">
                 {/* ── Top Bar ── */}
@@ -94,10 +94,10 @@ export default function TemplateLaporanCreate({ checkpoints = [] }: CreateProps)
                     </Link>
                     <div>
                         <h1 className="text-lg font-bold text-[#06283A]">
-                            Tambah Template Laporan
+                            Add Report Template
                         </h1>
                         <p className="text-xs text-slate-500">
-                            Definisikan kebutuhan form dan foto bukti untuk tahapan pengiriman
+                            Define form and proof photo requirements for shipment stages
                         </p>
                     </div>
                 </div>
@@ -106,13 +106,13 @@ export default function TemplateLaporanCreate({ checkpoints = [] }: CreateProps)
                     {/* ── Basic Info Card ── */}
                     <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3 shadow-2xs">
                         <h2 className="text-xs font-bold text-[#06283A] uppercase tracking-wide pb-2 border-b border-slate-100">
-                            Informasi Master Template
+                            Master Template Information
                         </h2>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
                                 <label className="block text-xs font-bold text-[#06283A] mb-1">
-                                    Tahapan Checkpoint <span className="text-rose-500">*</span>
+                                    Checkpoint Stage <span className="text-rose-500">*</span>
                                 </label>
                                 <select
                                     value={data.checkpoint_id}
@@ -121,7 +121,7 @@ export default function TemplateLaporanCreate({ checkpoints = [] }: CreateProps)
                                 >
                                     {checkpoints.map((cp) => (
                                         <option key={cp.id} value={cp.id}>
-                                            Tahap {cp.sequence}: {cp.name}
+                                            Stage {cp.sequence}: {cp.name}
                                         </option>
                                     ))}
                                 </select>
@@ -132,13 +132,13 @@ export default function TemplateLaporanCreate({ checkpoints = [] }: CreateProps)
 
                             <div>
                                 <label className="block text-xs font-bold text-[#06283A] mb-1">
-                                    Nama Template Laporan <span className="text-rose-500">*</span>
+                                    Report Template Name <span className="text-rose-500">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     value={data.name}
                                     onChange={(e) => setData('name', e.target.value)}
-                                    placeholder="Contoh: Laporan Ship-to-Ship Standard"
+                                    placeholder="Example: Standard Ship-to-Ship Report"
                                     className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg text-[#06283A] focus:outline-hidden focus:ring-1 focus:ring-[#06283A]"
                                 />
                                 {errors.name && (
@@ -149,13 +149,13 @@ export default function TemplateLaporanCreate({ checkpoints = [] }: CreateProps)
 
                         <div>
                             <label className="block text-xs font-bold text-[#06283A] mb-1">
-                                Deskripsi Prosedur (Opsional)
+                                Procedure Description (Optional)
                             </label>
                             <textarea
                                 value={data.description}
                                 onChange={(e) => setData('description', e.target.value)}
                                 rows={2}
-                                placeholder="Jelaskan SOP pengisian laporan ini..."
+                                placeholder="Describe the SOP for filling this report..."
                                 className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg text-[#06283A] focus:outline-hidden focus:ring-1 focus:ring-[#06283A]"
                             />
                         </div>
@@ -166,10 +166,10 @@ export default function TemplateLaporanCreate({ checkpoints = [] }: CreateProps)
                         <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                             <div>
                                 <h2 className="text-xs font-bold text-[#06283A] uppercase tracking-wide">
-                                    Definisi Form Field & Slot Foto ({data.fields.length})
+                                    Form Field & Photo Slot Definition ({data.fields.length})
                                 </h2>
                                 <p className="text-[11px] text-slate-500">
-                                    Item yang wajib diisi oleh petugas lapangan saat melapor
+                                    Items required to be filled by field officers when reporting
                                 </p>
                             </div>
 
@@ -188,7 +188,7 @@ export default function TemplateLaporanCreate({ checkpoints = [] }: CreateProps)
                                     className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#06283A] bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
                                 >
                                     <Camera size={12} />
-                                    + Slot Foto
+                                    + Photo Slot
                                 </button>
                             </div>
                         </div>
@@ -205,7 +205,7 @@ export default function TemplateLaporanCreate({ checkpoints = [] }: CreateProps)
                                 >
                                     <div className="flex items-center justify-between gap-2">
                                         <span className="text-[11px] font-bold text-[#06283A]">
-                                            #{idx + 1} {field.field_type === 'photo' ? 'Slot Foto' : 'Field Data'}
+                                            #{idx + 1} {field.field_type === 'photo' ? 'Photo Slot' : 'Data Field'}
                                         </span>
 
                                         <div className="flex items-center gap-3">
@@ -216,14 +216,14 @@ export default function TemplateLaporanCreate({ checkpoints = [] }: CreateProps)
                                                     onChange={(e) => updateField(idx, 'required', e.target.checked)}
                                                     className="rounded border-slate-300 text-[#06283A] focus:ring-0"
                                                 />
-                                                <span>Wajib Diisi (Required)</span>
+                                                <span>Required</span>
                                             </label>
 
                                             <button
                                                 type="button"
                                                 onClick={() => removeField(idx)}
                                                 className="text-slate-400 hover:text-rose-600 p-1 transition-colors cursor-pointer"
-                                                title="Hapus field"
+                                                title="Delete field"
                                             >
                                                 <Trash2 size={13} />
                                             </button>
@@ -233,31 +233,31 @@ export default function TemplateLaporanCreate({ checkpoints = [] }: CreateProps)
                                     <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
                                         <div className="sm:col-span-6">
                                             <label className="block text-[11px] font-semibold text-slate-600 mb-0.5">
-                                                Nama Field / Judul Foto
+                                                Field Name / Photo Title
                                             </label>
                                             <input
                                                 type="text"
                                                 value={field.field_name}
                                                 onChange={(e) => updateField(idx, 'field_name', e.target.value)}
-                                                placeholder="Contoh: Kondisi Muatan"
+                                                placeholder="Example: Cargo Condition"
                                                 className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg bg-white text-[#06283A]"
                                             />
                                         </div>
 
                                         <div className="sm:col-span-6">
                                             <label className="block text-[11px] font-semibold text-slate-600 mb-0.5">
-                                                Tipe Input
+                                                Input Type
                                             </label>
                                             <select
                                                 value={field.field_type}
                                                 onChange={(e) => updateField(idx, 'field_type', e.target.value)}
                                                 className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg bg-white text-[#06283A]"
                                             >
-                                                <option value="text">Text (Teks Singkat)</option>
-                                                <option value="number">Number (Angka / Satuan)</option>
-                                                <option value="dropdown">Dropdown (Pilihan)</option>
-                                                <option value="date">Date (Tanggal & Waktu)</option>
-                                                <option value="photo">Foto (Lampiran Gambar)</option>
+                                                <option value="text">Text (Short Text)</option>
+                                                <option value="number">Number (Numeric / Unit)</option>
+                                                <option value="dropdown">Dropdown (Options)</option>
+                                                <option value="date">Date (Date & Time)</option>
+                                                <option value="photo">Photo (Image Attachment)</option>
                                             </select>
                                         </div>
                                     </div>
@@ -265,7 +265,7 @@ export default function TemplateLaporanCreate({ checkpoints = [] }: CreateProps)
                                     {field.field_type === 'dropdown' && (
                                         <div className="pt-1">
                                             <label className="block text-[11px] font-semibold text-slate-600 mb-0.5">
-                                                Pilihan Dropdown (pisahkan dengan koma)
+                                                Dropdown Options (comma-separated)
                                             </label>
                                             <input
                                                 type="text"
@@ -275,7 +275,7 @@ export default function TemplateLaporanCreate({ checkpoints = [] }: CreateProps)
                                                     const parsed = raw.split(',').map((s) => s.trim()).filter(Boolean);
                                                     updateField(idx, 'options', parsed);
                                                 }}
-                                                placeholder="Contoh: CLEARED, IN_PROGRESS, PENDING, REJECTED"
+                                                placeholder="Example: CLEARED, IN_PROGRESS, PENDING, REJECTED"
                                                 className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg bg-white text-[#06283A]"
                                             />
                                         </div>
@@ -291,14 +291,14 @@ export default function TemplateLaporanCreate({ checkpoints = [] }: CreateProps)
                             href="/template-laporan"
                             className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
                         >
-                            Batal
+                            Cancel
                         </Link>
                         <button
                             type="submit"
                             disabled={processing}
                             className="px-4 py-2 rounded-lg text-xs font-bold text-[#06283A] bg-[#F6C343] hover:bg-[#E0AD2C] shadow-xs transition-all disabled:opacity-50 cursor-pointer"
                         >
-                            {processing ? 'Menyimpan...' : 'Simpan Master Template'}
+                            {processing ? 'Saving...' : 'Save Master Template'}
                         </button>
                     </div>
                 </form>

@@ -120,8 +120,8 @@ export default function LaporanIndex({ customers = [], statuses = [] }: Props) {
                 }}
             >
                 <PageHeader
-                    title="Laporan"
-                    subtitle="Buat dan unduh laporan pengiriman operasional"
+                    title="Reports"
+                    subtitle="Create and download operational shipment reports"
                 />
 
                 {/* Export error banner */}

@@ -255,8 +255,8 @@ export const ExportSuccess: React.FC<ExportSuccessProps> = ({ result, periodLabe
                 }}>
                     {[
                         ...(formatDisplay ? [{ label: 'Format', value: formatDisplay }] : []),
-                        { label: 'Periode', value: periodLabel },
-                        ...(sessionCount !== undefined ? [{ label: 'Jumlah Sesi', value: String(sessionCount) }] : []),
+                        { label: 'Period', value: periodLabel },
+                        ...(sessionCount !== undefined ? [{ label: 'Session Count', value: String(sessionCount) }] : []),
                     ].map(({ label, value }) => (
                         <div key={label}>
                             <p style={{ fontSize: 10, color: '#B7791F', fontWeight: 600, margin: 0, marginBottom: 2 }}>{label}</p>

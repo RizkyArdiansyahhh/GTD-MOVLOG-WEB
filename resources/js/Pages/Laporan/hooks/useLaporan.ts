@@ -90,7 +90,7 @@ export function useLaporan() {
             setSummary(result);
             setExportStatus('idle');
         } catch (err: unknown) {
-            setPreviewError(err instanceof Error ? err.message : 'Gagal memuat preview.');
+            setPreviewError(err instanceof Error ? err.message : 'Failed to load preview.');
             setExportStatus('idle');
         }
     }, [dateRange, customerId, statusFilter]);
@@ -116,7 +116,7 @@ export function useLaporan() {
             await refreshHistory();
             setExportStatus('done');
         } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : 'Export gagal. Silakan coba lagi.';
+            const msg = err instanceof Error ? err.message : 'Export failed. Please try again.';
             setExportError(msg);
             setExportStatus('idle');
         }

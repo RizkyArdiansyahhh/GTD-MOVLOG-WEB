@@ -123,17 +123,17 @@ export default function CheckpointStepCard({ step, isLast }: CheckpointStepCardP
                     <div>
                         {isCompleted && (
                             <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
-                                Selesai
+                                Completed
                             </span>
                         )}
                         {isInProgress && (
                             <span className="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-100/80 px-2.5 py-0.5 text-xs font-semibold text-amber-900">
-                                Sedang Berlangsung
+                                In Progress
                             </span>
                         )}
                         {isPending && (
                             <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-500">
-                                Belum Tercapai
+                                Not Reached
                             </span>
                         )}
                     </div>
@@ -154,7 +154,7 @@ export default function CheckpointStepCard({ step, isLast }: CheckpointStepCardP
                         {/* Waktu Pelaksanaan */}
                         <div className="flex items-center gap-1.5">
                             <Clock className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
-                            <span className="text-slate-400">Waktu:</span>
+                            <span className="text-slate-400">Time:</span>
                             <span className="font-medium text-slate-700">
                                 {step.actualStart
                                     ? new Date(step.actualStart).toLocaleString("id-ID", {
@@ -187,11 +187,11 @@ export default function CheckpointStepCard({ step, isLast }: CheckpointStepCardP
                         >
                             <FileText className="h-3.5 w-3.5" />
                             <span>
-                                {expanded ? "Sembunyikan detail progress" : "Lihat laporan & dokumentasi"}
+                                {expanded ? "Hide progress details" : "View reports & documentation"}
                             </span>
                             {report.photos.length > 0 && (
                                 <span className="ml-1 rounded-full bg-amber-100 px-1.5 py-0.2 text-[10px] font-bold text-amber-800">
-                                    {report.photos.length} foto
+                                    {report.photos.length} photos
                                 </span>
                             )}
                             <ChevronDown
@@ -207,7 +207,7 @@ export default function CheckpointStepCard({ step, isLast }: CheckpointStepCardP
                                 {report.description && (
                                     <div className="rounded-xl border border-slate-200/80 bg-slate-50 p-3.5">
                                         <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">
-                                            Catatan Lapangan
+                                            Field Notes
                                         </p>
                                         <p className="text-xs sm:text-sm text-slate-700 whitespace-pre-line leading-relaxed">
                                             {report.description}
@@ -219,7 +219,7 @@ export default function CheckpointStepCard({ step, isLast }: CheckpointStepCardP
                                 {report.photos.length > 0 && (
                                     <div>
                                         <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                                            Foto Dokumentasi Lapangan
+                                            Field Documentation Photos
                                         </p>
                                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                                             {report.photos.map((photo) => (

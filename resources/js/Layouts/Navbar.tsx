@@ -191,7 +191,7 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
                             setDropdownOpen(false);
                         }}
                         className="relative flex items-center justify-center w-9 h-9 rounded-full bg-slate-100/80 hover:bg-slate-200/80 text-slate-600 hover:text-slate-900 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
-                        title="Notifikasi Sistem"
+                        title="System Notifications"
                         aria-label="Notifications"
                         aria-expanded={notifOpen}
                     >
@@ -210,11 +210,11 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
                             <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                                 <div className="flex items-center gap-2">
                                     <span className="text-xs font-bold text-[#06283A]">
-                                        Notifikasi
+                                        Notifications
                                     </span>
                                     {unreadCount > 0 && (
                                         <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#F6C343]/20 text-amber-800 border border-[#F6C343]/40">
-                                            {unreadCount} baru
+                                            {unreadCount} new
                                         </span>
                                     )}
                                 </div>
@@ -226,7 +226,7 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
                                         className="text-[11px] font-semibold text-slate-500 hover:text-slate-900 flex items-center gap-1 hover:underline cursor-pointer transition-colors"
                                     >
                                         <CheckCheck size={13} strokeWidth={2} />
-                                        <span>Tandai semua dibaca</span>
+                                        <span>Mark all as read</span>
                                     </button>
                                 )}
                             </div>
@@ -237,7 +237,7 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
                                     <div className="p-8 text-center text-slate-400">
                                         <Bell size={24} className="mx-auto mb-2 text-slate-300" strokeWidth={1.5} />
                                         <p className="text-xs font-medium text-slate-600">
-                                            Belum ada notifikasi
+                                            No notifications yet
                                         </p>
                                         <p className="text-[11px] text-slate-400 mt-0.5">
                                             Document and shipment updates for your team will appear here.
@@ -284,7 +284,7 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
                                                     <span
                                                         className="w-2 h-2 rounded-full mt-1.5 shrink-0"
                                                         style={{ backgroundColor: '#F6C343' }}
-                                                        title="Belum dibaca"
+                                                        title="Unread"
                                                     />
                                                 )}
                                             </div>
@@ -300,7 +300,7 @@ export default function Navbar({ onToggleSidebar }: NavbarProps) {
                                     onClick={() => setNotifOpen(false)}
                                     className="text-[11px] font-bold text-slate-600 hover:text-slate-900 transition-colors block py-1"
                                 >
-                                    Lihat Semua Monitoring →
+                                    View All Monitoring →
                                 </Link>
                             </div>
                         </div>

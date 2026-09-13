@@ -75,7 +75,7 @@ export default function CheckpointHorizontalStepper({
                                                     : "font-medium text-slate-400 group-hover:text-slate-600"
                                             }`}
                                         >
-                                            Tahap {step.order}
+                                            Stage {step.order}
                                         </span>
                                         <span
                                             className={`text-xs block transition-colors ${

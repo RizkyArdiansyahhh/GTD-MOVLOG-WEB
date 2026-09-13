@@ -115,7 +115,7 @@ export function InsuranceStep() {
         if (!data.insurance.amountInsured.trim()) next.amountInsured = 'Insured amount is required.';
         if (!pdf) next.pdf = 'PDF document is required.';
         if (!selectedCustomer?.id) next.general = 'Customer must be selected first.';
-        if (!assignmentNoRef) next.general = 'Assignment Reference tidak ditemukan.';
+        if (!assignmentNoRef) next.general = 'Assignment Reference not found.';
 
         setErrors(next);
         return Object.keys(next).length === 0;
@@ -147,7 +147,7 @@ export function InsuranceStep() {
                     (data.transportDetail.shippName && data.transportDetail.shippName !== refTransport.shippName) ||
                     (data.transportDetail.voyage && data.transportDetail.voyage !== refTransport.voyage)
                 ) {
-                    warnings.transportChanged = 'Data Transport Detail berbeda dari Bill of Lading / CI.';
+                    warnings.transportChanged = 'Transport Detail differs from Bill of Lading / CI.';
                     changed.push('Transport Detail');
                 }
             }
@@ -161,8 +161,8 @@ export function InsuranceStep() {
                         (insItem.hsCodePol && insItem.hsCodePol !== bolItem.hsCodePol)
                     ) {
                         warnings[`cargoChanged_${index}`] =
-                            `Item ke-${index + 1}: Description of Goods atau HS Code POL berbeda dari Bill of Lading.`;
-                        changed.push(`Cargo Detail — Item ke-${index + 1}`);
+                            `Item ${index + 1}: Description of Goods or HS Code POL differs from Bill of Lading.`;
+                        changed.push(`Cargo Detail — Item ${index + 1}`);
                     }
                 });
             }
@@ -175,7 +175,7 @@ export function InsuranceStep() {
     const executeSave = async () => {
         setShowChangedModal(false);
         if (!assignmentNoRef || assignmentNoRef === 'null' || assignmentNoRef === 'undefined') {
-            setErrors((prev) => ({ ...prev, general: 'Assignment Reference tidak ditemukan. Muat ulang halaman dan pilih customer terlebih dahulu.' }));
+            setErrors((prev) => ({ ...prev, general: 'Assignment Reference not found. Reload the page and select a customer first.' }));
             return;
         }
         setIsSaving(true);
@@ -264,7 +264,7 @@ export function InsuranceStep() {
                         cursor: 'pointer',
                     }}
                 >
-                    Isi Data Contoh
+                    Fill Sample Data
                 </button>
                 )}
 
@@ -292,7 +292,7 @@ export function InsuranceStep() {
                         <Field
                             label="Commercial Invoice Number"
                             value={data.documentReference.commercialInvoiceNumber}
-                            placeholder={ciData?.documentDetail?.number || 'Nomor Commercial Invoice'}
+                            placeholder={ciData?.documentDetail?.number || 'Commercial Invoice Number'}
                             onChange={(v) =>
                                 update('documentReference', { ...data.documentReference, commercialInvoiceNumber: v })
                             }
@@ -301,7 +301,7 @@ export function InsuranceStep() {
                         <Field
                             label="Bill of Lading Number"
                             value={data.documentReference.billOfLadingNumber}
-                            placeholder={bolData?.documentDetail?.number || 'Nomor Bill of Lading'}
+                            placeholder={bolData?.documentDetail?.number || 'Bill of Lading Number'}
                             onChange={(v) =>
                                 update('documentReference', { ...data.documentReference, billOfLadingNumber: v })
                             }
@@ -312,7 +312,7 @@ export function InsuranceStep() {
                         <Field
                             label="Shipment Contract Number"
                             value={data.documentReference.shipmentContractNumber}
-                            placeholder={ciData?.documentDetail?.shipmentContractNumber || 'Nomor Kontrak Penjualan'}
+                            placeholder={ciData?.documentDetail?.shipmentContractNumber || 'Sales Contract Number'}
                             onChange={(v) =>
                                 update('documentReference', { ...data.documentReference, shipmentContractNumber: v })
                             }

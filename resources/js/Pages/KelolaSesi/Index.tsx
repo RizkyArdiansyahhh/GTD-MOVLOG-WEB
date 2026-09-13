@@ -55,7 +55,7 @@ export default function KelolaSesiIndex({ sessions, fieldWorkers }: KelolaSesiIn
             <div className="max-w-7xl mx-auto space-y-6">
                 <PageHeader
                     title="Worker Sessions"
-                    subtitle="Pusat monitoring progress pekerjaan logistik yang dibuat otomatis setelah verifikasi berkas lengkap."
+                    subtitle="Central monitoring for logistics work progress, auto-created after complete document verification."
                 />
 
                 {/* ── Flash Message ── */}

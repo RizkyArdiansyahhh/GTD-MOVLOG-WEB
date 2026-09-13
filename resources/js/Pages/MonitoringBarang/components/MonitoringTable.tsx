@@ -101,7 +101,7 @@ export function MonitoringTable({ data, onViewDetail, selectedId, itemsPerPage =
                     style={{ color: '#2563EB', backgroundColor: '#EFF6FF' }}
                   >
                     <Eye size={14} />
-                    Detail
+                    Details
                   </button>
                 </td>
               </tr>
@@ -115,7 +115,7 @@ export function MonitoringTable({ data, onViewDetail, selectedId, itemsPerPage =
         style={{ color: '#94A3B8', borderTop: '1px solid #F1F5F9' }}
       >
         <span>
-          Menampilkan {rangeStart} - {rangeEnd} dari {data.length} data
+          Showing {rangeStart} - {rangeEnd} of {data.length} entries
         </span>
 
         {totalPages > 1 && (

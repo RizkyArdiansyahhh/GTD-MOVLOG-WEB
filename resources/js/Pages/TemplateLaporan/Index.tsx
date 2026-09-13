@@ -20,7 +20,7 @@ export default function TemplateLaporanIndex({ templates = [], checkpoints = [] 
         : templates.filter((t) => String(t.checkpoint_id) === selectedCheckpoint);
 
     const handleDelete = (template: MasterTemplateItem) => {
-        if (!confirm(`Hapus template '${template.name}'? Tindakan ini tidak dapat dibatalkan.`)) {
+        if (!confirm(`Delete template '${template.name}'? This action cannot be undone.`)) {
             return;
         }
 
@@ -38,7 +38,7 @@ export default function TemplateLaporanIndex({ templates = [], checkpoints = [] 
             <div className="w-full max-w-7xl mx-auto space-y-6">
                 <PageHeader
                     title="Report Templates"
-                    subtitle="Konfigurasi formulir dan slot foto bukti untuk setiap tahapan pengiriman"
+                    subtitle="Configure forms and proof photo slots for each shipment stage"
                     actions={
                         <Link
                             href="/template-laporan/create"

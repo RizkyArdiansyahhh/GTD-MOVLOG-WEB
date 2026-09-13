@@ -161,7 +161,7 @@ export default function AvatarCropModal({
                         disabled={isProcessing}
                         className="px-4 py-2 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer disabled:opacity-50"
                     >
-                        Batal
+                        Cancel
                     </button>
 
                     <button

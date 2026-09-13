@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Head, router, usePage } from '@inertiajs/react';
-import { motion } from 'framer-motion';
+import { Head, router } from '@inertiajs/react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
+import { PageHeader } from '@/Components/ui';
 import CheckpointPipelineChart from './components/CheckpointPipelineChart';
 import ShipmentTrendChart from './components/ShipmentTrendChart';
 import type { PageProps } from '@/types';
@@ -10,7 +10,6 @@ import {
     ClipboardCheck,
     FileCheck2,
     Package,
-    RefreshCw,
     Truck,
 } from 'lucide-react';
 
@@ -86,15 +85,6 @@ interface DashboardProps extends PageProps {
 }
 
 /* ── Small helpers ─────────────────────────────────────────────── */
-function roleLabel(roles: string[] = []): string {
-    const r = roles.map((x) => x.toLowerCase());
-    if (r.includes('super-admin')) return 'Super Admin';
-    if (r.includes('supervisor')) return 'Supervisor';
-    if (r.includes('staff')) return 'Staff';
-    if (r.includes('field-worker')) return 'Field Worker';
-    return 'User';
-}
-
 function timeAgo(iso: string | null): string {
     if (!iso) return '-';
     const s = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
@@ -116,13 +106,7 @@ const TREND_MODES = [
     { value: 'tahunan', label: 'Yearly' },
 ] as const;
 
-const fadeUp = {
-    initial: { opacity: 0, y: 10 },
-    animate: { opacity: 1, y: 0 },
-};
-
 export default function Index(props: DashboardProps) {
-    const { auth } = usePage<PageProps>().props;
     const kpis = props.operational_kpis;
     const feed = props.operational_feed ?? [];
 
@@ -209,39 +193,14 @@ export default function Index(props: DashboardProps) {
         <DashboardLayout title="Dashboard">
             <Head title="Dashboard" />
 
-            <div className="flex flex-col gap-5">
-                {/* ── Executive Welcome Bar ── */}
-                <motion.div
-                    {...fadeUp}
-                    transition={{ duration: 0.25 }}
-                    className="bg-white rounded-xl border border-slate-200 shadow-sm px-5 py-4 flex flex-wrap items-center gap-x-5 gap-y-3"
-                >
-                    <div className="min-w-0">
-                        <h1 className="text-xl font-bold tracking-tight text-[#06283A] truncate">
-                            Dashboard
-                        </h1>
-                        <p className="text-xs text-slate-500 mt-0.5">
-                            {roleLabel(auth.user?.roles)} · <span className="font-medium text-slate-600">Operational Control Center Active</span>
-                        </p>
-                    </div>
-                    <div className="ms-auto flex items-center gap-3">
-                        <span className="hidden sm:inline-flex items-center gap-2 text-xs text-slate-500 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200/70">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                            Data synced
-                        </span>
-                        <button
-                            type="button"
-                            onClick={() => router.reload()}
-                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#06283A] bg-[#F6C343] hover:bg-[#E0AD2C] rounded-lg px-3 py-2 transition-colors"
-                        >
-                            <RefreshCw size={13} />
-                            Refresh
-                        </button>
-                    </div>
-                </motion.div>
+            <div className="space-y-6">
+                <PageHeader
+                    title="Dashboard"
+                    subtitle="Monitor operational performance, shipment trends, and live field activity."
+                />
 
                 {/* ── Operational Command Deck ── */}
-                <motion.div {...fadeUp} transition={{ duration: 0.25, delay: 0.05 }} className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {kpiCards.map((card) => {
                         const Icon = card.icon;
                         return (
@@ -259,10 +218,10 @@ export default function Index(props: DashboardProps) {
                             </div>
                         );
                     })}
-                </motion.div>
+                </div>
 
                 {/* ── Volume trend + period filter ── */}
-                <motion.div {...fadeUp} transition={{ duration: 0.25, delay: 0.1 }}>
+                <div>
                     <div className="flex flex-wrap items-center gap-2 mb-2.5">
                         <div className="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 shadow-sm">
                             {TREND_MODES.map((m) => (
@@ -307,10 +266,10 @@ export default function Index(props: DashboardProps) {
                         )}
                     </div>
                     <ShipmentTrendChart data={trends} badgeText={trendBadge} avgUnit={trendAvgUnit} footerNote={trendFooter} />
-                </motion.div>
+                </div>
 
                 {/* ── Pipeline + feed pendek ── */}
-                <motion.div {...fadeUp} transition={{ duration: 0.25, delay: 0.15 }} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <CheckpointPipelineChart data={props.checkpoint_pipeline ?? []} scopeLabel={scopeLabel} isFiltered={isFiltered} />
                     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
                         <h2 className="text-sm font-bold text-[#06283A]">Live Activity Feed</h2>
@@ -352,7 +311,7 @@ export default function Index(props: DashboardProps) {
                             </ul>
                         )}
                     </div>
-                </motion.div>
+                </div>
             </div>
         </DashboardLayout>
     );

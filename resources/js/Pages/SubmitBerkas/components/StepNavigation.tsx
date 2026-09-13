@@ -49,7 +49,7 @@ export function StepNavigation({
           }}
         >
           <ArrowLeft size={15} />
-          Kembali
+          Back
         </button>
       )}
 
@@ -72,7 +72,7 @@ export function StepNavigation({
           opacity: isSaving ? 0.75 : 1,
         }}
       >
-        {isSaving ? 'Menyimpan...' : displayLabel}
+        {isSaving ? 'Saving...' : displayLabel}
         {!isSaving && <ArrowRight size={15} />}
       </button>
     </div>

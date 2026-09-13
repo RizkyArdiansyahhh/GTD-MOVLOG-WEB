@@ -13,7 +13,7 @@ interface SearchBarProps {
 export default function SearchBar({
     value,
     onChange,
-    placeholder = "Cari no. assignment atau customer...",
+    placeholder = "Search assignment no. or customer...",
 }: SearchBarProps) {
     return (
         <div className="relative w-full">
@@ -32,7 +32,7 @@ export default function SearchBar({
                     type="button"
                     onClick={() => onChange("")}
                     className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 transition hover:text-slate-600 cursor-pointer"
-                    aria-label="Bersihkan pencarian"
+                    aria-label="Clear search"
                 >
                     <X className="h-3.5 w-3.5" />
                 </button>

@@ -29,18 +29,10 @@ interface MenuItem {
     icon: React.ElementType;
     badge?: string | number;
     roles?: string[];
+    /** Additional paths that should highlight this menu (aliases / orphan pages). */
+    aliases?: string[];
 }
 
-const menuItems: MenuItem[] = [
-    { label: 'Dashboard', href: '/', routeName: 'dashboard', icon: LayoutDashboard },
-    { label: 'Kelola Akun', href: '/kelola-akun', routeName: 'kelola-akun', icon: Users, roles: ['super-admin'] },
-    { label: 'Monitoring Barang', href: '/monitoring-barang', icon: PackageSearch },
-    { label: 'Monitoring Checkpoint', href: '/monitoring-checkpoint', icon: MapPin },
-    { label: 'Kelola Sesi Pekerja', href: '/sesi-pekerja', routeName: 'sesi-pekerja', icon: ClipboardList, roles: ['super-admin', 'staff'] },
-    { label: 'Submit Dokumen', href: '/submit-berkas', routeName: 'submit-berkas.index', icon: FileUp, roles: ['super-admin', 'staff'] },
-    { label: 'Verifikasi Dokumen', href: '/verifikasi-berkas', routeName: 'verifikasi-berkas', icon: FileCheck2, roles: ['supervisor'] },
-    { label: 'Laporan', href: '/laporan', icon: BarChart3 },
-];
 interface MenuSection {
     title: string;
     items: MenuItem[];
@@ -56,7 +48,7 @@ const menuSections: MenuSection[] = [
     {
         title: 'Operations',
         items: [
-            { label: 'Worker Sessions', href: '/sesi-pekerja', routeName: 'kelola-sesi', icon: ClipboardList, roles: ['super-admin'] },
+            { label: 'Worker Sessions', href: '/sesi-pekerja', routeName: 'kelola-sesi', icon: ClipboardList, roles: ['super-admin', 'staff'] },
             { label: 'Cargo Monitoring', href: '/monitoring-barang', icon: PackageSearch },
             { label: 'Checkpoint Monitoring', href: '/monitoring-checkpoint', icon: MapPin },
         ],
@@ -66,21 +58,21 @@ const menuSections: MenuSection[] = [
         items: [
             { label: 'Submit Documents', href: '/submit-berkas', routeName: 'submit-berkas.index', icon: FileUp, roles: ['super-admin', 'staff'] },
             { label: 'Verify Documents', href: '/verifikasi-berkas', routeName: 'verifikasi-berkas', icon: FileCheck2, roles: ['supervisor'] },
-            { label: 'Reports', href: '/laporan', icon: BarChart3 },
+            { label: 'Reports', href: '/laporan', icon: BarChart3, roles: ['super-admin', 'staff'], aliases: ['/reports', '/report'] },
         ],
     },
     {
         title: 'Configuration',
         items: [
             { label: 'Report Templates', href: '/template-laporan', routeName: 'template-laporan.index', icon: FileSpreadsheet, roles: ['super-admin'] },
-            { label: 'Account Management', href: '/kelola-akun', routeName: 'kelola-akun', icon: Users, roles: ['super-admin'] },
+            { label: 'Account Management', href: '/kelola-akun', routeName: 'kelola-akun', icon: Users, roles: ['super-admin'], aliases: ['/users'] },
         ],
     },
     {
         title: 'Support',
         items: [
-            { label: 'Help Center', href: '/pusat-bantuan', routeName: 'pusat-bantuan', icon: LifeBuoy },
-            { label: 'System Guide', href: '/panduan', routeName: 'panduan', icon: BookOpen },
+            { label: 'Help Center', href: '/pusat-bantuan', routeName: 'pusat-bantuan', icon: LifeBuoy, aliases: ['/help-center'] },
+            { label: 'System Guide', href: '/panduan', routeName: 'panduan', icon: BookOpen, aliases: ['/system-guide'] },
         ],
     },
 ];
@@ -127,9 +119,38 @@ export default function Sidebar({
         return item.href;
     };
 
+    // Normalize a URL/path for active-state comparison:
+    // strips query string + hash, converts absolute URLs (Ziggy) to
+    // pathname, and removes trailing slashes (except root).
+    const normalizePath = (raw: string): string => {
+        if (!raw) return '/';
+        let path = raw.split(/[?#]/)[0];
+        try {
+            if (/^https?:\/\//i.test(path)) {
+                path = new URL(path).pathname;
+            }
+        } catch {
+            // Keep raw path on parse failure.
+        }
+        if (!path.startsWith('/')) path = `/${path}`;
+        if (path.length > 1) path = path.replace(/\/+$/, '');
+        return path || '/';
+    };
+
+    const currentPathname = useMemo(() => normalizePath(currentPath), [currentPath]);
+
     const isActive = (href: string) => {
-        if (href === '/') return currentPath === '/';
-        return currentPath === href || currentPath.startsWith(href + '/');
+        const target = normalizePath(href);
+        if (target === '/') return currentPathname === '/';
+        return currentPathname === target || currentPathname.startsWith(`${target}/`);
+    };
+
+    const isItemActive = (item: MenuItem): boolean => {
+        if (isActive(item.href)) return true;
+        if (item.aliases?.some((alias) => isActive(alias))) return true;
+        const targetHref = getItemHref(item);
+        if (targetHref !== item.href && isActive(targetHref)) return true;
+        return false;
     };
 
     // Render inner sidebar content
@@ -208,7 +229,7 @@ export default function Sidebar({
 
                             {validItems.map((item) => {
                                 const targetHref = getItemHref(item);
-                                const active = isActive(item.href) || (targetHref !== item.href && isActive(targetHref));
+                                const active = isItemActive(item);
                                 const Icon = item.icon;
 
                                 return (

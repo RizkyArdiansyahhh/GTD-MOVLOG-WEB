@@ -163,7 +163,7 @@ export default function TambahAkun() {
                     className="font-medium transition-colors duration-150 hover:opacity-80"
                     style={{ color: '#F6C343' }}
                 >
-                    Kelola Akun
+                    Account Management
                 </Link>
                 <ChevronRight size={14} className="text-slate-400 shrink-0" />
                 <span className="font-medium text-slate-500">Add Account</span>
@@ -171,11 +171,14 @@ export default function TambahAkun() {
 
             {/* ── Page Title ── */}
             <h1
-                className="text-2xl font-bold mb-6"
+                className="text-2xl font-bold"
                 style={{ color: '#06283A' }}
             >
-                Tambah Akun
+                Add Account
             </h1>
+            <p className="text-sm text-slate-500 mt-1 mb-6">
+                Create a new system account with role and access.
+            </p>
 
             {/* ── Form Card ── */}
             <div className="max-w-3xl mx-auto">

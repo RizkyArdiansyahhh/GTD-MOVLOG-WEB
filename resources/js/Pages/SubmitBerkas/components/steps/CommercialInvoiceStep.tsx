@@ -156,7 +156,7 @@ export function CommercialInvoiceStep() {
     if (!data.consignee.name.trim()) next.consigneeName = 'Consignee name is required.';
     if (!pdf) next.pdf = 'PDF document is required.';
     if (!selectedCustomer?.id) next.general = 'Customer must be selected first.';
-    if (!assignmentNoRef) next.general = 'Assignment Reference tidak ditemukan.';
+    if (!assignmentNoRef) next.general = 'Assignment Reference not found.';
 
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -172,7 +172,7 @@ export function CommercialInvoiceStep() {
         (data.shipper.address && data.shipper.address !== bolData.shipper?.address) ||
         (data.shipper.taxId && data.shipper.taxId !== bolData.shipper?.taxId)
       ) {
-        warnings.shipperChanged = 'Data Shipper berbeda dari Bill of Lading.';
+        warnings.shipperChanged = 'Shipper data differs from Bill of Lading.';
         changed.push('Shipper');
       }
 
@@ -181,7 +181,7 @@ export function CommercialInvoiceStep() {
         (data.consignee.address && data.consignee.address !== bolData.consignee?.address) ||
         (data.consignee.taxId && data.consignee.taxId !== bolData.consignee?.taxId)
       ) {
-        warnings.consigneeChanged = 'Data Consignee berbeda dari Bill of Lading.';
+        warnings.consigneeChanged = 'Consignee data differs from Bill of Lading.';
         changed.push('Consignee');
       }
 
@@ -191,7 +191,7 @@ export function CommercialInvoiceStep() {
         (data.transportDetail.shippName && data.transportDetail.shippName !== bolData.transportDetail?.shippName) ||
         (data.transportDetail.voyage && data.transportDetail.voyage !== bolData.transportDetail?.voyage)
       ) {
-        warnings.transportChanged = 'Data Transport Detail berbeda dari Bill of Lading.';
+        warnings.transportChanged = 'Transport Detail differs from Bill of Lading.';
         changed.push('Transport Detail');
       }
 
@@ -203,8 +203,8 @@ export function CommercialInvoiceStep() {
           (ciItem.hsCodePol && ciItem.hsCodePol !== bolItem.hsCodePol)
         ) {
           warnings[`cargoChanged_${index}`] =
-            `Item ke-${index + 1}: Description of Goods atau HS Code POL berbeda dari Bill of Lading.`;
-          changed.push(`Cargo Detail — Item ke-${index + 1}`);
+            `Item ${index + 1}: Description of Goods or HS Code POL differs from Bill of Lading.`;
+          changed.push(`Cargo Detail — Item ${index + 1}`);
         }
       });
     }
@@ -216,7 +216,7 @@ export function CommercialInvoiceStep() {
   const executeSave = async () => {
     setShowChangedModal(false);
     if (!assignmentNoRef || assignmentNoRef === 'null' || assignmentNoRef === 'undefined') {
-      setErrors((prev) => ({ ...prev, general: 'Assignment Reference tidak ditemukan. Muat ulang halaman dan pilih customer terlebih dahulu.' }));
+      setErrors((prev) => ({ ...prev, general: 'Assignment Reference not found. Reload the page and select a customer first.' }));
       return;
     }
     setIsSaving(true);
@@ -306,7 +306,7 @@ export function CommercialInvoiceStep() {
               cursor: 'pointer',
             }}
           >
-            Isi Data Contoh
+            Fill Sample Data
           </button>
         )}
 
@@ -438,7 +438,7 @@ export function CommercialInvoiceStep() {
               label="Name"
               value={data.shipper.name}
               readOnly={isReadOnly}
-              placeholder={bolData?.shipper?.name || 'Nama Shipper'}
+              placeholder={bolData?.shipper?.name || 'Shipper Name'}
               onChange={(v) => update('shipper', { ...data.shipper, name: v })}
               error={errors.shipperName}
             />
@@ -455,7 +455,7 @@ export function CommercialInvoiceStep() {
               label="Address"
               value={data.shipper.address}
               readOnly={isReadOnly}
-              placeholder={bolData?.shipper?.address || 'Alamat Shipper'}
+              placeholder={bolData?.shipper?.address || 'Shipper Address'}
               onChange={(v) => update('shipper', { ...data.shipper, address: v })}
             />
           </FieldGroup>
@@ -468,7 +468,7 @@ export function CommercialInvoiceStep() {
               label="Name"
               value={data.consignee.name}
               readOnly={isReadOnly}
-              placeholder={bolData?.consignee?.name || 'Nama Consignee'}
+              placeholder={bolData?.consignee?.name || 'Consignee Name'}
               onChange={(v) => update('consignee', { ...data.consignee, name: v })}
               error={errors.consigneeName}
             />
@@ -485,7 +485,7 @@ export function CommercialInvoiceStep() {
               label="Address"
               value={data.consignee.address}
               readOnly={isReadOnly}
-              placeholder={bolData?.consignee?.address || 'Alamat Consignee'}
+              placeholder={bolData?.consignee?.address || 'Consignee Address'}
               onChange={(v) => update('consignee', { ...data.consignee, address: v })}
             />
           </FieldGroup>
@@ -654,7 +654,7 @@ export function CommercialInvoiceStep() {
           }}
         />
 
-        <FormSection title="Total Quantity (Otomatis Terhitung)" icon={<Calculator size={17} />}>
+        <FormSection title="Total Quantity (Auto-Calculated)" icon={<Calculator size={17} />}>
           <FieldGroup>
             <FieldWithUnit
               label="Total of Packages"

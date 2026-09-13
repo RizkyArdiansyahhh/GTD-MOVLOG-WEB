@@ -93,7 +93,7 @@ export default function MovementReportModal({
     const fetchBrowserGps = () => {
         if (!navigator.geolocation) {
             setGpsStatus('error');
-            setGpsErrorMsg('Browser tidak mendukung Geolocation API.');
+            setGpsErrorMsg('Browser does not support Geolocation API.');
             return;
         }
 
@@ -111,10 +111,10 @@ export default function MovementReportModal({
             (error) => {
                 if (error.code === error.PERMISSION_DENIED) {
                     setGpsStatus('denied');
-                    setGpsErrorMsg('Izin akses lokasi GPS ditolak oleh pengguna/browser.');
+                    setGpsErrorMsg('GPS location access was denied by the user/browser.');
                 } else {
                     setGpsStatus('error');
-                    setGpsErrorMsg('Gagal memperoleh sinyal GPS akurat.');
+                    setGpsErrorMsg('Failed to obtain an accurate GPS signal.');
                 }
             },
             {
@@ -175,7 +175,7 @@ export default function MovementReportModal({
                 },
                 onError: (errors) => {
                     setIsSubmitting(false);
-                    setErrorMessage(errors.report || 'Gagal menyimpan laporan armada.');
+                    setErrorMessage(errors.report || 'Failed to save fleet report.');
                 },
                 preserveScroll: true,
             }
@@ -196,7 +196,7 @@ export default function MovementReportModal({
                 },
                 onError: (errors) => {
                     setIsCompleting(false);
-                    setErrorMessage(errors.report || 'Gagal menyelesaikan laporan armada. Pastikan seluruh field & foto wajib telah terpenuhi.');
+                    setErrorMessage(errors.report || 'Failed to complete fleet report. Ensure all required fields & photos are completed.');
                 },
                 preserveScroll: true,
             }
@@ -243,7 +243,7 @@ export default function MovementReportModal({
                         <div>
                             <div className="flex items-center gap-2">
                                 <h3 className="text-base font-bold text-[#06283A]">
-                                    Laporan Aktivitas: {movement.movement_name}
+                                    Activity Report: {movement.movement_name}
                                 </h3>
                                 <span
                                     className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold ${
@@ -255,14 +255,14 @@ export default function MovementReportModal({
                                     }`}
                                 >
                                     {movement.is_completed
-                                        ? 'SELESAI'
+                                        ? 'COMPLETED'
                                         : report
-                                        ? 'DALAM PROSES'
-                                        : 'BELUM DIMULAI'}
+                                        ? 'IN PROGRESS'
+                                        : 'NOT STARTED'}
                                 </span>
                             </div>
                             <p className="text-xs text-slate-500">
-                                {stage.stage_name} (Tahap {stage.stage_order}) &middot; Snapshot Template: {snapshot?.template_name || 'Server-Driven'}
+                                {stage.stage_name} (Stage {stage.stage_order}) &middot; Snapshot Template: {snapshot?.template_name || 'Server-Driven'}
                             </p>
                         </div>
                     </div>
@@ -279,9 +279,9 @@ export default function MovementReportModal({
                 <div className="px-6 py-2.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between text-xs shrink-0">
                     <div className="flex items-center gap-2 text-slate-600 font-medium">
                         <span className="w-2 h-2 rounded-full bg-[#F6C343]" />
-                        Kelengkapan Syarat Snapshot:
+                        Snapshot Requirements:
                         <span className="font-bold text-[#06283A]">
-                            {satisfiedRequirements} / {totalRequirements} Syarat Terpenuhi
+                            {satisfiedRequirements} / {totalRequirements} Requirements Met
                         </span>
                     </div>
                     <div className="w-36 h-2 bg-slate-200 rounded-full overflow-hidden">
@@ -302,7 +302,7 @@ export default function MovementReportModal({
                         <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2.5 text-xs text-rose-700">
                             <AlertCircle size={18} className="shrink-0 mt-0.5 text-rose-600" />
                             <div>
-                                <p className="font-bold">Gagal Menyimpan / Menyelesaikan</p>
+                                <p className="font-bold">Failed to Save / Complete</p>
                                 <p>{errorMessage}</p>
                             </div>
                         </div>
@@ -312,7 +312,7 @@ export default function MovementReportModal({
                     <div>
                         <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-1.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-[#06283A]" />
-                            Form Isian Data ({completedFieldsCount}/{fields.length})
+                            Data Form ({completedFieldsCount}/{fields.length})
                         </h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {fields.map((field: TemplateFieldOption) => {
@@ -335,7 +335,7 @@ export default function MovementReportModal({
                                                 }
                                                 className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-[#06283A] focus:outline-none focus:ring-2 focus:ring-[#F6C343]/20 focus:border-[#F6C343] transition-all"
                                             >
-                                                <option value="">-- Pilih {field.label} --</option>
+                                                <option value="">-- Select {field.label} --</option>
                                                 {field.options.map((opt) => (
                                                     <option key={opt} value={opt}>
                                                         {opt}
@@ -346,7 +346,7 @@ export default function MovementReportModal({
                                             <input
                                                 type={field.field_type === 'number' ? 'number' : 'text'}
                                                 value={val}
-                                                placeholder={`Masukkan ${field.label.toLowerCase()}...`}
+                                                placeholder={`Enter ${field.label.toLowerCase()}...`}
                                                 onChange={(e) =>
                                                     setFieldValues((prev) => ({
                                                         ...prev,
@@ -366,7 +366,7 @@ export default function MovementReportModal({
                     <div>
                         <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-1.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-[#06283A]" />
-                            Slot Foto Dokumentasi Bukti ({completedPhotosCount}/{photoSlots.length})
+                            Proof Documentation Photo Slots ({completedPhotosCount}/{photoSlots.length})
                         </h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                             {photoSlots.map((slot: TemplatePhotoSlot) => {
@@ -398,7 +398,7 @@ export default function MovementReportModal({
                                             </div>
                                             {slot.required && (
                                                 <span className="text-[10px] font-bold text-amber-700 bg-amber-100/80 px-1.5 py-0.5 rounded">
-                                                    Wajib
+                                                    Required
                                                 </span>
                                             )}
                                         </div>
@@ -414,10 +414,10 @@ export default function MovementReportModal({
                                                     />
                                                     <div className="text-[11px] text-slate-600 space-y-0.5">
                                                         <p className="font-semibold text-emerald-800">
-                                                            {previewUrl ? 'Foto Baru Dipilih' : 'Tersimpan di Server'}
+                                                            {previewUrl ? 'New Photo Selected' : 'Saved on Server'}
                                                         </p>
                                                         <label className="text-[10px] text-blue-600 hover:underline cursor-pointer font-medium block">
-                                                            Ganti Foto
+                                                            Replace Photo
                                                             <input
                                                                 type="file"
                                                                 accept="image/*"
@@ -438,7 +438,7 @@ export default function MovementReportModal({
                                                         type="button"
                                                         onClick={() => handleFileChange(slot.field_key, null)}
                                                         className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                                                        title="Batalkan pilihan foto"
+                                                        title="Cancel photo selection"
                                                     >
                                                         <Trash2 size={14} />
                                                     </button>
@@ -448,7 +448,7 @@ export default function MovementReportModal({
                                             <label className="flex flex-col items-center justify-center py-3 border border-dashed border-slate-300 hover:border-[#F6C343] rounded-lg cursor-pointer bg-white hover:bg-amber-50/20 transition-all">
                                                 <Upload size={16} className="text-slate-400 mb-1" />
                                                 <span className="text-[11px] font-medium text-slate-600">
-                                                    Klik untuk upload foto
+                                                    Click to upload photo
                                                 </span>
                                                 <input
                                                     type="file"
@@ -474,7 +474,7 @@ export default function MovementReportModal({
                         <div className="flex items-center justify-between mb-3">
                             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
                                 <span className="w-1.5 h-1.5 rounded-full bg-[#06283A]" />
-                                Metadata Geotagging & Waktu
+                                Geotagging & Time Metadata
                             </h4>
                             <button
                                 type="button"
@@ -483,14 +483,14 @@ export default function MovementReportModal({
                                 className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-800 transition-colors"
                             >
                                 <Crosshair size={12} className={gpsStatus === 'fetching' ? 'animate-spin' : ''} />
-                                {gpsStatus === 'fetching' ? 'Mencari GPS...' : 'Ambil GPS Terkini'}
+                                {gpsStatus === 'fetching' ? 'Locating GPS...' : 'Get Current GPS'}
                             </button>
                         </div>
 
                         {gpsErrorMsg && (
                             <div className="p-2.5 mb-3 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-800 flex items-center gap-2">
                                 <AlertCircle size={14} className="shrink-0" />
-                                <span>{gpsErrorMsg} Anda dapat mengisi koordinat secara manual.</span>
+                                <span>{gpsErrorMsg} You can enter coordinates manually.</span>
                             </div>
                         )}
 
@@ -530,14 +530,14 @@ export default function MovementReportModal({
                             <div>
                                 <div className="flex items-center justify-between mb-1">
                                     <label className="block text-[11px] font-semibold text-slate-700">
-                                        Waktu Kejadian <span className="text-rose-500">*</span>
+                                        Event Time <span className="text-rose-500">*</span>
                                     </label>
                                     <button
                                         type="button"
                                         onClick={handleSetCurrentTime}
                                         className="text-[10px] text-blue-600 hover:underline font-medium"
                                     >
-                                        Waktu Sekarang
+                                        Now
                                     </button>
                                 </div>
                                 <div className="relative">
@@ -561,7 +561,7 @@ export default function MovementReportModal({
                         onClick={onClose}
                         className="px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
                     >
-                        Tutup
+                        Close
                     </button>
 
                     <div className="flex items-center gap-2.5">
@@ -571,7 +571,7 @@ export default function MovementReportModal({
                             disabled={isSubmitting || isCompleting}
                             className="px-4 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl shadow-sm transition-all disabled:opacity-50"
                         >
-                            {isSubmitting ? 'Menyimpan...' : 'Simpan Data & Foto'}
+                            {isSubmitting ? 'Saving...' : 'Save Data & Photos'}
                         </button>
 
                         {!movement.is_completed && (
@@ -582,7 +582,7 @@ export default function MovementReportModal({
                                 className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm hover:shadow transition-all disabled:opacity-50"
                             >
                                 <Check size={14} />
-                                {isCompleting ? 'Menyelesaikan...' : 'Selesaikan Laporan'}
+                                {isCompleting ? 'Completing...' : 'Complete Report'}
                             </button>
                         )}
                     </div>

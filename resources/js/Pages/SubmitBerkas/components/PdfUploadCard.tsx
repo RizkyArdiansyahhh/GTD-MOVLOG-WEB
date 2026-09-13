@@ -87,7 +87,7 @@ export function PdfUploadCard({ file, onFileSelect, onRemove, error, readOnly = 
                 cursor: 'pointer',
               }}
             >
-              Pilih File
+              Choose File
             </button>
             <p style={{ fontSize: 11, color: '#CBD5E0', margin: 0 }}>Format: PDF</p>
             <input
@@ -151,7 +151,7 @@ export function PdfUploadCard({ file, onFileSelect, onRemove, error, readOnly = 
               }}
             >
               <Eye size={13} />
-              Lihat PDF
+              View PDF
             </a>
           )}
           {!readOnly && (
@@ -173,7 +173,7 @@ export function PdfUploadCard({ file, onFileSelect, onRemove, error, readOnly = 
               }}
             >
               <X size={13} />
-              Hapus
+              Remove
             </button>
           )}
         </div>

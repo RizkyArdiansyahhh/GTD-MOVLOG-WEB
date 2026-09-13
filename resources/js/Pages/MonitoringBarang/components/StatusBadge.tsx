@@ -15,8 +15,20 @@ const STATUS_STYLES: Record<ShippingStatus, { bg: string; text: string }> = {
     'Pending Verification': { bg: '#FEF9E7', text: '#B7950B' },
 };
 
+// Legacy Indonesian status values (from older data) are mapped to English
+// labels for display. Style lookup still supports both variants.
+const STATUS_LABELS: Record<string, string> = {
+  'Dalam Perjalanan': 'In Transit',
+  'Sampai Tujuan': 'Delivered',
+  'Sampai Checkpoint': 'Arrived at Checkpoint',
+  'Terlambat': 'Delayed',
+  'Menunggu': 'Pending',
+  'Dibatalkan': 'Cancelled',
+};
+
 export function StatusBadge({ status }: { status: ShippingStatus }) {
   const style = STATUS_STYLES[status] ?? STATUS_STYLES['Menunggu'];
+  const label = STATUS_LABELS[status] ?? status;
   return (
     <span
       className="inline-flex items-center justify-center rounded-full"
@@ -29,7 +41,7 @@ export function StatusBadge({ status }: { status: ShippingStatus }) {
         color: style.text,
       }}
     >
-      {status}
+      {label}
     </span>
   );
 }

@@ -94,7 +94,7 @@ export function ChangedDataModal({
               justifyContent: 'center',
               flexShrink: 0,
             }}
-            aria-label="Tutup"
+            aria-label="Close"
           >
             <X size={18} />
           </button>
@@ -109,7 +109,7 @@ export function ChangedDataModal({
               lineHeight: 1.5,
             }}
           >
-            Perubahan terdeteksi di bagian berikut. Pastikan perbedaan ini disengaja agar tidak terjadi selisih data.
+            Changes detected in the following sections. Ensure these differences are intentional to avoid data discrepancies.
           </p>
 
           <ul
@@ -167,7 +167,7 @@ export function ChangedDataModal({
                 cursor: 'pointer',
               }}
             >
-              Perbaiki Data
+              Fix Data
             </button>
             {onConfirm && (
               <button

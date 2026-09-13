@@ -2,6 +2,7 @@ import { type ReactNode, useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import Toast from '@/Components/Toast';
+import { PageTransition } from '@/Components/ui';
 
 interface DashboardLayoutProps {
     children: ReactNode;
@@ -55,7 +56,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
                 {/* Main Page Viewport Container */}
                 <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-x-hidden min-h-[calc(100vh-64px)] max-w-[1600px] w-full mx-auto">
-                    {children}
+                    <PageTransition>{children}</PageTransition>
                 </main>
             </div>
         </div>

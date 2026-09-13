@@ -23,7 +23,7 @@ const SUGGESTIONS = [
     'SES-2048',
     'INV-2026-014',
     'TRK-2024-001',
-    'Pelabuhan',
+    'Port',
     'PT Customer A',
 ];
 
@@ -221,7 +221,7 @@ export default function GlobalSearchBar() {
             }
             console.error('Search request error:', err);
             if (latestQueryRef.current === trimmed) {
-                setError('Pencarian gagal. Periksa koneksi lalu coba lagi.');
+                    setError('Search failed. Check your connection and try again.');
             }
         } finally {
             // An aborted request must not clear the loading state of its successor.
@@ -396,7 +396,7 @@ export default function GlobalSearchBar() {
                                     onClick={clearRecentSearches}
                                     className="text-xs text-slate-400 hover:text-red-600 transition-colors"
                                 >
-                                    Hapus
+                                    Clear
                                 </button>
                             </div>
                             <div className="flex flex-wrap gap-1.5">
@@ -419,7 +419,7 @@ export default function GlobalSearchBar() {
 
                     <div>
                         <span className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                            Pintasan Cepat
+                            Quick Shortcuts
                         </span>
                         <div className="grid grid-cols-2 gap-1">
                             {SUGGESTIONS.map((item) => (
@@ -462,14 +462,14 @@ export default function GlobalSearchBar() {
                         {error}
                     </p>
                     <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto leading-relaxed">
-                        Hasil untuk &ldquo;{trimmed}&rdquo; belum dapat dimuat.
+                        Results for &ldquo;{trimmed}&rdquo; could not be loaded.
                     </p>
                     <button
                         type="button"
                         onClick={() => fetchResults(trimmed)}
                         className="mt-4 px-4 py-2 text-xs font-semibold text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg border border-slate-200 transition-colors"
                     >
-                        Coba lagi
+                        Try again
                     </button>
                 </div>
             );
@@ -484,7 +484,7 @@ export default function GlobalSearchBar() {
                     <div
                         id={listId}
                         role="listbox"
-                        aria-label="Hasil pencarian"
+                        aria-label="Search results"
                         className="max-h-[380px] overflow-y-auto divide-y divide-slate-100 scroll-smooth"
                     >
                         {Object.entries(results.categories).map(([catKey, categoryGroup]) => {
@@ -665,7 +665,7 @@ export default function GlobalSearchBar() {
                                 onClick={() => handleViewAllResults()}
                                 className="font-semibold text-slate-700 hover:text-slate-950 flex items-center gap-1 transition-colors"
                             >
-                                <span>Lihat semua hasil ({results.total_count} item)</span>
+                                <span>View all results ({results.total_count} items)</span>
                                 <ArrowRight size={12} />
                             </button>
                         ) : (
@@ -745,7 +745,7 @@ export default function GlobalSearchBar() {
                             onClick={() => setIsMobileModalOpen(false)}
                             className="px-2.5 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900"
                         >
-                            Tutup
+                            Close
                         </button>
                     </div>
 
@@ -760,7 +760,7 @@ export default function GlobalSearchBar() {
                                 onClick={() => handleViewAllResults()}
                                 className="w-full py-2 bg-white hover:bg-slate-100 text-xs font-semibold text-slate-800 rounded-lg border border-slate-300 text-center transition-colors"
                             >
-                                Lihat semua {results.total_count} hasil →
+                                View all {results.total_count} results →
                             </button>
                         </div>
                     )}

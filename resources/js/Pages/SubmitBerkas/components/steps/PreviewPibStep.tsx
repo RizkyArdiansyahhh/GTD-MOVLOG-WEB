@@ -166,7 +166,7 @@ function ConfirmSubmitModal({ open, onConfirm, onCancel, isSubmitting, warnings 
                             borderRadius: 8,
                         }}>
                             <p style={{ margin: '0 0 6px', fontSize: 13, fontWeight: 700, color: '#92400E' }}>
-                                Perhatian:
+                                Attention:
                             </p>
                             <ul style={{ margin: 0, padding: '0 0 0 18px', fontSize: 12, color: '#78350F' }}>
                                 {warnings.map((w, i) => (
@@ -196,7 +196,7 @@ function ConfirmSubmitModal({ open, onConfirm, onCancel, isSubmitting, warnings 
                             cursor: isSubmitting ? 'not-allowed' : 'pointer',
                         }}
                     >
-                        Batal
+                        Cancel
                     </button>
                     <button
                         type="button"
@@ -215,7 +215,7 @@ function ConfirmSubmitModal({ open, onConfirm, onCancel, isSubmitting, warnings 
                             opacity: isSubmitting ? 0.7 : 1,
                         }}
                     >
-                        {isSubmitting ? 'Mengirim...' : 'Ya, Submit'}
+                        {isSubmitting ? 'Submitting...' : 'Yes, Submit'}
                     </button>
                 </div>
             </div>
@@ -304,7 +304,7 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
         const warnings: string[] = [];
         if (cargoCountMismatch) {
             warnings.push(
-                `Jumlah item cargo di Commercial Invoice (${ci?.data?.cargoDetail?.length}) tidak sama dengan Packing List (${pl?.data?.cargoDetail?.length}). Net weight per item mungkin tidak sesuai.`
+                `Cargo item count in Commercial Invoice (${ci?.data?.cargoDetail?.length}) does not match Packing List (${pl?.data?.cargoDetail?.length}). Net weight per item may be mismatched.`
             );
         }
         return warnings;
@@ -377,7 +377,7 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <AlertCircle size={14} color="#B45309" />
                         <span style={{ fontWeight: 700, color: '#78350F', fontSize: 12 }}>
-                            Catatan Revisi dari Verifikator:
+                            Revision Notes from Verifier:
                         </span>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingLeft: 20 }}>
@@ -422,7 +422,7 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
                     <AlertTriangle size={20} color="#DC2626" style={{ flexShrink: 0, marginTop: 1 }} />
                     <div>
                         <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#DC2626' }}>
-                            Ada step yang belum lengkap
+                            Some steps are incomplete
                         </p>
                         <p style={{ margin: '4px 0 10px', fontSize: 13, color: '#7F1D1D' }}>
                             Complete the following steps before submitting documents:
@@ -546,10 +546,10 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
 
             <SummaryCard
                 icon={<Calculator size={17} color="#06283A" />}
-                title="9. Nilai & Bobot"
+                title="9. Value & Weight"
                 rows={[
                     {
-                        label: 'Premi Insurance (CI)',
+                        label: 'Insurance Premium (CI)',
                         value:
                             isFob && ci?.data?.documentDetail?.insurance
                                 ? `${ci.data.documentDetail.insurance} ${ci.data.documentDetail?.insuranceCurrency || ''}`
@@ -606,16 +606,16 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
                     >
                         <AlertTriangle size={14} color="#B45309" style={{ flexShrink: 0, marginTop: 2 }} />
                         <span style={{ fontSize: 12, color: '#92400E' }}>
-                            Jumlah item CI ({ci?.data?.cargoDetail?.length}) dan PL (
-                            {pl?.data?.cargoDetail?.length}) berbeda — net weight per item mungkin tidak
-                            sesuai pasangannya.
+                            CI ({ci?.data?.cargoDetail?.length}) and PL (
+                            {pl?.data?.cargoDetail?.length}) item counts differ — net weight per item may not
+                            match.
                         </span>
                     </div>
                 )}
 
                 {mergedCargo.length === 0 ? (
                     <div style={{ padding: '16px 20px', fontSize: 13, color: '#94A3B8' }}>
-                        Belum ada data cargo.
+                        No cargo data yet.
                     </div>
                 ) : (
                     mergedCargo.map((item, index) => (
@@ -691,7 +691,7 @@ export function PreviewPibStep({ onFinished }: PreviewPibStepProps) {
                     }}
                 >
                     <ChevronLeft size={16} />
-                    Kembali
+                    Back
                 </button>
 
                 {isReadOnly ? (

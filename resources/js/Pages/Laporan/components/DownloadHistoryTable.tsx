@@ -141,7 +141,7 @@ export const DownloadHistoryTable: React.FC<Props> = ({ items = [] }) => {
                         {items.length === 0 ? (
                             <tr>
                                 <td colSpan={5} style={{ padding: '20px 16px', fontSize: 13, color: '#9CA3AF', textAlign: 'center' }}>
-                                    Belum ada riwayat export. Setiap export yang berhasil akan tercatat di sini.
+                                    No export history yet. Every successful export will be recorded here.
                                 </td>
                             </tr>
                         ) : (

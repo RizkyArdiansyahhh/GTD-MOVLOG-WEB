@@ -24,9 +24,10 @@ export default function MonitoringBarang({ items: propItems }: MonitoringBarangP
         <div className="flex-1 min-w-0 flex flex-col gap-6">
           <PageHeader
             title="Cargo Monitoring"
+            subtitle="Track shipment routes, stages, and live cargo status."
             actions={
               <div className="text-xs text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full font-medium">
-                Total Pengiriman: {items.length}
+                Total Shipments: {items.length}
               </div>
             }
           />
@@ -36,7 +37,7 @@ export default function MonitoringBarang({ items: propItems }: MonitoringBarangP
               <div className="p-3 bg-slate-50 rounded-full text-slate-400">
                 <PackageOpen size={36} />
               </div>
-              <h3 className="text-base font-semibold text-slate-700">Belum Ada Data Pengiriman</h3>
+              <h3 className="text-base font-semibold text-slate-700">No Shipment Data Yet</h3>
               <p className="text-slate-500 text-xs max-w-md">
                 Cargo document data is not yet available. Please submit shipment assignment documents first via the <strong>Submit Documents</strong> menu.
               </p>

@@ -51,7 +51,7 @@ export const laporanService = {
         } catch (err: unknown) {
             if (axios.isAxiosError(err)) {
                 throw new Error(
-                    await resolveErrorMessage(err.response?.data, 'Gagal mengambil preview laporan.'),
+                    await resolveErrorMessage(err.response?.data, 'Failed to fetch report preview.'),
                 );
             }
             throw err;
@@ -116,8 +116,8 @@ export const laporanService = {
                 const status = err.response?.status;
                 const fallback =
                     status !== undefined
-                        ? `Export gagal dengan status ${status}`
-                        : 'Export gagal. Silakan coba lagi.';
+                        ? `Export failed with status ${status}`
+                        : 'Export failed. Please try again.';
                 throw new Error(await resolveErrorMessage(err.response?.data, fallback));
             }
             throw err;

@@ -130,7 +130,7 @@ export function CertificateOfOriginStep() {
         if (!data.consignee.name.trim()) next.consigneeName = 'Importer name is required.';
         if (!pdf) next.pdf = 'PDF document is required.';
         if (!selectedCustomer?.id) next.general = 'Customer must be selected first.';
-        if (!assignmentNoRef) next.general = 'Assignment Reference tidak ditemukan.';
+        if (!assignmentNoRef) next.general = 'Assignment Reference not found.';
 
         setErrors(next);
         return Object.keys(next).length === 0;
@@ -146,8 +146,8 @@ export function CertificateOfOriginStep() {
                     (data.commercialInvoiceRef.number && data.commercialInvoiceRef.number !== ciData.documentDetail?.number) ||
                     (data.commercialInvoiceRef.date && data.commercialInvoiceRef.date !== ciData.documentDetail?.date)
                 ) {
-                    warnings.invoiceRefChanged = 'Referensi Invoice berbeda dari Commercial Invoice.';
-                    changed.push('Referensi Invoice');
+                    warnings.invoiceRefChanged = 'Invoice reference differs from Commercial Invoice.';
+                    changed.push('Invoice Reference');
                 }
             }
 
@@ -156,7 +156,7 @@ export function CertificateOfOriginStep() {
                 (data.shipper.address && data.shipper.address !== refData.shipper?.address) ||
                 (data.shipper.taxId && data.shipper.taxId !== refData.shipper?.taxId)
             ) {
-                warnings.shipperChanged = `Data Shipper berbeda dari ${recommendationSource}.`;
+                warnings.shipperChanged = `Shipper data differs from ${recommendationSource}.`;
                 changed.push('Shipper');
             }
 
@@ -165,7 +165,7 @@ export function CertificateOfOriginStep() {
                 (data.consignee.address && data.consignee.address !== refData.consignee?.address) ||
                 (data.consignee.taxId && data.consignee.taxId !== refData.consignee?.taxId)
             ) {
-                warnings.consigneeChanged = `Data Consignee berbeda dari ${recommendationSource}.`;
+                warnings.consigneeChanged = `Consignee data differs from ${recommendationSource}.`;
                 changed.push('Consignee');
             }
 
@@ -175,7 +175,7 @@ export function CertificateOfOriginStep() {
                 (data.transportDetail.shippName && data.transportDetail.shippName !== refData.transportDetail?.shippName) ||
                 (data.transportDetail.voyage && data.transportDetail.voyage !== refData.transportDetail?.voyage)
             ) {
-                warnings.transportChanged = `Data Transport Detail berbeda dari ${recommendationSource}.`;
+                warnings.transportChanged = `Transport Detail differs from ${recommendationSource}.`;
                 changed.push('Transport Detail');
             }
 
@@ -189,8 +189,8 @@ export function CertificateOfOriginStep() {
                         (cooItem.hsCodePol && cooItem.hsCodePol !== ciItem.hsCodePol)
                     ) {
                         warnings[`cargoChanged_${index}`] =
-                            `Item ke-${index + 1}: Detail barang berbeda dari Commercial Invoice.`;
-                        changed.push(`Cargo Detail — Item ke-${index + 1}`);
+                            `Item ${index + 1}: Goods details differ from Commercial Invoice.`;
+                        changed.push(`Cargo Detail — Item ${index + 1}`);
                     }
                 });
             }
@@ -203,7 +203,7 @@ export function CertificateOfOriginStep() {
     const executeSave = async () => {
         setShowChangedModal(false);
         if (!assignmentNoRef || assignmentNoRef === 'null' || assignmentNoRef === 'undefined') {
-            setErrors((prev) => ({ ...prev, general: 'Assignment Reference tidak ditemukan. Muat ulang halaman dan pilih customer terlebih dahulu.' }));
+            setErrors((prev) => ({ ...prev, general: 'Assignment Reference not found. Reload the page and select a customer first.' }));
             return;
         }
         setIsSaving(true);
@@ -292,7 +292,7 @@ export function CertificateOfOriginStep() {
                         cursor: 'pointer',
                     }}
                 >
-                    Isi Data Contoh
+                    Fill Sample Data
                 </button>
                 )}
 
@@ -320,7 +320,7 @@ export function CertificateOfOriginStep() {
                         <Field
                             label="Invoice Number"
                             value={data.commercialInvoiceRef.number}
-                            placeholder={ciData?.documentDetail?.number || 'Nomor Commercial Invoice'}
+                            placeholder={ciData?.documentDetail?.number || 'Commercial Invoice Number'}
                             onChange={(v) => updateInvoiceRef({ number: v })}
                         />
                         <Field
@@ -339,7 +339,7 @@ export function CertificateOfOriginStep() {
                         <Field
                             label="Name"
                             value={data.shipper.name}
-                            placeholder={refData?.shipper?.name || 'Nama Shipper'}
+                            placeholder={refData?.shipper?.name || 'Shipper Name'}
                             onChange={(v) => update('shipper', { ...data.shipper, name: v })}
                             error={errors.shipperName}
                         />
@@ -354,7 +354,7 @@ export function CertificateOfOriginStep() {
                         <Field
                             label="Address"
                             value={data.shipper.address}
-                            placeholder={refData?.shipper?.address || 'Alamat Shipper'}
+                            placeholder={refData?.shipper?.address || 'Shipper Address'}
                             onChange={(v) => update('shipper', { ...data.shipper, address: v })}
                         />
                     </FieldGroup>
@@ -367,7 +367,7 @@ export function CertificateOfOriginStep() {
                         <Field
                             label="Name"
                             value={data.consignee.name}
-                            placeholder={refData?.consignee?.name || 'Nama Consignee'}
+                            placeholder={refData?.consignee?.name || 'Consignee Name'}
                             onChange={(v) => update('consignee', { ...data.consignee, name: v })}
                             error={errors.consigneeName}
                         />
@@ -382,7 +382,7 @@ export function CertificateOfOriginStep() {
                         <Field
                             label="Address"
                             value={data.consignee.address}
-                            placeholder={refData?.consignee?.address || 'Alamat Consignee'}
+                            placeholder={refData?.consignee?.address || 'Consignee Address'}
                             onChange={(v) => update('consignee', { ...data.consignee, address: v })}
                         />
                     </FieldGroup>

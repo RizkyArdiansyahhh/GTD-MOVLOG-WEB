@@ -283,7 +283,7 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                 {/* Name & Info with generous spacing */}
                                 <div className="mt-6 space-y-1">
                                     <h2 className="text-base sm:text-lg font-bold text-[#06283A] leading-snug">
-                                        {profileData.name || profile.name}
+                                        {profile.name}
                                     </h2>
                                     <p className="text-xs text-slate-500 font-medium">
                                         {profile.email}

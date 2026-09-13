@@ -4,7 +4,7 @@ import DashboardLayout from "@/Layouts/DashboardLayout";
 import { PageHeader } from "@/Components/ui";
 import CheckpointTable from "./components/CheckpointTable";
 import SearchBar from "./components/SearchBar";
-import { Navigation, Clock, CheckCircle2, AlertCircle, Compass } from "lucide-react";
+import { Navigation, Clock, CheckCircle2, AlertCircle } from "lucide-react";
 import type { MonitoringCheckpointPageProps } from "./types/MonitoringCheckpoint";
 
 /**
@@ -40,13 +40,9 @@ export default function MonitoringCheckpoint({ shipments }: MonitoringCheckpoint
             <div className="space-y-6">
                 {/* ── Header ── */}
                 <div>
-                    <div className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-[#06283A] mb-2">
-                        <Compass className="h-3.5 w-3.5 text-[#B7791F]" />
-                        <span>Logistik & Pelacakan Kargo</span>
-                    </div>
                     <PageHeader
                         title="Monitoring Checkpoint"
-                        subtitle={<>Pantau pergerakan kargo bertahap: <span className="font-medium text-slate-700">MV &rarr; Tongkang &rarr; Pelabuhan &rarr; Site</span></>}
+                        subtitle={<>Track staged cargo movements: <span className="font-medium text-slate-700">MV &rarr; Barge &rarr; Port &rarr; Site</span></>}
                     />
                 </div>
 
@@ -55,7 +51,7 @@ export default function MonitoringCheckpoint({ shipments }: MonitoringCheckpoint
                     {/* Total Shipment */}
                     <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-xs flex flex-col justify-between hover:shadow-sm transition">
                         <div className="flex items-center justify-between">
-                            <span className="text-xs font-medium text-slate-500">Total Pengiriman</span>
+                            <span className="text-xs font-medium text-slate-500">Total Shipments</span>
                             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-[#06283A]">
                                 <Navigation className="h-4 w-4" />
                             </div>
@@ -66,7 +62,7 @@ export default function MonitoringCheckpoint({ shipments }: MonitoringCheckpoint
                     {/* Sedang Berjalan */}
                     <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-xs flex flex-col justify-between hover:shadow-sm transition">
                         <div className="flex items-center justify-between">
-                            <span className="text-xs font-medium text-slate-500">Sedang Berjalan</span>
+                            <span className="text-xs font-medium text-slate-500">In Progress</span>
                             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-[#B7791F]">
                                 <Clock className="h-4 w-4" />
                             </div>
@@ -77,7 +73,7 @@ export default function MonitoringCheckpoint({ shipments }: MonitoringCheckpoint
                     {/* Selesai */}
                     <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-xs flex flex-col justify-between hover:shadow-sm transition">
                         <div className="flex items-center justify-between">
-                            <span className="text-xs font-medium text-slate-500">Selesai (100%)</span>
+                            <span className="text-xs font-medium text-slate-500">Completed (100%)</span>
                             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
                                 <CheckCircle2 className="h-4 w-4" />
                             </div>
@@ -88,7 +84,7 @@ export default function MonitoringCheckpoint({ shipments }: MonitoringCheckpoint
                     {/* Belum Dimulai */}
                     <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-xs flex flex-col justify-between hover:shadow-sm transition">
                         <div className="flex items-center justify-between">
-                            <span className="text-xs font-medium text-slate-500">Belum Dimulai</span>
+                            <span className="text-xs font-medium text-slate-500">Not Started</span>
                             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
                                 <AlertCircle className="h-4 w-4" />
                             </div>
@@ -101,7 +97,7 @@ export default function MonitoringCheckpoint({ shipments }: MonitoringCheckpoint
                 <div className="space-y-3">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
                         <h2 className="text-base font-bold text-[#06283A]">
-                            Daftar Penugasan Pengiriman ({filteredShipments.length})
+                            Shipment Assignment List ({filteredShipments.length})
                         </h2>
                         <div className="w-full sm:w-80">
                             <SearchBar value={search} onChange={setSearch} />

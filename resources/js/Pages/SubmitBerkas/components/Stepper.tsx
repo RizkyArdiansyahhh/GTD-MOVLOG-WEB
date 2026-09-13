@@ -111,7 +111,7 @@ export function Stepper() {
                       marginTop: 1,
                     }}
                   >
-                    Revisi
+                    Revision
                   </span>
                 )}
               </div>

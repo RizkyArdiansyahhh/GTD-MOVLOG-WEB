@@ -23,9 +23,9 @@ export default function CheckpointTable({ shipments }: CheckpointTableProps) {
                 <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-slate-100 text-slate-400 mb-3">
                     <PackageSearch className="h-7 w-7" />
                 </div>
-                <h3 className="text-base font-semibold text-slate-700">Tidak Ada Data Pengiriman</h3>
+                <h3 className="text-base font-semibold text-slate-700">No Shipment Data</h3>
                 <p className="mt-1 text-xs text-slate-500 max-w-sm">
-                    Belum ada shipment yang terdaftar atau tidak ditemukan data yang sesuai dengan pencarian Anda.
+                    No shipments registered yet or no data matches your search.
                 </p>
             </div>
         );
@@ -38,22 +38,22 @@ export default function CheckpointTable({ shipments }: CheckpointTableProps) {
                     <thead>
                         <tr className="border-b border-slate-200/80 bg-[#F8FAFC]">
                             <th className="px-5 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                                No. Assignment
+                                Assignment No.
                             </th>
                             <th className="px-5 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                                 Customer
                             </th>
                             <th className="px-5 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                                Checkpoint Terkini
+                                Current Checkpoint
                             </th>
                             <th className="px-5 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                                 Progress
                             </th>
                             <th className="px-5 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                                Update Terakhir
+                                Last Updated
                             </th>
                             <th className="px-4 py-3.5 text-right text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                                Detail
+                                Details
                             </th>
                         </tr>
                     </thead>

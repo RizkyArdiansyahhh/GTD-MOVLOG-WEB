@@ -33,9 +33,9 @@ export default function UnitListInput({ units, onChange, disabled = false }: Uni
         <div className="space-y-3">
             <div className="flex items-center justify-between">
                 <label className="block text-xs font-semibold uppercase text-slate-600">
-                    Daftar Unit Alat Berat <span className="text-red-500">*</span>
+                    Heavy Equipment Unit List <span className="text-red-500">*</span>
                 </label>
-                <span className="text-xs text-slate-400">{units.length} unit</span>
+                <span className="text-xs text-slate-400">{units.length} units</span>
             </div>
 
             <div className="space-y-2">
@@ -53,7 +53,7 @@ export default function UnitListInput({ units, onChange, disabled = false }: Uni
                                 type="text"
                                 value={unit.unit_name}
                                 onChange={(e) => updateUnit(idx, 'unit_name', e.target.value)}
-                                placeholder={"Nama & Model Unit (cth: Excavator CAT 320)"}
+                                placeholder={"Unit Name & Model (e.g.: Excavator CAT 320)"}
                                 disabled={disabled}
                                 className="w-full px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-sm text-[#06283A] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#F6C343] transition-all disabled:opacity-50"
                             />
@@ -68,7 +68,7 @@ export default function UnitListInput({ units, onChange, disabled = false }: Uni
                                 disabled={disabled}
                                 className="w-full px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-sm text-center font-semibold text-[#06283A] focus:outline-none focus:ring-2 focus:ring-[#F6C343] transition-all disabled:opacity-50"
                             />
-                            <span className="block text-[10px] text-slate-400 text-center mt-0.5">Jumlah</span>
+                            <span className="block text-[10px] text-slate-400 text-center mt-0.5">Quantity</span>
                         </div>
 
                         <button

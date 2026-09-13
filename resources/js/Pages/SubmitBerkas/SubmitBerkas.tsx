@@ -3,6 +3,7 @@ import { Head } from '@inertiajs/react';
 import axios from 'axios';
 import { CheckCircle2, Lock } from 'lucide-react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
+import { PageHeader } from '@/Components/ui';
 import { WizardProvider } from './context/WizardContext';
 import { useWizard } from './hooks/useWizard';
 import { WizardHeader } from './components/WizardHeader';
@@ -89,10 +90,10 @@ class StepErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundar
           </div>
           <div>
             <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#991B1B' }}>
-              Terjadi Kesalahan Saat Menampilkan {this.props.stepName || 'Step'}
+              An Error Occurred While Displaying {this.props.stepName || 'Step'}
             </h3>
             <p style={{ margin: '6px 0 0', fontSize: 13, color: '#7F1D1D', lineHeight: 1.5 }}>
-              {this.state.error?.message || 'Data yang dibutuhkan step ini belum lengkap atau terjadi error.'}
+              {this.state.error?.message || 'The data required for this step is incomplete or an error occurred.'}
             </p>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
@@ -110,7 +111,7 @@ class StepErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundar
                 cursor: 'pointer',
               }}
             >
-              Coba Lagi
+              Try Again
             </button>
             {this.props.onGoBack && (
               <button
@@ -130,7 +131,7 @@ class StepErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundar
                   cursor: 'pointer',
                 }}
               >
-                Kembali ke Step Sebelumnya
+                Back to Previous Step
               </button>
             )}
           </div>
@@ -254,7 +255,7 @@ function SubmitBerkasHubContent({
                   Documents Verified (Read-Only)
                 </p>
                 <p style={{ margin: '2px 0 0', fontSize: 12, color: '#166534' }}>
-                  Seluruh data penugasan ini sudah fix dan tidak dapat diedit kembali. Anda dapat meninjau setiap dokumen melalui navigasi step.
+                  All assignment data is finalized and cannot be edited. You can review each document via step navigation.
                 </p>
               </div>
             </div>
@@ -292,12 +293,12 @@ function SubmitBerkasHubContent({
         </>
       ) : (
         /* ── KONDISI 2: HUB UTAMA DASHBOARD (LAYOUT 70 - 30) ── */
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'minmax(0, 1fr) 340px',
-          gap: 24,
-          alignItems: 'start'
-        }}>
+        <>
+        <PageHeader
+          title="Submit Documents"
+          subtitle="Select a customer and manage shipment document assignments."
+        />
+        <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
           {/* Sisi Kiri (70%): Tabel Riwayat Berkas */}
           <DocumentAssignmentTable
             assignments={assignments}
@@ -314,6 +315,7 @@ function SubmitBerkasHubContent({
             isLoading={isStartingAssignment || isLoadingAssignment}
           />
         </div>
+        </>
       )}
 
       {/* Modal Tambah Customer Baru */}
