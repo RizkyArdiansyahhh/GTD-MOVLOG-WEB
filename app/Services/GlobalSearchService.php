@@ -453,7 +453,7 @@ class GlobalSearchService
             if ($user->hasRole(UserRole::Customer->value)) {
                 $url = $doc->shipping_session_id
                     ? '/customer/shipment/'.$doc->shipping_session_id
-                    : '/customer/monitoring-barang';
+                    : '/customer/checkpoints';
             } elseif ($user->hasRole(UserRole::Supervisor->value)) {
                 // Deep-link to the shipment verification detail when known.
                 $url = $doc->assignment_no_ref

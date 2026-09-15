@@ -25,7 +25,7 @@ class NotificationController extends Controller
                 'type'             => $n->data['type'] ?? 'general',
                 'title'            => $n->data['title'] ?? 'Notifikasi Kargo',
                 'assignment_no'    => $n->data['assignment_no'] ?? null,
-                'url'              => $n->data['url'] ?? '/customer/monitoring-barang',
+                'url'              => $n->data['url'] ?? '/customer/checkpoints',
                 'read_at'          => $n->read_at?->toISOString(),
                 'created_at'       => $n->created_at?->toISOString(),
                 'created_at_human' => $n->created_at?->diffForHumans(),

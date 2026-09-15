@@ -81,6 +81,7 @@ export interface ShipmentDetail {
     progress_percent: number;
     eta?: string;
     current_checkpoint?: string;
+    updated_at?: string | null;
 }
 
 export interface CustomerShipmentListItem {

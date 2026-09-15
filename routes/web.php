@@ -230,16 +230,19 @@ Route::middleware(['auth', 'verified', 'role:customer'])->prefix('customer')->na
     Route::get('/dashboard', [CustomerDashboardController::class, 'index'])
         ->name('dashboard');
 
-    Route::get('/monitoring-barang', [CustomerDashboardController::class, 'monitoring'])
+    // Legacy Cargo Monitoring URLs: merged into Checkpoint. List redirects
+    // generically; detail preserves the shipment ID.
+    Route::get('/monitoring-barang', fn () => redirect()->route('customer.checkpoints', [], 301))
         ->name('monitoring');
 
-    Route::get('/monitoring-barang/{id}', [CustomerDashboardController::class, 'detail'])
+    Route::get('/monitoring-barang/{id}', fn (string $id) => redirect("/customer/shipment/{$id}", 301))
+        ->where('id', '.*')
         ->name('monitoring.detail');
 
     Route::get('/checkpoints', [CustomerDashboardController::class, 'checkpoints'])
         ->name('checkpoints');
 
-    Route::get('/shipment/{id}', [CustomerDashboardController::class, 'detail'])
+    Route::get('/shipment/{id}', [CustomerDashboardController::class, 'checkpointDetail'])
         ->name('shipment.detail');
 
     // Customer Profile Management

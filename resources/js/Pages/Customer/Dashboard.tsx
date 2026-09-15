@@ -130,7 +130,7 @@ export default function Dashboard({
                             </div>
                             <div className="pt-3.5 mt-2 border-t border-slate-100">
                                 <Link
-                                    href="/customer/monitoring-barang"
+                                    href="/customer/checkpoints"
                                     className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-900 hover:text-amber-600 transition-colors uppercase tracking-wider group"
                                 >
                                     <span>Buka Monitoring</span>
@@ -225,7 +225,7 @@ export default function Dashboard({
                                     Recent Shipments
                                 </h2>
                                 <Link
-                                    href="/customer/monitoring-barang"
+                                    href="/customer/checkpoints"
                                     className="text-xs font-semibold text-slate-600 hover:text-[#06283A] uppercase tracking-wider transition-colors inline-flex items-center gap-1 group"
                                 >
                                     <span>Lihat Semua</span>
@@ -316,7 +316,7 @@ export default function Dashboard({
                                 Aktivitas Terbaru
                             </h2>
                             <Link
-                                href="/customer/monitoring-barang"
+                                href="/customer/checkpoints"
                                 className="text-xs font-semibold text-slate-500 hover:text-slate-900 uppercase tracking-wider transition-colors inline-flex items-center gap-1"
                             >
                                 <span>Full History</span>

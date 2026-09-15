@@ -45,7 +45,7 @@ class ShipmentStageUpdated extends Notification
             'assignment_no'     => (string) $this->session->assignment_no,
             'checkpoint_name'   => (string) $checkpointName,
             'checkpoint_status' => $statusUpper,
-            'url'               => "/customer/monitoring-barang/{$this->session->id}",
+            'url'               => "/customer/shipment/{$this->session->id}",
         ];
     }
 }

@@ -34,7 +34,7 @@ class ShipmentCompleted extends Notification
             'shipment_id'   => (string) $this->session->id,
             'assignment_no' => (string) $this->session->assignment_no,
             'destination'   => (string) $destination,
-            'url'           => "/customer/monitoring-barang/{$this->session->id}",
+            'url'           => "/customer/shipment/{$this->session->id}",
         ];
     }
 }

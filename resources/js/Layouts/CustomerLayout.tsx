@@ -3,11 +3,9 @@ import { type ReactNode, useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import {
     LayoutDashboard,
-    PackageSearch,
     MapPin,
     LifeBuoy,
     LogOut,
-    Search,
     ChevronDown,
     Building2,
     CheckCircle,
@@ -38,8 +36,7 @@ interface CustomerNavLink {
 
 const navLinks: CustomerNavLink[] = [
     { href: '/customer/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/customer/monitoring-barang', label: 'Cargo Monitoring', icon: PackageSearch, aliases: ['/customer/shipment'] },
-    { href: '/customer/checkpoints', label: 'Checkpoint', icon: MapPin },
+    { href: '/customer/checkpoints', label: 'Checkpoint', icon: MapPin, aliases: ['/customer/shipment'] },
     { href: '/customer/pusat-bantuan', label: 'Help Center', icon: LifeBuoy, aliases: ['/customer/panduan', '/customer/help-center', '/customer/system-guide'] },
 ];
 
@@ -50,7 +47,6 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
     // Dropdown states
     const [profileOpen, setProfileOpen] = useState(false);
     const [notifOpen, setNotifOpen] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
     const [showFlash, setShowFlash] = useState(true);
 
     // Notification states
@@ -138,17 +134,6 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
     const isNavActive = (item: CustomerNavLink) => {
         if (isActive(item.href)) return true;
         return item.aliases?.some((alias) => isActive(alias)) ?? false;
-    };
-
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (searchQuery.trim()) {
-            router.get(
-                '/customer/monitoring-barang',
-                { search: searchQuery.trim() },
-                { preserveState: true }
-            );
-        }
     };
 
     // Handle marking a single notification as read & navigating
@@ -268,21 +253,8 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
                         })}
                     </nav>
 
-                    {/* Right Search & User Avatar */}
+                    {/* Right User Controls */}
                     <div className="flex items-center gap-3">
-                        {/* Quick Search */}
-                        <form onSubmit={handleSearch} className="hidden lg:flex items-center">
-                            <div className="flex items-center gap-2 rounded-full px-3.5 bg-slate-100/90 border border-slate-200 focus-within:ring-2 focus-within:ring-[#F6C343] focus-within:bg-white transition-all w-52 h-9">
-                                <Search size={14} className="text-slate-400 shrink-0" strokeWidth={2} />
-                                <input
-                                    type="text"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    placeholder="Search..."
-                                    className="flex-1 bg-transparent text-xs text-slate-800 placeholder-slate-400 outline-none font-medium"
-                                />
-                            </div>
-                        </form>
 
                         {/* Notification Bell Dropdown Container */}
                         <div className="relative" ref={notifDropdownRef}>
@@ -400,11 +372,11 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
                                     {/* Dropdown Footer */}
                                     <div className="p-2 border-t border-slate-100 bg-slate-50/50 text-center">
                                         <Link
-                                            href="/customer/monitoring-barang"
+                                            href="/customer/checkpoints"
                                             onClick={() => setNotifOpen(false)}
                                             className="text-[11px] font-bold text-slate-600 hover:text-slate-900 transition-colors block py-1"
                                         >
-                                            Lihat Semua Monitoring Kargo →
+                                            Lihat Semua Checkpoint →
                                         </Link>
                                     </div>
                                 </div>

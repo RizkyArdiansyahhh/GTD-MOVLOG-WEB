@@ -65,7 +65,7 @@ class HandleInertiaRequests extends Middleware
                     'assignment_no'    => $n->data['assignment_no'] ?? null,
                     // Role-aware fallback so internal rows never point at
                     // the customer portal (customer behavior unchanged).
-                    'url'              => $n->data['url'] ?? ($user->customer_id ? '/customer/monitoring-barang' : '/monitoring-barang'),
+                    'url'              => $n->data['url'] ?? ($user->customer_id ? '/customer/checkpoints' : '/monitoring-barang'),
                     'read_at'          => $n->read_at?->toISOString(),
                     'created_at'       => $n->created_at?->toISOString(),
                     'created_at_human' => $n->created_at?->diffForHumans(),
