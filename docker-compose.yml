@@ -26,6 +26,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      mailpit:
+        condition: service_started
 
     networks:
       - lms_network
@@ -90,6 +92,19 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - lms_network
+
+  # ─────────────────────────────────────────
+  # Mailpit (local SMTP + Web UI for password resets)
+  # ─────────────────────────────────────────
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: lms_mailpit
+    restart: unless-stopped
+    ports:
+      - "${MAILPIT_SMTP_PORT:-1025}:1025"
+      - "${MAILPIT_UI_PORT:-8025}:8025"
     networks:
       - lms_network
 

@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Checkpoint;
 use App\Models\Customer;
 use App\Models\ShippingSession;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -22,7 +23,7 @@ class CustomerDashboardController extends Controller
         $user = $request->user();
         $customer = $user?->customer;
 
-        if (!$customer) {
+        if (! $customer) {
             abort(403, 'Akun Anda belum terhubung ke perusahaan customer manapun. Hubungi Admin GTD untuk menyelesaikan konfigurasi akun.');
         }
 
@@ -139,6 +140,7 @@ class CustomerDashboardController extends Controller
                 'current_checkpoint' => $s->currentCheckpoint?->name ?? 'Belum ditentukan',
                 'progress_percent' => $this->calculateProgress($s),
                 'eta' => $this->estimateEta($s),
+                'updated_at' => $s->updated_at ? $s->updated_at->toISOString() : null,
                 'units' => $s->units->map(fn ($u) => [
                     'name' => (string) $u->unit_name,
                     'qty' => (int) $u->quantity,
@@ -146,27 +148,8 @@ class CustomerDashboardController extends Controller
             ];
         })->toArray();
 
-        // Checkpoint Groups Overview
-        $checkpointGroups = Checkpoint::with([
-            'shippingSessions' => fn ($q) => $q->where('customer_id', $customer->id)
-                ->whereIn('status', ['IN_PROGRESS', 'in_transit', 'IN_TRANSIT']),
-        ])
-            ->orderBy('sequence')
-            ->get()
-            ->map(function ($cp) {
-                return [
-                    'id' => (int) $cp->id,
-                    'name' => (string) $cp->name,
-                    'sequence' => (int) $cp->sequence,
-                    'active_fleets' => (int) $cp->shippingSessions->count(),
-                    'shipments' => $cp->shippingSessions->take(3)->map(fn ($ss) => [
-                        'id' => (string) $ss->id,
-                        'assignment_no' => (string) $ss->assignment_no,
-                        'cargo_name' => (string) $ss->cargo_name,
-                    ])->values()->toArray(),
-                ];
-            })->toArray();
-
+        // Checkpoint Groups Overview is rendered on the dedicated Checkpoint
+        // page (checkpoints()), not on the dashboard — so it is not fetched here.
         return Inertia::render('Customer/Dashboard', [
             'customer' => [
                 'id' => (string) $customer->id,
@@ -175,7 +158,6 @@ class CustomerDashboardController extends Controller
             ],
             'stats' => $stats,
             'recentShipments' => $recentShipments,
-            'checkpointGroups' => $checkpointGroups,
         ]);
     }
 
@@ -185,7 +167,7 @@ class CustomerDashboardController extends Controller
      * so no shipment becomes unreachable after the Cargo Monitoring menu
      * removal.
      *
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     * @return LengthAwarePaginator
      */
     private function paginateShipments(Customer $customer, Request $request)
     {

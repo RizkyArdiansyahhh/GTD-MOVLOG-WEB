@@ -60,7 +60,7 @@ const ITEMS_PER_PAGE = 5;
 // ─────────────────────────────────────────────
 export default function Index() {
     const pageProps = usePage<KelolaAkunProps>().props;
-    const { users, stats, availableRoles, filters, auth, flash } = pageProps;
+    const { users, stats, availableRoles, filters, auth } = pageProps;
 
     // ── Access control ──
     const isSuperAdmin = useMemo(() => {
@@ -165,22 +165,9 @@ export default function Index() {
     const [isSubmittingDelete, setIsSubmittingDelete] = useState(false);
     const [toast, setToast] = useState<ToastMessage | null>(null);
 
-    // Listen to flash messages (e.g., success message on redirect from Edit User)
-    useEffect(() => {
-        if (flash?.success) {
-            setToast({
-                id: String(Date.now()),
-                type: 'success',
-                message: flash.success,
-            });
-        } else if (flash?.error) {
-            setToast({
-                id: String(Date.now()),
-                type: 'error',
-                message: flash.error,
-            });
-        }
-    }, [flash]);
+    // NOTE: flash.success/error is rendered by the global <Toast /> in
+    // DashboardLayout. Do NOT mirror it into the local ToastNotification —
+    // that was the source of the double popup after create/status/delete.
 
     // Filtered users (works for both server fallback and local client filter)
     const filteredUsers = useMemo(() => {
@@ -307,15 +294,12 @@ export default function Index() {
                     preserveScroll: true,
                     preserveState: false,
                     onSuccess: () => {
+                        // Success flash from the server redirect is rendered
+                        // by the global <Toast /> — no local toast here.
                         updateLocal();
                         setIsSubmittingStatus(false);
                         setUpdatingUserId(null);
                         setModalUser(null);
-                        setToast({
-                            id: String(Date.now()),
-                            type: 'success',
-                            message: `Account status for ${modalUser.name} has been ${actionLabel}.`,
-                        });
                     },
                     onError: (errors) => {
                         setIsSubmittingStatus(false);
@@ -369,14 +353,11 @@ export default function Index() {
                 preserveScroll: true,
                 preserveState: false,
                 onSuccess: () => {
+                    // Success flash from the server redirect is rendered
+                    // by the global <Toast /> — no local toast here.
                     updateLocal();
                     setIsSubmittingDelete(false);
                     setDeleteModalUser(null);
-                    setToast({
-                        id: String(Date.now()),
-                        type: 'success',
-                        message: '✅ User deleted successfully.',
-                    });
                 },
                 onError: (errors) => {
                     setIsSubmittingDelete(false);

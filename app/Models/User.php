@@ -87,6 +87,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Send the GTD-branded password reset notification.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new \App\Notifications\ResetPasswordRequested($token, $this->getEmailForPasswordReset()));
+    }
+
+    /**
      * Get the public URL for the user's avatar.
      *
      * Returns the storage URL if an avatar exists, otherwise null.

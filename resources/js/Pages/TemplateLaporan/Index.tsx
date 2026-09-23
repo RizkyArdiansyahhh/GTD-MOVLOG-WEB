@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Plus, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Head, Link, router } from '@inertiajs/react';
+import { Plus } from 'lucide-react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { PageHeader } from '@/Components/ui';
 import type { MasterTemplateItem, CheckpointOption } from './types';
@@ -11,7 +11,6 @@ interface IndexProps {
 }
 
 export default function TemplateLaporanIndex({ templates = [], checkpoints = [] }: IndexProps) {
-    const { flash } = usePage<{ flash: { success?: string; error?: string } }>().props;
     const [selectedCheckpoint, setSelectedCheckpoint] = useState<string>('all');
     const [deletingId, setDeletingId] = useState<number | null>(null);
 
@@ -49,21 +48,6 @@ export default function TemplateLaporanIndex({ templates = [], checkpoints = [] 
                         </Link>
                     }
                 />
-
-                {/* ── Flash Messages ── */}
-                {flash?.success && (
-                    <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center gap-2 text-xs text-emerald-800">
-                        <CheckCircle2 size={14} className="shrink-0 text-emerald-600" />
-                        <span>{flash.success}</span>
-                    </div>
-                )}
-
-                {flash?.error && (
-                    <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-lg flex items-center gap-2 text-xs text-rose-800">
-                        <AlertCircle size={14} className="shrink-0 text-rose-600" />
-                        <span>{flash.error}</span>
-                    </div>
-                )}
 
                 {/* ── Subtle Filter Tabs ── */}
                 <div className="flex items-center gap-1 overflow-x-auto border-b border-slate-200">

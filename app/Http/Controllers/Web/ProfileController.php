@@ -11,7 +11,6 @@ use App\Http\Requests\Profile\UpdateProfilePasswordRequest;
 use App\Http\Requests\Profile\UpdateProfileRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -97,8 +96,8 @@ class ProfileController extends Controller
         $user = $request->user();
         $validated = $request->validated();
 
-        $user->password = Hash::make($validated['password']);
-        $user->save();
+        app(\App\Services\PasswordService::class)
+            ->updatePassword($user, $validated['password']);
 
         return back()->with('success', 'Password akun Anda berhasil diperbarui.');
     }

@@ -8,9 +8,6 @@ import {
     LogOut,
     ChevronDown,
     Building2,
-    CheckCircle,
-    AlertCircle,
-    X,
     Bell,
     UserRound,
     CheckCheck,
@@ -42,12 +39,11 @@ const navLinks: CustomerNavLink[] = [
 
 export default function CustomerLayout({ children }: CustomerLayoutProps) {
     const { props, url } = usePage<PageProps>();
-    const { auth, notifications, flash } = props;
+    const { auth, notifications } = props;
 
     // Dropdown states
     const [profileOpen, setProfileOpen] = useState(false);
     const [notifOpen, setNotifOpen] = useState(false);
-    const [showFlash, setShowFlash] = useState(true);
 
     // Notification states
     const [unreadCount, setUnreadCount] = useState<number>(notifications?.unread_count ?? 0);
@@ -81,14 +77,6 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
             setNotificationList(notifications.latest);
         }
     }, [notifications]);
-
-    useEffect(() => {
-        if (flash?.success || flash?.error) {
-            setShowFlash(true);
-            const timer = setTimeout(() => setShowFlash(false), 6000);
-            return () => clearTimeout(timer);
-        }
-    }, [flash]);
 
     // Close dropdowns on outside click
     useEffect(() => {
@@ -477,40 +465,6 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
                     })}
                 </div>
             </div>
-
-            {/* Flash Messages (Inline fallback) */}
-            {showFlash && flash?.success && (
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-3 w-full animate-in fade-in">
-                    <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-semibold flex items-center justify-between shadow-xs">
-                        <div className="flex items-center gap-2">
-                            <CheckCircle size={16} className="text-emerald-600 shrink-0" />
-                            <span>{flash.success}</span>
-                        </div>
-                        <button
-                            onClick={() => setShowFlash(false)}
-                            className="text-emerald-600 hover:text-emerald-900 p-1 cursor-pointer"
-                        >
-                            <X size={14} />
-                        </button>
-                    </div>
-                </div>
-            )}
-            {showFlash && flash?.error && (
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-3 w-full animate-in fade-in">
-                    <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-900 text-xs font-semibold flex items-center justify-between shadow-xs">
-                        <div className="flex items-center gap-2">
-                            <AlertCircle size={16} className="text-red-600 shrink-0" />
-                            <span>{flash.error}</span>
-                        </div>
-                        <button
-                            onClick={() => setShowFlash(false)}
-                            className="text-red-600 hover:text-red-900 p-1 cursor-pointer"
-                        >
-                            <X size={14} />
-                        </button>
-                    </div>
-                </div>
-            )}
 
             {/* Main Content */}
             <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 w-full">

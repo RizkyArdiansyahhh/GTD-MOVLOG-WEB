@@ -32,6 +32,13 @@ class AuthenticatedSessionController extends Controller
             'password' => ['required', 'string'],
         ]);
 
+        // Honor the "Keep me signed in for 30 days" label: shrink the
+        // recaller cookie lifetime from the framework default (400 days)
+        // to 30 days, only when the checkbox is ticked.
+        if ($request->boolean('remember')) {
+            Auth::guard('web')->setRememberDuration(60 * 24 * 30);
+        }
+
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             throw ValidationException::withMessages([
                 'email' => __('auth.failed'),
