@@ -262,6 +262,9 @@ class VerifikasiBerkasController extends Controller
             ?? $data['shipment_reference']
             ?? $doc->assignment_no_ref;
 
+        // Keep quantity detail and the legacy totals alias consistent.
+        $quantityDetail = $data['quantity'] ?? $data['totalQuantity'] ?? null;
+
         $fileUrl = $doc->file_path ? Storage::url($doc->file_path) : null;
         $previewUrl = route('verifikasi-berkas.file', ['document' => $doc->id]);
 
@@ -307,7 +310,12 @@ class VerifikasiBerkasController extends Controller
             'notifyParty'            => $data['notifyParty'] ?? null,
             'transportDetail'        => $data['transportDetail'] ?? null,
             'cargoDetails'           => $data['cargoDetail'] ?? null,
-            'totals'                 => $data['totalQuantity'] ?? $data['quantity'] ?? null,
+            'totals'                 => $quantityDetail,
+            'documentDetail'         => $data['documentDetail'] ?? null,
+            'documentReference'      => $data['documentReference'] ?? null,
+            'insuranceDetail'        => $data['insurance'] ?? null,
+            'quantityDetail'         => $quantityDetail,
+            'documentData'           => $data,
             'relatedDocumentNumbers' => $data['documentReference'] ?? $data['commercialInvoiceRef'] ?? null,
             'amountInsured'          => $data['insurance']['amountInsured'] ?? null,
         ];

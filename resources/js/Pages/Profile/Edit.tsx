@@ -235,8 +235,6 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                 <span>Dashboard</span>
                             </Link>
                             <span>/</span>
-                            <span className="text-slate-700">Account Settings</span>
-                            <span>/</span>
                             <span className="text-[#06283A] font-bold">Edit Profile</span>
                         </div>
                         <PageHeader

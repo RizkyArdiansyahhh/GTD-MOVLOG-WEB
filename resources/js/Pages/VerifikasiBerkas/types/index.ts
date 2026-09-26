@@ -109,7 +109,11 @@ export interface VerificationDocument {
     totals?: any;
     relatedDocumentNumbers?: Record<string, any> | null;
     amountInsured?: string | null;
-    documentData?: Record<string, any> | null;
+    documentDetail?: Record<string, unknown> | null;
+    documentReference?: Record<string, unknown> | null;
+    insuranceDetail?: Record<string, unknown> | null;
+    quantityDetail?: Record<string, unknown> | null;
+    documentData?: Record<string, unknown> | null;
 }
 
 export interface DocumentStats {

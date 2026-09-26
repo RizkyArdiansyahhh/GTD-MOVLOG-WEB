@@ -205,7 +205,7 @@ export default function Login() {
                                         href="/forgot-password"
                                         className="text-xs text-foreground/50 hover:text-gold hover:underline transition-colors font-body"
                                     >
-                                        Forgot Password?
+                                        Forgo Password?
                                     </a>
                                 </div>
                                 <div className="relative">
