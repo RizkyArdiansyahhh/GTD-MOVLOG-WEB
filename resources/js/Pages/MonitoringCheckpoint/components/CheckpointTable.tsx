@@ -19,41 +19,41 @@ export default function CheckpointTable({ shipments }: CheckpointTableProps) {
 
     if (shipments.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white py-16 px-4 text-center shadow-xs">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 mb-3">
+            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white py-16 px-4 text-center shadow-xs">
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-slate-100 text-slate-400 mb-3">
                     <PackageSearch className="h-7 w-7" />
                 </div>
-                <h3 className="text-base font-semibold text-slate-700">Tidak Ada Data Pengiriman</h3>
+                <h3 className="text-base font-semibold text-slate-700">No Shipment Data</h3>
                 <p className="mt-1 text-xs text-slate-500 max-w-sm">
-                    Belum ada shipment yang terdaftar atau tidak ditemukan data yang sesuai dengan pencarian Anda.
+                    No shipments registered yet or no data matches your search.
                 </p>
             </div>
         );
     }
 
     return (
-        <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs">
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs">
             <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
                     <thead>
                         <tr className="border-b border-slate-200/80 bg-[#F8FAFC]">
                             <th className="px-5 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                                No. Assignment
+                                Assignment No.
                             </th>
                             <th className="px-5 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                                 Customer
                             </th>
                             <th className="px-5 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                                Checkpoint Terkini
+                                Current Checkpoint
                             </th>
                             <th className="px-5 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                                 Progress
                             </th>
                             <th className="px-5 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                                Update Terakhir
+                                Last Updated
                             </th>
                             <th className="px-4 py-3.5 text-right text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                                Detail
+                                Details
                             </th>
                         </tr>
                     </thead>

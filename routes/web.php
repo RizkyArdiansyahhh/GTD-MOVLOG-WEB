@@ -3,12 +3,15 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Web\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Web\Auth\PasswordResetController;
 use App\Http\Controllers\Web\Customer\NotificationController as CustomerNotificationController;
 use App\Http\Controllers\Web\Customer\ProfileController as CustomerProfileController;
 use App\Http\Controllers\Web\CustomerDashboardController;
+use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\GlobalSearchController;
+use App\Http\Controllers\Web\Internal\NotificationController as InternalNotificationController;
 use App\Http\Controllers\Web\KelolaAkunController;
-use App\Http\Controllers\Web\LaporanController;
+use App\Http\Controllers\Web\ReportController;
 use App\Http\Controllers\Web\MonitoringBarangController;
 use App\Http\Controllers\Web\MonitoringCheckpointController;
 use App\Http\Controllers\Web\ProfileController;
@@ -18,11 +21,6 @@ use App\Http\Controllers\Web\SubmitBerkasController;
 use App\Http\Controllers\Web\SupportController;
 use App\Http\Controllers\Web\UserController;
 use App\Http\Controllers\Web\VerifikasiBerkasController;
-use App\Enums\ShippingSessionStatus;
-use App\Models\Checkpoint;
-use App\Models\ShippingSession;
-use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -44,6 +42,20 @@ Route::middleware('guest')->group(function () {
 
     Route::post('login', [AuthenticatedSessionController::class, 'store'])
         ->name('login.store');
+
+    Route::get('forgot-password', [PasswordResetController::class, 'create'])
+        ->name('password.request');
+
+    Route::post('forgot-password', [PasswordResetController::class, 'store'])
+        ->middleware('throttle:5,1')
+        ->name('password.email');
+
+    Route::get('reset-password/{token}', [PasswordResetController::class, 'edit'])
+        ->name('password.reset');
+
+    Route::post('reset-password', [PasswordResetController::class, 'update'])
+        ->middleware('throttle:5,1')
+        ->name('password.update');
 });
 
 // Support & System Guide Routes (Public & Authenticated)
@@ -63,25 +75,8 @@ Route::get('/system-guide', [SupportController::class, 'systemGuide'])
 // ============================
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    // Dashboard (Admin / Staff / Customer Redirect)
-    Route::get('/', function (Request $request) {
-        if ($request->user()?->hasRole('customer')) {
-            return redirect()->route('customer.dashboard');
-        }
-
-        $stats = [
-            'total_users' => User::count(),
-            'total_shipments' => ShippingSession::count(),
-            'active_drivers' => User::whereHas('roles', fn ($q) => $q->where('name', 'field-worker'))->count(),
-            'pending_deliveries' => ShippingSession::whereIn('status', [ShippingSessionStatus::IN_TRANSIT->value, ShippingSessionStatus::PENDING->value])->count(),
-        ];
-
-        return Inertia::render('Dashboard/Index', [
-            'stats' => $stats,
-            'recentSessions' => ShippingSession::with(['customer', 'currentCheckpoint'])->latest()->take(5)->get(),
-            'masterCheckpoints' => Checkpoint::orderBy('sequence')->get(),
-        ]);
-    })->name('dashboard');
+    // Dashboard (operational control tower — see DashboardController)
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/dashboard', fn () => redirect()->route('dashboard'));
 
@@ -113,6 +108,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('kelola-akun.store');
         Route::patch('kelola-akun/{user}/status', [KelolaAkunController::class, 'toggleStatus'])
             ->name('kelola-akun.toggle-status');
+
+        // Master Template Laporan (super-admin only — controller aborts 403 for staff)
+        Route::resource('template-laporan', ReportTemplateController::class)->except(['show']);
+
+        // User Management (super-admin only)
+        Route::resource('users', UserController::class);
     });
 
     // --- Kelola Sesi Pekerja (Super Admin & Staff) --------------------
@@ -120,12 +121,35 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('sesi-pekerja', [SesiPekerjaController::class, 'index'])
             ->name('sesi-pekerja');
 
-        // Master Template Laporan
-        Route::resource('template-laporan', ReportTemplateController::class)->except(['show']);
-
         // Aliases for kelola-sesi
         Route::get('kelola-sesi', [SesiPekerjaController::class, 'index'])
             ->name('kelola-sesi');
+
+        // Sesi Pekerja detail & mutations (protected by role middleware + controller auth)
+        Route::get('sesi-pekerja/{session}', [SesiPekerjaController::class, 'show'])
+            ->name('sesi-pekerja.show');
+
+        Route::post('sesi-pekerja/{session}/assign-all', [SesiPekerjaController::class, 'assignAllStages'])
+            ->name('sesi-pekerja.assign-all');
+
+        Route::post('sesi-pekerja/{session}/stages/{stage}/assign', [SesiPekerjaController::class, 'assignStage'])
+            ->name('sesi-pekerja.stages.assign');
+
+        Route::post('sesi-pekerja/{session}/stages/{stage}/complete', [SesiPekerjaController::class, 'completeStage'])
+            ->name('sesi-pekerja.stages.complete');
+
+        // Movement & Report Operations for Web Admin
+        Route::post('sesi-pekerja/{session}/stages/{stage}/movements', [SesiPekerjaController::class, 'storeMovement'])
+            ->name('sesi-pekerja.stages.movements.store');
+
+        Route::delete('sesi-pekerja/{session}/movements/{movement}', [SesiPekerjaController::class, 'deleteMovement'])
+            ->name('sesi-pekerja.movements.destroy');
+
+        Route::post('sesi-pekerja/{session}/stages/{stage}/movements/{movement}/reports', [SesiPekerjaController::class, 'saveReport'])
+            ->name('sesi-pekerja.stages.movements.reports.save');
+
+        Route::post('sesi-pekerja/{session}/stages/{stage}/movements/{movement}/complete-report', [SesiPekerjaController::class, 'completeReport'])
+            ->name('sesi-pekerja.stages.movements.reports.complete');
     });
 
     // --- Supervisor Routes --------------------------------------------
@@ -143,37 +167,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('verifikasi-berkas.file');
     });
 
-    // User Management
-    Route::resource('users', UserController::class);
-
-    // Sesi Pekerja Operations
-    Route::get('sesi-pekerja/{session}', [SesiPekerjaController::class, 'show'])
-        ->name('sesi-pekerja.show');
-
-    Route::post('sesi-pekerja/{session}/assign-all', [SesiPekerjaController::class, 'assignAllStages'])
-        ->name('sesi-pekerja.assign-all');
-
-    Route::post('sesi-pekerja/{session}/stages/{stage}/assign', [SesiPekerjaController::class, 'assignStage'])
-        ->name('sesi-pekerja.stages.assign');
-
-    Route::post('sesi-pekerja/{session}/stages/{stage}/complete', [SesiPekerjaController::class, 'completeStage'])
-        ->name('sesi-pekerja.stages.complete');
-
-    // Movement & Report Operations for Web Admin
-    Route::post('sesi-pekerja/{session}/stages/{stage}/movements', [SesiPekerjaController::class, 'storeMovement'])
-        ->name('sesi-pekerja.stages.movements.store');
-
-    Route::delete('sesi-pekerja/{session}/movements/{movement}', [SesiPekerjaController::class, 'deleteMovement'])
-        ->name('sesi-pekerja.movements.destroy');
-
-    Route::post('sesi-pekerja/{session}/stages/{stage}/movements/{movement}/reports', [SesiPekerjaController::class, 'saveReport'])
-        ->name('sesi-pekerja.stages.movements.reports.save');
-
-    Route::post('sesi-pekerja/{session}/stages/{stage}/movements/{movement}/complete-report', [SesiPekerjaController::class, 'completeReport'])
-        ->name('sesi-pekerja.stages.movements.reports.complete');
-
     // --- Internal Operational Routes (Super Admin, Staff, Supervisor) ---
     Route::middleware('role:super-admin|staff|supervisor')->group(function () {
+        // Internal Notifications (bell in Navbar)
+        Route::get('notifications', [InternalNotificationController::class, 'index'])
+            ->name('notifications.index');
+        Route::post('notifications/{id}/read', [InternalNotificationController::class, 'markAsRead'])
+            ->name('notifications.read');
+        Route::post('notifications/read-all', [InternalNotificationController::class, 'markAllAsRead'])
+            ->name('notifications.read-all');
+
         // Monitoring Barang
         Route::get('monitoring-barang', [MonitoringBarangController::class, 'index'])
             ->name('monitoring-barang.index');
@@ -202,18 +205,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
             });
         Route::get('submit-document', fn () => redirect()->route('submit-berkas.index'));
 
-        // Laporan & Reports
-        Route::get('laporan', [LaporanController::class, 'index'])
-            ->name('laporan.index');
-        Route::get('laporan/export', [LaporanController::class, 'export'])
-            ->name('laporan.export');
-        Route::get('reports', [LaporanController::class, 'index'])
-            ->name('reports.index');
-        Route::get('report', [LaporanController::class, 'index'])
-            ->name('report.index');
-
         Route::get('checkpoint-monitoring', fn () => redirect()->route('monitoring-checkpoint.index'));
         Route::get('shipments', fn () => redirect()->route('monitoring-barang.index'));
+    });
+
+    // --- Laporan (Super Admin & Staff, thin ReportController) ------------
+    Route::middleware('role:super-admin|staff')->group(function () {
+        Route::get('laporan', [ReportController::class, 'index'])
+            ->name('laporan');
+        Route::post('laporan/preview', [ReportController::class, 'preview'])
+            ->name('laporan.preview');
+        Route::post('laporan/export', [ReportController::class, 'export'])
+            ->name('laporan.export');
+        Route::get('laporan/download/{token}', [ReportController::class, 'download'])
+            ->name('laporan.download');
+        Route::get('laporan/history', [ReportController::class, 'history'])
+            ->name('laporan.history');
+        Route::get('reports', [ReportController::class, 'index'])
+            ->name('reports.index');
+        Route::get('report', [ReportController::class, 'index'])
+            ->name('report.index');
     });
 
     Route::get('drivers', fn () => redirect()->route('kelola-akun'));
@@ -234,16 +245,19 @@ Route::middleware(['auth', 'verified', 'role:customer'])->prefix('customer')->na
     Route::get('/dashboard', [CustomerDashboardController::class, 'index'])
         ->name('dashboard');
 
-    Route::get('/monitoring-barang', [CustomerDashboardController::class, 'monitoring'])
+    // Legacy Cargo Monitoring URLs: merged into Checkpoint. List redirects
+    // generically; detail preserves the shipment ID.
+    Route::get('/monitoring-barang', fn () => redirect()->route('customer.checkpoints', [], 301))
         ->name('monitoring');
 
-    Route::get('/monitoring-barang/{id}', [CustomerDashboardController::class, 'detail'])
+    Route::get('/monitoring-barang/{id}', fn (string $id) => redirect("/customer/shipment/{$id}", 301))
+        ->where('id', '.*')
         ->name('monitoring.detail');
 
     Route::get('/checkpoints', [CustomerDashboardController::class, 'checkpoints'])
         ->name('checkpoints');
 
-    Route::get('/shipment/{id}', [CustomerDashboardController::class, 'detail'])
+    Route::get('/shipment/{id}', [CustomerDashboardController::class, 'checkpointDetail'])
         ->name('shipment.detail');
 
     // Customer Profile Management

@@ -18,9 +18,9 @@ export default function KelolaSesiShow({ session: propSession, fieldWorkers: pro
     if (!session) {
         return (
             <DashboardLayout>
-                <Head title="Detail Sesi - GTD Logistics" />
+                <Head title="Session Detail - GTD Logistics" />
                 <div className="flex items-center justify-center py-20 text-slate-400">
-                    Sesi tidak ditemukan.
+                    Session not found.
                 </div>
             </DashboardLayout>
         );
@@ -31,7 +31,7 @@ export default function KelolaSesiShow({ session: propSession, fieldWorkers: pro
 
     return (
         <DashboardLayout>
-            <Head title={`Detail Sesi ${session.sessionId} - GTD Logistics`} />
+            <Head title={`Session Detail ${session.sessionId} - GTD Logistics`} />
 
             <div className="w-full max-w-7xl mx-auto space-y-4">
                 {/* ── Top Bar ── */}
@@ -40,14 +40,14 @@ export default function KelolaSesiShow({ session: propSession, fieldWorkers: pro
                         <Link
                             href="/sesi-pekerja"
                             className="flex items-center justify-center w-8 h-8 rounded-lg bg-white border border-slate-200 text-[#06283A] hover:bg-slate-50 transition-colors shadow-2xs"
-                            title="Kembali ke Kelola Sesi"
+                             title="Back to Worker Sessions"
                         >
                             <ArrowLeft size={16} />
                         </Link>
                         <div>
                             <div className="flex items-center gap-2">
                                 <h1 className="text-lg font-bold text-[#06283A]">
-                                    Detail Sesi {session.sessionId}
+                                    Session Detail {session.sessionId}
                                 </h1>
                                 <span
                                     className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold ${
@@ -57,14 +57,14 @@ export default function KelolaSesiShow({ session: propSession, fieldWorkers: pro
                                     }`}
                                 >
                                     {isSessionDelivered
-                                        ? 'DELIVERED (SELESAI)'
+                                        ? 'DELIVERED'
                                         : activeStage
-                                        ? `Aktif: ${activeStage.stage_name}`
-                                        : 'Dalam Pengiriman'}
+                                        ? `Active: ${activeStage.stage_name}`
+                                        : 'In Transit'}
                                 </span>
                             </div>
                             <p className="text-xs text-slate-500">
-                                Monitoring pergerakan kargo dan penugasan tim lapangan
+                                Monitor cargo movements and field team assignments
                             </p>
                         </div>
                     </div>
@@ -78,15 +78,15 @@ export default function KelolaSesiShow({ session: propSession, fieldWorkers: pro
                         <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3">
                             <div className="pb-2 border-b border-slate-100">
                                 <h2 className="text-xs font-bold text-[#06283A] uppercase tracking-wide">
-                                    Informasi Kargo & Unit
+                                    Cargo & Unit Information
                                 </h2>
-                                <p className="text-[11px] text-slate-500">Manifest muatan yang dikirimkan</p>
+                                <p className="text-[11px] text-slate-500">Manifest of shipped cargo</p>
                             </div>
 
                             {/* Units List */}
                             <div className="space-y-1.5">
                                 <span className="text-[11px] font-semibold text-slate-500 uppercase">
-                                    Daftar Unit Alat Berat
+                                    Heavy Equipment Unit List
                                 </span>
                                 {session.units && session.units.length > 0 ? (
                                     <div className="flex flex-wrap gap-1.5">
@@ -101,7 +101,7 @@ export default function KelolaSesiShow({ session: propSession, fieldWorkers: pro
                                         ))}
                                     </div>
                                 ) : (
-                                    <p className="text-xs text-slate-400">Belum ada data unit.</p>
+                                    <p className="text-xs text-slate-400">No unit data yet.</p>
                                 )}
                             </div>
 
@@ -109,7 +109,7 @@ export default function KelolaSesiShow({ session: propSession, fieldWorkers: pro
                             {session.notes && (
                                 <div className="pt-2 border-t border-slate-100">
                                     <span className="text-[11px] font-semibold text-slate-500 uppercase block mb-0.5">
-                                        Catatan Sesi
+                                        Session Notes
                                     </span>
                                     <p className="text-xs text-[#06283A] bg-slate-50 p-2 rounded-lg border border-slate-100">
                                         {session.notes}
@@ -131,10 +131,10 @@ export default function KelolaSesiShow({ session: propSession, fieldWorkers: pro
                         <div className="bg-white border border-slate-200 rounded-xl p-4">
                             <div className="pb-3 mb-3 border-b border-slate-100">
                                 <h2 className="text-xs font-bold text-[#06283A] uppercase tracking-wide">
-                                    Alur Operasional & Monitoring Checkpoint
+                                    Operational Flow & Checkpoint Monitoring
                                 </h2>
                                 <p className="text-[11px] text-slate-500">
-                                    Pantau pergerakan fisik armada dan kelengkapan bukti dokumentasi
+                                    Track fleet physical movements and documentation completeness
                                 </p>
                             </div>
 

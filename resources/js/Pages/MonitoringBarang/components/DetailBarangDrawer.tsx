@@ -151,17 +151,17 @@ export function DetailBarangDrawer({ item, onClose }: DetailBarangDrawerProps) {
                                     letterSpacing: '0.05em',
                                 }}
                             >
-                                RUTE PENGIRIMAN
+                                SHIPMENT ROUTE
                             </div>
 
                             <div className="flex items-center justify-between mt-2 text-xs">
                                 <div>
-                                    <span className="text-[10px] text-slate-400 uppercase font-semibold block">Pelabuhan Muat (Asal)</span>
+                                    <span className="text-[10px] text-slate-400 uppercase font-semibold block">Port of Loading (Origin)</span>
                                     <span className="font-semibold text-slate-800">{item.origin || '-'}</span>
                                 </div>
                                 <span className="text-slate-300 font-bold">&rarr;</span>
                                 <div className="text-right">
-                                    <span className="text-[10px] text-slate-400 uppercase font-semibold block">Pelabuhan Bongkar (Tujuan)</span>
+                                    <span className="text-[10px] text-slate-400 uppercase font-semibold block">Port of Discharge (Destination)</span>
                                     <span className="font-semibold text-slate-800">{item.finalDestination ?? item.destination}</span>
                                 </div>
                             </div>
@@ -178,7 +178,7 @@ export function DetailBarangDrawer({ item, onClose }: DetailBarangDrawerProps) {
                         >
                             <div>
                                 <div style={{ fontSize: 10, color: '#9A3412', fontWeight: 600 }}>
-                                    BERAT KESELURUHAN
+                                    TOTAL WEIGHT
                                 </div>
                                 <div style={{ fontSize: 12, fontWeight: 600, color: '#1E293B', marginTop: 1 }}>
                                     {item.totalWeight ?? '-'}
@@ -187,7 +187,7 @@ export function DetailBarangDrawer({ item, onClose }: DetailBarangDrawerProps) {
 
                             <div>
                                 <div style={{ fontSize: 10, color: '#9A3412', fontWeight: 600 }}>
-                                    TOTAL ITEM KARGO
+                                    TOTAL CARGO ITEMS
                                 </div>
                                 <div style={{ fontSize: 12, fontWeight: 600, color: '#1E293B', marginTop: 1 }}>
                                     {cargoList.length > 0 ? `${cargoList.length} Cargo Items` : (item.itemCount ? `${item.itemCount} Cargo Items` : '1 Cargo Item')}
@@ -218,7 +218,7 @@ export function DetailBarangDrawer({ item, onClose }: DetailBarangDrawerProps) {
                             >
                                 <span>ALL CARGO DETAILS ({cargoList.length})</span>
                                 <span className="flex items-center gap-1 text-slate-500 font-normal text-[10px]">
-                                    <Boxes size={12} /> {cargoList.length} Item terdaftar
+                                    <Boxes size={12} /> {cargoList.length} Items registered
                                 </span>
                             </div>
 
@@ -255,7 +255,7 @@ export function DetailBarangDrawer({ item, onClose }: DetailBarangDrawerProps) {
                                                     <span className="text-slate-700 font-medium">{cargo.brand || '-'}</span>
                                                 </div>
                                                 <div>
-                                                    <span className="text-slate-400 block text-[10px]">Jumlah</span>
+                                                        <span className="text-slate-400 block text-[10px]">Quantity</span>
                                                     <span className="text-slate-700 font-medium">
                                                         {cargo.quantity || '-'} {cargo.unit || ''}
                                                     </span>
@@ -274,7 +274,7 @@ export function DetailBarangDrawer({ item, onClose }: DetailBarangDrawerProps) {
                                                 )}
                                                 {cargo.price && (
                                                     <div>
-                                                        <span className="text-slate-400 block text-[10px]">Harga</span>
+                                                        <span className="text-slate-400 block text-[10px]">Price</span>
                                                         <span className="text-slate-700 font-medium">{cargo.price}</span>
                                                     </div>
                                                 )}
@@ -355,7 +355,7 @@ export function DetailBarangDrawer({ item, onClose }: DetailBarangDrawerProps) {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                                                        title="Buka Dokumen PDF"
+                                                        title="Open PDF Document"
                                                     >
                                                         <ExternalLink size={14} />
                                                     </a>
@@ -378,7 +378,7 @@ export function DetailBarangDrawer({ item, onClose }: DetailBarangDrawerProps) {
                                     marginBottom: 10,
                                 }}
                             >
-                                RIWAYAT STATUS PENGIRIMAN
+                                SHIPMENT STATUS HISTORY
                             </div>
 
                             <div className="flex flex-col">

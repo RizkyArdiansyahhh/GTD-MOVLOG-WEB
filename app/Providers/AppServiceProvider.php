@@ -13,7 +13,9 @@ use App\Observers\SessionCheckpointObserver;
 use App\Observers\ShippingSessionObserver;
 use App\Policies\ShippingSessionPolicy;
 use App\Policies\UserPolicy;
+use App\Repositories\Contracts\ShippingSessionRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Repositories\Eloquent\ShippingSessionRepository;
 use App\Repositories\Eloquent\UserRepository;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -34,6 +36,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             UserRepositoryInterface::class,
             UserRepository::class,
+        );
+
+        $this->app->bind(
+            ShippingSessionRepositoryInterface::class,
+            ShippingSessionRepository::class,
         );
     }
 

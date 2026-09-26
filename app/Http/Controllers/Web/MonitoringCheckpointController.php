@@ -128,7 +128,27 @@ class MonitoringCheckpointController extends Controller
 
         $movementService = app(\App\Services\MovementService::class);
 
-        $steps = $checkpointDefinitions->values()->map(function ($checkpoint, $index) use ($session, $sessionCheckpoints, $movementService) {
+        // Batch-load movement reports once (eliminate per-movement N+1).
+        // Collect all movement IDs across all checkpoints first.
+        $allMovementsByCheckpoint = [];
+        foreach ($checkpointDefinitions as $checkpoint) {
+            $sc = $sessionCheckpoints->get($checkpoint->id);
+            if ($sc) {
+                $allMovementsByCheckpoint[$sc->id] = $movementService->resolveMovementsForCheckpoint($session, $sc);
+            }
+        }
+        $allMovementIds = collect($allMovementsByCheckpoint)->flatten()->map(fn ($m) => $m->id)->unique()->values()->all();
+        $reportsByMovement = collect();
+        if (! empty($allMovementIds)) {
+            $reportsByMovement = Report::whereIn('movement_id', $allMovementIds)
+                ->whereIn('session_checkpoint_id', $sessionCheckpoints->keys()->all())
+                ->with(['photos', 'values.templateField'])
+                ->orderBy('event_at', 'desc')
+                ->get()
+                ->groupBy(fn ($r) => $r->session_checkpoint_id.'|'.$r->movement_id);
+        }
+
+        $steps = $checkpointDefinitions->values()->map(function ($checkpoint, $index) use ($session, $sessionCheckpoints, $movementService, $allMovementsByCheckpoint, $reportsByMovement) {
             /** @var SessionCheckpoint|null $sessionCheckpoint */
             $sessionCheckpoint = $sessionCheckpoints->get($checkpoint->id);
             $latestReport = $sessionCheckpoint?->reports?->first();
@@ -137,17 +157,13 @@ class MonitoringCheckpointController extends Controller
                 ? ($sessionCheckpoint->status->value ?? (string) $sessionCheckpoint->status)
                 : (string) ($sessionCheckpoint?->status ?? 'pending');
 
-            // Resolve physical movements for this step
+            // Resolve physical movements for this step (pre-resolved batch above)
             $movements = $sessionCheckpoint
-                ? $movementService->resolveMovementsForCheckpoint($session, $sessionCheckpoint)
+                ? ($allMovementsByCheckpoint[$sessionCheckpoint->id] ?? collect())
                 : collect();
 
-            $movementsData = $movements->map(function ($movement) use ($sessionCheckpoint) {
-                $mReport = Report::where('session_checkpoint_id', $sessionCheckpoint->id)
-                    ->where('movement_id', $movement->id)
-                    ->with(['photos', 'values.templateField'])
-                    ->latest('event_at')
-                    ->first();
+            $movementsData = $movements->map(function ($movement) use ($sessionCheckpoint, $reportsByMovement) {
+                $mReport = $reportsByMovement->get($sessionCheckpoint->id.'|'.$movement->id)?->first();
 
                 return [
                     'id'           => $movement->id,

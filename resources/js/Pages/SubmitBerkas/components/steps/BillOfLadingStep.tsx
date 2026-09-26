@@ -168,7 +168,7 @@ export function BillOfLadingStep() {
             cursor: 'pointer',
           }}
         >
-          Isi Data Contoh
+          Fill Sample Data
         </button>
       )}
 
@@ -348,7 +348,7 @@ export function BillOfLadingStep() {
         )}
       />
 
-      <FormSection title="Quantity (Otomatis Terhitung)" icon={<Scale size={17} />}>
+      <FormSection title="Quantity (Auto-Calculated)" icon={<Scale size={17} />}>
         <FieldGroup>
           <FieldWithUnit
             label="Total of Gross Weight"

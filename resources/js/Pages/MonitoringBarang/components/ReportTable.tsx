@@ -22,10 +22,10 @@ export const ReportTable: React.FC<ReportTableProps> = ({ reports }) => {
                 <thead>
                     <tr className="border-b border-slate-200">
                         <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Template</th>
-                        <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Tipe</th>
-                        <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Dibuat Oleh</th>
-                        <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Tanggal</th>
-                        <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Sinkronisasi</th>
+                        <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Type</th>
+                        <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Created By</th>
+                        <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Date</th>
+                        <th className="text-left py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Sync Status</th>
                         <th className="py-2 px-3"></th>
                     </tr>
                 </thead>
@@ -57,7 +57,7 @@ export const ReportTable: React.FC<ReportTableProps> = ({ reports }) => {
                                             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                                             </svg>
-                                            Lihat
+                                            View
                                         </a>
                                     ) : (
                                         <span className="text-xs text-slate-300">—</span>

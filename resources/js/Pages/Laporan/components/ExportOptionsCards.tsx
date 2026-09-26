@@ -1,23 +1,35 @@
 import React from 'react';
-import type { DateRange, DateRangePreset, ExportFormat } from '../types/laporan';
+import type { CustomerOption, DateRange, DateRangePreset, ExportFormat, StatusOption } from '../types/laporan';
 import { DATE_RANGE_PRESETS } from '../constants/laporan';
 
-/* ════════════════════════════════════════════════════════
+/* ????????????????????????????????????????????????????????
    DateRangeCard
-   ════════════════════════════════════════════════════════ */
+   ???????????????????????????????????????????????????????? */
 
 interface DateRangeCardProps {
     selectedPreset: DateRangePreset | 'custom';
     dateRange: DateRange;
+    customers?: CustomerOption[];
+    statuses?: StatusOption[];
+    customerId?: string;
+    statusFilter?: string;
     onPresetChange: (preset: DateRangePreset) => void;
     onDateChange: (field: keyof DateRange, value: string) => void;
+    onCustomerChange?: (customerId: string) => void;
+    onStatusChange?: (status: string) => void;
 }
 
 export const DateRangeCard: React.FC<DateRangeCardProps> = ({
     selectedPreset,
     dateRange,
+    customers,
+    statuses,
+    customerId,
+    statusFilter,
     onPresetChange,
     onDateChange,
+    onCustomerChange,
+    onStatusChange,
 }) => {
     return (
         <div
@@ -124,13 +136,78 @@ export const DateRangeCard: React.FC<DateRangeCardProps> = ({
                     />
                 </div>
             </div>
+
+            {/* Optional Customer & Status Filters */}
+            {((customers && customers.length > 0) || (statuses && statuses.length > 0)) && (
+                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 14 }}>
+                    {customers && customers.length > 0 && (
+                        <div style={{ flex: 1, minWidth: 160 }}>
+                            <label style={{ display: 'block', fontSize: 12, color: '#6B7280', marginBottom: 6, fontWeight: 500 }}>
+                                Customer (Optional)
+                            </label>
+                            <select
+                                value={customerId ?? ''}
+                                onChange={(e) => onCustomerChange?.(e.target.value)}
+                                style={{
+                                    width: '100%',
+                                    height: 40,
+                                    border: '1px solid #E2E8F0',
+                                    borderRadius: 8,
+                                    padding: '0 12px',
+                                    fontSize: 13,
+                                    color: '#06283A',
+                                    outline: 'none',
+                                    boxSizing: 'border-box',
+                                    background: '#fff',
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                <option value="">All Customers</option>
+                                {customers.map((c) => (
+                                    <option key={c.id} value={c.id}>{c.company_name}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+                    {statuses && statuses.length > 0 && (
+                        <div style={{ flex: 1, minWidth: 160 }}>
+                            <label style={{ display: 'block', fontSize: 12, color: '#6B7280', marginBottom: 6, fontWeight: 500 }}>
+                                Status (Optional)
+                            </label>
+                            <select
+                                value={statusFilter ?? ''}
+                                onChange={(e) => onStatusChange?.(e.target.value)}
+                                style={{
+                                    width: '100%',
+                                    height: 40,
+                                    border: '1px solid #E2E8F0',
+                                    borderRadius: 8,
+                                    padding: '0 12px',
+                                    fontSize: 13,
+                                    color: '#06283A',
+                                    outline: 'none',
+                                    boxSizing: 'border-box',
+                                    background: '#fff',
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                <option value="">All Statuses</option>
+                                {statuses.map((s) => (
+                                    <option key={s.value} value={s.value}>{s.label}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+                </div>
+            )}
+
         </div>
     );
 };
 
-/* ════════════════════════════════════════════════════════
+/* ????????????????????????????????????????????????????????
    FileFormatCard
-   ════════════════════════════════════════════════════════ */
+   ???????????????????????????????????????????????????????? */
 
 interface FormatOption {
     key: ExportFormat;

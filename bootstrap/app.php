@@ -27,6 +27,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
             \App\Http\Middleware\EnsureUserIsActive::class,
+            // Logs out stale sessions after a password change
+            // (e.g. via password reset). Keyed per user ID so
+            // legitimate user switches are not logged out.
+            \App\Http\Middleware\InvalidateStaleSessions::class,
         ]);
 
         $middleware->trustProxies(at: '*');
@@ -39,7 +43,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->validateCsrfTokens(except: [
-            'kelola-akun/*/status',
+            //
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

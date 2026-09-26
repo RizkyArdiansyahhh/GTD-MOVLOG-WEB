@@ -4,7 +4,7 @@ interface UserRoleBadgeProps {
 
 export default function UserRoleBadge({ role }: UserRoleBadgeProps) {
     return (
-        <span className="text-sm font-medium text-gray-700">
+        <span className="text-sm font-medium text-slate-700">
             {role}
         </span>
     );

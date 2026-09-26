@@ -53,9 +53,12 @@ class SessionApiController extends ApiController
         }
 
         if ($search = $request->query('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('assignment_no', 'like', "%{$search}%")
-                  ->orWhere('cargo_name', 'like', "%{$search}%");
+            // Escape LIKE wildcards so the keyword is matched literally.
+            $escaped = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], (string) $search);
+            $pattern = '%'.$escaped.'%';
+            $query->where(function ($q) use ($pattern) {
+                $q->whereRaw("assignment_no LIKE ? ESCAPE '\\'", [$pattern])
+                  ->orWhereRaw("cargo_name LIKE ? ESCAPE '\\'", [$pattern]);
             });
         }
 

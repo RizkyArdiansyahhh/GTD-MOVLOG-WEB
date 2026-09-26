@@ -227,10 +227,10 @@ export default function SystemGuide() {
                         {currentSop.steps.map((step) => (
                             <div
                                 key={step.number}
-                                className="relative p-6 rounded-2xl bg-slate-50/70 border border-slate-200/60 flex flex-col sm:flex-row items-start gap-5 transition-all hover:bg-slate-50"
+                                className="relative p-6 rounded-xl bg-slate-50/70 border border-slate-200/60 flex flex-col sm:flex-row items-start gap-5 transition-all hover:bg-slate-50"
                             >
                                 {/* Step Number Badge */}
-                                <div className="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center font-extrabold text-base tracking-tight shrink-0 shadow-xs">
+                                <div className="w-12 h-12 rounded-xl bg-slate-900 text-white flex items-center justify-center font-extrabold text-base tracking-tight shrink-0 shadow-xs">
                                     {step.number}
                                 </div>
 

@@ -18,7 +18,7 @@ export default function CheckpointStepTimeline({ steps }: CheckpointStepTimeline
     const isAllCompleted = completedCount === steps.length && steps.length > 0;
 
     return (
-        <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs sm:p-7">
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs sm:p-7">
             {/* Header Timeline */}
             <div className="mb-6 flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
                 <div className="flex items-center gap-2">
@@ -27,10 +27,10 @@ export default function CheckpointStepTimeline({ steps }: CheckpointStepTimeline
                     </div>
                     <div>
                         <h2 className="text-base font-semibold text-[#06283A]">
-                            Riwayat Perpindahan Checkpoint
+                            Checkpoint Movement History
                         </h2>
                         <p className="text-xs text-slate-500">
-                            Progres bertahap dari pemindahan muatan kargo
+                            Staged progress of cargo load transfers
                         </p>
                     </div>
                 </div>
@@ -44,7 +44,7 @@ export default function CheckpointStepTimeline({ steps }: CheckpointStepTimeline
                         }`}
                     >
                         {isAllCompleted && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />}
-                        {completedCount} dari {steps.length} Selesai
+                        {completedCount} of {steps.length} Completed
                     </span>
                 </div>
             </div>

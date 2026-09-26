@@ -76,17 +76,17 @@ export default function TeamAssignmentCard({
             <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
                 <div>
                     <h2 className="text-xs font-bold text-[#06283A] uppercase tracking-wide">
-                        Penugasan Petugas PIC
+                        PIC Officer Assignment
                     </h2>
                     <p className="text-[11px] text-slate-500 mt-0.5">
-                        Tentukan penanggung jawab untuk masing-masing tahap
+                        Assign a person in charge for each stage
                     </p>
                 </div>
 
                 {savedSuccess && (
                     <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                         <CheckCircle2 size={12} />
-                        Tersimpan
+                        Saved
                     </span>
                 )}
             </div>
@@ -95,7 +95,7 @@ export default function TeamAssignmentCard({
                 <div className="space-y-2">
                     {stages.map((stage) => {
                         const stageTitle =
-                            STAGE_LABELS[stage.stage_type] || stage.stage_name || `Tahap ${stage.stage_order}`;
+                            STAGE_LABELS[stage.stage_type] || stage.stage_name || `Stage ${stage.stage_order}`;
                         const isCompleted = stage.status === 'selesai';
                         const isSelected = Boolean(assignments[stage.id]);
 
@@ -113,26 +113,26 @@ export default function TeamAssignmentCard({
                                 <div className="flex items-center justify-between mb-1.5">
                                     <div className="flex items-center gap-2">
                                         <span className="text-xs font-bold text-[#06283A]">
-                                            Tahap {stage.stage_order}: {stageTitle}
+                                            Stage {stage.stage_order}: {stageTitle}
                                         </span>
                                         {!isCompleted && !isSelected && (
                                             <span className="text-[10px] text-rose-500 font-semibold">
-                                                *Wajib diisi
+                                                *Required
                                             </span>
                                         )}
                                     </div>
 
                                     {isCompleted ? (
                                         <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
-                                            Selesai
+                                            Completed
                                         </span>
                                     ) : stage.status === 'aktif' ? (
                                         <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">
-                                            Aktif
+                                            Active
                                         </span>
                                     ) : (
                                         <span className="text-[10px] text-slate-500 bg-slate-100 px-1.5 py-0.2 rounded">
-                                            Menunggu
+                                            Pending
                                         </span>
                                     )}
                                 </div>
@@ -151,7 +151,7 @@ export default function TeamAssignmentCard({
                                         fieldWorkers={fieldWorkers}
                                         value={assignments[stage.id] || ''}
                                         onChange={(val) => handleWorkerChange(stage.id, val)}
-                                        placeholder={`-- Pilih PIC ${stageTitle} --`}
+                                        placeholder={`-- Select PIC ${stageTitle} --`}
                                     />
                                 )}
                             </div>
@@ -165,7 +165,7 @@ export default function TeamAssignmentCard({
                         <div className="flex items-center gap-1.5 p-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs">
                             <AlertCircle size={14} className="shrink-0 text-amber-600" />
                             <span>
-                                Pilih PIC untuk semua tahapan (<strong>{unassignedStages.length} belum ditentukan</strong>) agar penugasan lengkap.
+                                Select a PIC for all stages (<strong>{unassignedStages.length} unassigned</strong>) to complete the assignment.
                             </span>
                         </div>
                     )}
@@ -175,16 +175,16 @@ export default function TeamAssignmentCard({
                         disabled={isSaving || !isAllAssigned}
                         className={`w-full py-2 px-3 rounded-lg text-xs font-bold transition-all ${
                             isAllAssigned && !isSaving
-                                ? 'bg-[#F5B800] hover:bg-[#E5AC00] text-[#06283A] shadow-xs cursor-pointer'
+                                ? 'bg-[#F6C343] hover:bg-[#E0AD2C] text-[#06283A] shadow-xs cursor-pointer'
                                 : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-60'
                         }`}
                     >
                         {isSaving ? (
-                            'Menyimpan...'
+                            'Saving...'
                         ) : !isAllAssigned ? (
-                            `Lengkapi PIC (${unassignedStages.length} Kosong)`
+                            `Complete PIC (${unassignedStages.length} Missing)`
                         ) : (
-                            'Simpan Semua Penugasan PIC'
+                            'Save All PIC Assignments'
                         )}
                     </button>
                 </div>

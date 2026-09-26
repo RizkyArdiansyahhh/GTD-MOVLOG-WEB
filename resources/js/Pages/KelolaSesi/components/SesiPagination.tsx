@@ -59,9 +59,9 @@ export default function SesiPagination({
                             onClick={() => onPageChange(p)}
                             className="flex items-center justify-center w-8 h-8 rounded border text-xs font-semibold transition-colors"
                             style={{
-                                backgroundColor: isActive ? '#F5B800' : '#FFFFFF',
+                                backgroundColor: isActive ? '#F6C343' : '#FFFFFF',
                                 color: isActive ? '#06283A' : '#475569',
-                                borderColor: isActive ? '#F5B800' : '#E2E8F0',
+                                borderColor: isActive ? '#F6C343' : '#E2E8F0',
                             }}
                         >
                             {p}

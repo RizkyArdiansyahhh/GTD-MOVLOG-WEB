@@ -237,10 +237,10 @@ export function AddCustomerModal({
         if (!phone.trim()) return null;
         const length = phone.trim().length;
         if (length < PHONE_MIN_LENGTH) {
-            return `Minimal ${PHONE_MIN_LENGTH} karakter.`;
+            return `Minimum ${PHONE_MIN_LENGTH} characters.`;
         }
         if (length > PHONE_MAX_LENGTH) {
-            return `Maksimal ${PHONE_MAX_LENGTH} karakter.`;
+            return `Maximum ${PHONE_MAX_LENGTH} characters.`;
         }
         return null;
     };
@@ -376,7 +376,7 @@ export function AddCustomerModal({
                             <div>
                                 <h3 style={styles.title}>Add New Customer</h3>
                                 <p style={styles.subtitle}>
-                                    Masukkan detail perusahaan untuk penugasan pengiriman
+                                    Enter company details for the shipment assignment
                                 </p>
                             </div>
                         </div>
@@ -390,32 +390,32 @@ export function AddCustomerModal({
                     <form onSubmit={handleCreateCustomer} style={styles.form}>
                         <div>
                             <label style={styles.label}>
-                                Nama Perusahaan <span style={styles.required}>*</span>
+                                Company Name <span style={styles.required}>*</span>
                             </label>
                             <input
                                 type="text"
                                 disabled={isFormDisabled}
                                 value={form.companyName}
                                 onChange={(e) => handleFormChange('companyName', e.target.value)}
-                                placeholder="Contoh: PT Sumber Logistik Bersama"
+                                placeholder="Example: PT Sumber Logistik Bersama"
                                 style={styles.input}
                             />
                         </div>
 
                         <div style={styles.grid2}>
                             <div>
-                                <label style={styles.label}>Nama PIC</label>
+                                <label style={styles.label}>PIC Name</label>
                                 <input
                                     type="text"
                                     disabled={isFormDisabled}
                                     value={form.picName}
                                     onChange={(e) => handleFormChange('picName', e.target.value)}
-                                    placeholder="Nama penanggung jawab"
+                                    placeholder="Person in charge name"
                                     style={styles.input}
                                 />
                             </div>
                             <div>
-                                <label style={styles.label}>No. Telepon / WA</label>
+                                <label style={styles.label}>Phone No. / WhatsApp</label>
                                 <input
                                     type="text"
                                     disabled={isFormDisabled}
@@ -429,7 +429,7 @@ export function AddCustomerModal({
                         </div>
 
                         <div>
-                            <label style={styles.label}>Email Perusahaan</label>
+                                <label style={styles.label}>Company Email</label>
                             <input
                                 type="email"
                                 disabled={isFormDisabled}
@@ -441,7 +441,7 @@ export function AddCustomerModal({
                         </div>
 
                         <div>
-                            <label style={styles.label}>Alamat Lengkap</label>
+                                <label style={styles.label}>Full Address</label>
                             <textarea
                                 rows={2}
                                 disabled={isFormDisabled}
@@ -463,7 +463,7 @@ export function AddCustomerModal({
                                 disabled={isFormDisabled}
                                 style={styles.cancelButton(isFormDisabled)}
                             >
-                                Batal
+                                Cancel
                             </button>
                             <button
                                 type="submit"

@@ -11,15 +11,15 @@ export default function DocumentPreview({ document }: DocumentPreviewProps) {
 
     if (!document) {
         return (
-            <div className="w-full flex-1 flex flex-col items-center justify-center p-8 bg-gray-50/50 rounded-xl border border-dashed border-gray-200 text-center min-h-[360px]">
+            <div className="w-full flex-1 flex flex-col items-center justify-center p-8 bg-slate-50/50 rounded-xl border border-dashed border-slate-200 text-center min-h-[360px]">
                 <div
-                    className="flex items-center justify-center rounded-full mb-3 bg-gray-100 text-gray-400"
+                    className="flex items-center justify-center rounded-full mb-3 bg-slate-100 text-slate-400"
                     style={{ width: 56, height: 56 }}
                 >
                     <FileText size={28} strokeWidth={1.5} />
                 </div>
-                <h3 className="text-sm font-semibold text-gray-700">No document selected</h3>
-                <p className="text-xs text-gray-400 mt-1 max-w-xs">
+                <h3 className="text-sm font-semibold text-slate-700">No document selected</h3>
+                <p className="text-xs text-slate-400 mt-1 max-w-xs">
                     Select a document from the list on the left to preview and verify.
                 </p>
             </div>
@@ -37,8 +37,8 @@ export default function DocumentPreview({ document }: DocumentPreviewProps) {
                 >
                     <AlertTriangle size={26} strokeWidth={1.8} />
                 </div>
-                <h3 className="text-sm font-semibold text-gray-800">Document preview unavailable</h3>
-                <p className="text-xs text-gray-500 mt-1 max-w-xs">
+                <h3 className="text-sm font-semibold text-slate-800">Document preview unavailable</h3>
+                <p className="text-xs text-slate-500 mt-1 max-w-xs">
                     The uploaded file could not be previewed directly in the browser.
                 </p>
                 {previewUrl && (

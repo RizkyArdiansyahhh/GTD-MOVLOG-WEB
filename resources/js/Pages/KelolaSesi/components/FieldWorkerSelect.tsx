@@ -104,8 +104,8 @@ export default function FieldWorkerSelect({
                 type="button"
                 disabled={disabled}
                 onClick={() => setIsOpen((prev) => !prev)}
-                className={`w-full px-3.5 py-2.5 bg-white border rounded-xl text-sm text-left flex items-center justify-between transition-all focus:outline-none focus:ring-2 focus:ring-[#F5B800] ${
-                    isOpen ? 'border-[#F5B800] ring-2 ring-[#F5B800]' : 'border-[#E2E8F0]'
+                className={`w-full px-3.5 py-2.5 bg-white border rounded-xl text-sm text-left flex items-center justify-between transition-all focus:outline-none focus:ring-2 focus:ring-[#F6C343] ${
+                    isOpen ? 'border-[#F6C343] ring-2 ring-[#F6C343]' : 'border-[#E2E8F0]'
                 } ${disabled ? 'bg-slate-50 cursor-not-allowed opacity-60' : 'cursor-pointer hover:border-slate-300'}`}
             >
                 {selectedWorker ? (

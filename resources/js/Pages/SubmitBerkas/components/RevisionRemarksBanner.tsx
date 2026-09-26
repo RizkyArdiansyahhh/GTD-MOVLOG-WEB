@@ -29,7 +29,7 @@ export function RevisionRemarksBanner({ remarks }: RevisionRemarksBannerProps) {
             <AlertCircle size={14} color="#B45309" style={{ marginTop: 2, flexShrink: 0 }} />
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'baseline' }}>
                 <span style={{ fontWeight: 700, color: '#78350F', fontSize: 12 }}>
-                    Catatan Revisi:
+                    Revision Notes:
                 </span>
                 <span style={{ color: '#92400E', fontSize: 12, fontWeight: 500 }}>
                     {remarks}

@@ -37,7 +37,7 @@ class DocumentVerifiedNotification extends Notification
             'assignment_no' => (string) $this->session->assignment_no,
             'document_id'   => (string) $this->document->id,
             'document_name' => (string) $this->document->file_name,
-            'url'           => "/customer/monitoring-barang/{$this->session->id}",
+            'url'           => "/customer/shipment/{$this->session->id}",
         ];
     }
 }

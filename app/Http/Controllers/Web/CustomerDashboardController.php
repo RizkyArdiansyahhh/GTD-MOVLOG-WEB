@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Checkpoint;
 use App\Models\Customer;
 use App\Models\ShippingSession;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -22,7 +23,7 @@ class CustomerDashboardController extends Controller
         $user = $request->user();
         $customer = $user?->customer;
 
-        if (!$customer) {
+        if (! $customer) {
             abort(403, 'Akun Anda belum terhubung ke perusahaan customer manapun. Hubungi Admin GTD untuk menyelesaikan konfigurasi akun.');
         }
 
@@ -139,6 +140,7 @@ class CustomerDashboardController extends Controller
                 'current_checkpoint' => $s->currentCheckpoint?->name ?? 'Belum ditentukan',
                 'progress_percent' => $this->calculateProgress($s),
                 'eta' => $this->estimateEta($s),
+                'updated_at' => $s->updated_at ? $s->updated_at->toISOString() : null,
                 'units' => $s->units->map(fn ($u) => [
                     'name' => (string) $u->unit_name,
                     'qty' => (int) $u->quantity,
@@ -146,27 +148,8 @@ class CustomerDashboardController extends Controller
             ];
         })->toArray();
 
-        // Checkpoint Groups Overview
-        $checkpointGroups = Checkpoint::with([
-            'shippingSessions' => fn ($q) => $q->where('customer_id', $customer->id)
-                ->whereIn('status', ['IN_PROGRESS', 'in_transit', 'IN_TRANSIT']),
-        ])
-            ->orderBy('sequence')
-            ->get()
-            ->map(function ($cp) {
-                return [
-                    'id' => (int) $cp->id,
-                    'name' => (string) $cp->name,
-                    'sequence' => (int) $cp->sequence,
-                    'active_fleets' => (int) $cp->shippingSessions->count(),
-                    'shipments' => $cp->shippingSessions->take(3)->map(fn ($ss) => [
-                        'id' => (string) $ss->id,
-                        'assignment_no' => (string) $ss->assignment_no,
-                        'cargo_name' => (string) $ss->cargo_name,
-                    ])->values()->toArray(),
-                ];
-            })->toArray();
-
+        // Checkpoint Groups Overview is rendered on the dedicated Checkpoint
+        // page (checkpoints()), not on the dashboard — so it is not fetched here.
         return Inertia::render('Customer/Dashboard', [
             'customer' => [
                 'id' => (string) $customer->id,
@@ -175,17 +158,19 @@ class CustomerDashboardController extends Controller
             ],
             'stats' => $stats,
             'recentShipments' => $recentShipments,
-            'checkpointGroups' => $checkpointGroups,
         ]);
     }
 
     /**
-     * Customer Cargo Monitoring
+     * Shared paginated shipment list for the customer portal (all statuses,
+     * server-side search + status filter). Used by the merged Checkpoint list
+     * so no shipment becomes unreachable after the Cargo Monitoring menu
+     * removal.
+     *
+     * @return LengthAwarePaginator
      */
-    public function monitoring(Request $request): Response
+    private function paginateShipments(Customer $customer, Request $request)
     {
-        $customer = $this->getCustomer($request);
-
         $query = ShippingSession::with([
             'currentCheckpoint',
             'sessionCheckpoints.checkpoint',
@@ -206,14 +191,16 @@ class CustomerDashboardController extends Controller
             }
         }
 
-        // Search Filter
+        // Search Filter (LIKE wildcards in user input are escaped so the
+        // keyword is always matched literally).
         if ($request->filled('search')) {
-            $search = '%'.trim((string) $request->search).'%';
+            $escaped = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], trim((string) $request->search));
+            $search = '%'.$escaped.'%';
             $query->where(function ($q) use ($search) {
-                $q->where('assignment_no', 'ILIKE', $search)
-                    ->orWhere('cargo_name', 'ILIKE', $search)
-                    ->orWhere('origin', 'ILIKE', $search)
-                    ->orWhere('destination', 'ILIKE', $search);
+                $q->whereRaw("assignment_no ILIKE ? ESCAPE '\\'", [$search])
+                    ->orWhereRaw("cargo_name ILIKE ? ESCAPE '\\'", [$search])
+                    ->orWhereRaw("origin ILIKE ? ESCAPE '\\'", [$search])
+                    ->orWhereRaw("destination ILIKE ? ESCAPE '\\'", [$search]);
             });
         }
 
@@ -240,17 +227,13 @@ class CustomerDashboardController extends Controller
             ];
         });
 
-        return Inertia::render('Customer/MonitoringBarang', [
-            'shipments' => $paginated,
-            'filters' => [
-                'search' => (string) ($request->search ?? ''),
-                'status' => (string) ($request->status ?? 'all'),
-            ],
-        ]);
+        return $paginated;
     }
 
     /**
-     * Checkpoint Overview Page
+     * Checkpoint Overview Page (merged with the former Cargo Monitoring list:
+     * grouped in-transit overview + full shipment list with search & status
+     * filter covering every status).
      */
     public function checkpoints(Request $request): Response
     {
@@ -288,13 +271,35 @@ class CustomerDashboardController extends Controller
         return Inertia::render('Customer/Checkpoint', [
             'checkpoints' => $checkpointGroups,
             'total_in_transit' => $totalInTransit,
+            'shipments' => $this->paginateShipments($customer, $request),
+            'filters' => [
+                'search' => (string) ($request->search ?? ''),
+                'status' => (string) ($request->status ?? 'all'),
+            ],
         ]);
     }
 
     /**
-     * Shipment Detail Page
+     * Checkpoint Shipment Detail Page (tracking-focused: progress + history).
      */
-    public function detail(Request $request, string $id): Response
+    public function checkpointDetail(Request $request, string $id): Response
+    {
+        [$shipmentPayload, $units, $timeline, $verifiedDocs] = $this->getShipmentDetailData($request, $id);
+
+        return Inertia::render('Customer/CheckpointDetail', [
+            'shipment' => $shipmentPayload,
+            'units' => $units,
+            'timeline' => $timeline,
+            'documents' => $verifiedDocs,
+        ]);
+    }
+
+    /**
+     * Shared data preparation for both customer detail pages.
+     *
+     * @return array{0: array, 1: array, 2: array, 3: array}
+     */
+    private function getShipmentDetailData(Request $request, string $id): array
     {
         $this->getCustomer($request);
 
@@ -367,13 +372,9 @@ class CustomerDashboardController extends Controller
             'progress_percent' => $this->calculateProgress($session),
             'eta' => $this->estimateEta($session),
             'current_checkpoint' => $session->currentCheckpoint?->name ?? 'Pos Operasional GTD',
+            'updated_at' => $session->updated_at ? $session->updated_at->format('d M Y H:i') : null,
         ];
 
-        return Inertia::render('Customer/DetailShipment', [
-            'shipment' => $shipmentPayload,
-            'units' => $units,
-            'timeline' => $timeline,
-            'documents' => $verifiedDocs,
-        ]);
+        return [$shipmentPayload, $units, $timeline, $verifiedDocs];
     }
 }

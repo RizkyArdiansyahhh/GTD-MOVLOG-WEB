@@ -22,7 +22,27 @@ class MonitoringBarangService
             ->get()
             ->groupBy('assignment_no_ref');
 
-        return $assignments->map(function (Collection $docs, string $assignmentRef) {
+        // Batch-load to eliminate N+1: 1 query for sessions + 1 for checkpoints.
+        $assignmentRefs = $assignments->keys()->values()->all();
+        $sessionsByRef = \App\Models\ShippingSession::whereIn('assignment_no', $assignmentRefs)
+            ->with([
+                'sessionCheckpoints' => function ($q) {
+                    $q->with([
+                        'checkpoint',
+                        'picUser:id,name',
+                        'reports' => function ($rq) {
+                            $rq->with(['photos', 'createdBy:id,name'])->latest('event_at');
+                        },
+                    ]);
+                },
+                'currentCheckpoint:id,name',
+            ])
+            ->get()
+            ->keyBy('assignment_no');
+
+        $masterCheckpoints = \App\Models\Checkpoint::orderBy('sequence', 'asc')->get();
+
+        return $assignments->map(function (Collection $docs, string $assignmentRef) use ($sessionsByRef, $masterCheckpoints) {
             $bolDoc = $docs->firstWhere('document_type_id', 1); // Bill of Lading
             $ciDoc  = $docs->firstWhere('document_type_id', 2); // Commercial Invoice
             $plDoc  = $docs->firstWhere('document_type_id', 3); // Packing List
@@ -208,20 +228,8 @@ class MonitoringBarangService
             });
 
             // 6. Ambil Data Sesi Pengiriman Aktual & Checkpoints (Single Source of Truth)
-            $shippingSession = \App\Models\ShippingSession::where('assignment_no', $assignmentRef)
-                ->with([
-                    'sessionCheckpoints' => function ($q) {
-                        $q->with([
-                            'checkpoint',
-                            'picUser:id,name',
-                            'reports' => function ($rq) {
-                                $rq->with(['photos', 'createdBy:id,name'])->latest('event_at');
-                            },
-                        ]);
-                    },
-                    'currentCheckpoint:id,name',
-                ])
-                ->first();
+            // Pre-loaded batch above — no per-row queries (N+1 eliminated).
+            $shippingSession = $sessionsByRef->get($assignmentRef);
 
             // Tentukan status shipment secara akurat
             if ($shippingSession) {
@@ -276,7 +284,7 @@ class MonitoringBarangService
             $formattedDate = $firstDoc?->created_at ? $firstDoc->created_at->format('d M Y') : date('d M Y');
             $formattedTime = $firstDoc?->created_at ? $firstDoc->created_at->format('H:i') : '00:00';
 
-            $masterCheckpoints = \App\Models\Checkpoint::orderBy('sequence', 'asc')->get();
+            // Reuse batch-loaded master checkpoints (no per-row query).
 
             $checkpointsList = [];
             $activitiesList = [];

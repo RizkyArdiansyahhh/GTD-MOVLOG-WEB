@@ -13,7 +13,9 @@ createInertiaApp({
   resolve: (name) =>
     resolvePageComponent(
       `./Pages/${name}.tsx`,
-      import.meta.glob("./Pages/**/*.tsx"),
+      // Test files live next to the code they cover but must never
+      // ship to production (the glob below is bundled eagerly).
+      import.meta.glob(['./Pages/**/*.tsx', '!./Pages/**/*.test.{ts,tsx}']),
     ) as Promise<ResolvedComponent>,
   setup({ el, App, props }) {
     const root = createRoot(el);

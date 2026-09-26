@@ -2,6 +2,7 @@ import { type ReactNode, useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import Toast from '@/Components/Toast';
+import { PageTransition } from '@/Components/ui';
 
 interface DashboardLayoutProps {
     children: ReactNode;
@@ -30,7 +31,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     };
 
     return (
-        <div className="min-h-screen bg-[#F5F7FC] flex text-gray-800 font-sans antialiased">
+        <div className="min-h-screen bg-[#F5F7FC] flex text-slate-800 font-sans antialiased">
             {/* -- Left Fixed Desktop Sidebar & Mobile Drawer -- */}
             <Sidebar
                 isOpen={sidebarOpen}
@@ -55,7 +56,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
                 {/* Main Page Viewport Container */}
                 <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-x-hidden min-h-[calc(100vh-64px)] max-w-[1600px] w-full mx-auto">
-                    {children}
+                    <PageTransition>{children}</PageTransition>
                 </main>
             </div>
         </div>

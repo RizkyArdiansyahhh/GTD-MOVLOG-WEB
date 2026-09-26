@@ -34,21 +34,21 @@ export default function UserFilters({
     };
 
     return (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-4">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-4">
             <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">
                 {/* Search */}
                 <div
-                    className="flex items-center gap-2 rounded-xl px-3.5 flex-1 w-full lg:max-w-sm border border-gray-200 transition-all duration-150 focus-within:border-amber-300 focus-within:ring-2 focus-within:ring-amber-100"
+                    className="flex items-center gap-2 rounded-xl px-3.5 flex-1 w-full lg:max-w-sm border border-slate-200 transition-all duration-150 focus-within:border-amber-300 focus-within:ring-2 focus-within:ring-amber-100"
                     style={{ height: 42, backgroundColor: '#F8FAFC' }}
                 >
-                    <Search size={18} className="text-gray-400 shrink-0" strokeWidth={1.8} />
+                    <Search size={18} className="text-slate-400 shrink-0" strokeWidth={1.8} />
                     <input
                         type="text"
                         value={search}
                         onChange={(e) => onSearchChange(e.target.value)}
                         onKeyDown={handleKeyDown}
                         placeholder="Search users..."
-                        className="flex-1 bg-transparent text-sm text-gray-700 placeholder-gray-400 outline-none"
+                        className="flex-1 bg-transparent text-sm text-slate-700 placeholder-slate-400 outline-none"
                     />
                 </div>
 
@@ -56,7 +56,7 @@ export default function UserFilters({
                 <select
                     value={roleFilter}
                     onChange={(e) => onRoleFilterChange(e.target.value)}
-                    className="w-full sm:w-40 rounded-xl px-3.5 text-sm text-gray-600 border border-gray-200 outline-none cursor-pointer transition-all duration-150 focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
+                    className="w-full sm:w-40 rounded-xl px-3.5 text-sm text-slate-600 border border-slate-200 outline-none cursor-pointer transition-all duration-150 focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
                     style={{ height: 42, backgroundColor: '#F8FAFC' }}
                 >
                     {roleOptions.map((role) => (
@@ -70,7 +70,7 @@ export default function UserFilters({
                 <select
                     value={statusFilter}
                     onChange={(e) => onStatusFilterChange(e.target.value)}
-                    className="w-full sm:w-38 rounded-xl px-3.5 text-sm text-gray-600 border border-gray-200 outline-none cursor-pointer transition-all duration-150 focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
+                    className="w-full sm:w-38 rounded-xl px-3.5 text-sm text-slate-600 border border-slate-200 outline-none cursor-pointer transition-all duration-150 focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
                     style={{ height: 42, backgroundColor: '#F8FAFC' }}
                 >
                     {statusOptions.map((status) => (
@@ -85,7 +85,7 @@ export default function UserFilters({
                     <button
                         type="button"
                         onClick={onReset}
-                        className="w-full sm:w-auto justify-center flex items-center gap-1.5 rounded-xl px-3.5 text-sm font-medium text-gray-500 border border-gray-200 hover:bg-gray-50 hover:text-gray-700 transition-all duration-150"
+                        className="w-full sm:w-auto justify-center flex items-center gap-1.5 rounded-xl px-3.5 text-sm font-medium text-slate-500 border border-slate-200 hover:bg-slate-50 hover:text-slate-700 transition-all duration-150"
                         style={{ height: 42 }}
                     >
                         <RotateCcw size={14} strokeWidth={2} />

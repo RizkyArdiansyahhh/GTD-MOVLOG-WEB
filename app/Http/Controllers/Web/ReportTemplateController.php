@@ -32,16 +32,34 @@ class ReportTemplateController extends Controller
     {
         $this->authorizeSuperAdmin($request);
 
-        $templates = $this->reportTemplateService->listTemplates()->map(function (ReportTemplate $template) {
+        $templates = $this->reportTemplateService->listTemplates();
+
+        // Batch usage checks (eliminate per-template N+1).
+        $templateIds = $templates->pluck('id')->all();
+        $usedReportIds = ! empty($templateIds)
+            ? Report::whereIn('report_template_id', $templateIds)->distinct()->pluck('report_template_id')->flip()->all()
+            : [];
+        $snapshotTemplateIds = [];
+        if (! empty($templateIds)) {
+            $snapshots = SessionCheckpoint::query()
+                ->whereNotNull('template_snapshot')
+                ->pluck('template_snapshot');
+            foreach ($snapshots as $snap) {
+                $arr = is_string($snap) ? json_decode($snap, true) : (array) $snap;
+                $tid = $arr['template_id'] ?? null;
+                if ($tid !== null) {
+                    $snapshotTemplateIds[(int) $tid] = true;
+                }
+            }
+        }
+
+        $templates = $templates->map(function (ReportTemplate $template) use ($usedReportIds, $snapshotTemplateIds) {
             $fieldsCount = $template->templateFields->where('field_type', '!=', 'photo')->count();
             $photoSlotsCount = $template->templateFields->where('field_type', 'photo')->count();
 
             // Check if this template is currently used by any operational reports or session snapshots
-            $isUsedInReports = Report::where('report_template_id', $template->id)->exists();
-            $isUsedInSnapshots = SessionCheckpoint::whereRaw(
-                "template_snapshot->>'template_id' = ?",
-                [(string) $template->id]
-            )->exists();
+            $isUsedInReports = isset($usedReportIds[$template->id]);
+            $isUsedInSnapshots = isset($snapshotTemplateIds[(int) $template->id]);
 
             return [
                 'id'                     => $template->id,

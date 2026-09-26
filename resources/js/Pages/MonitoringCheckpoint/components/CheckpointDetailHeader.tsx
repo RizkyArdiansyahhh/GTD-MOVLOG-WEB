@@ -33,7 +33,7 @@ export default function CheckpointDetailHeader({
                 className="group inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 transition hover:text-[#06283A] cursor-pointer"
             >
                 <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
-                Kembali ke Monitoring
+                Back to Monitoring
             </button>
 
             {/* Hero card */}
@@ -42,9 +42,9 @@ export default function CheckpointDetailHeader({
                     {/* Left */}
                     <div>
                         <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                            Nomor Penugasan
+                            Assignment Number
                         </p>
-                        <h1 className="mt-1 text-xl font-bold tracking-tight text-[#06283A]">
+                        <h1 className="mt-1 text-2xl font-bold tracking-tight text-[#06283A]">
                             {assignmentNo}
                         </h1>
                         <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-slate-500">
@@ -63,10 +63,10 @@ export default function CheckpointDetailHeader({
                         <div className="flex flex-col gap-1.5">
                             <div className="flex items-center justify-between gap-4">
                                 <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                                    Progres
+                                    Progress
                                 </span>
                                 <span className="text-xs font-bold text-[#06283A]">
-                                    {completedSteps}/{totalSteps} Tahap
+                                    {completedSteps}/{totalSteps} Stages
                                 </span>
                             </div>
                             <div className="h-1.5 w-40 overflow-hidden rounded-full bg-slate-100">

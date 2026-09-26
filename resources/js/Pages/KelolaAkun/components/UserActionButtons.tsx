@@ -31,7 +31,7 @@ export default function UserActionButtons({
                 title="Edit"
                 aria-label="Edit user"
             >
-                <Pencil size={16} className="text-gray-400 hover:text-amber-600" strokeWidth={1.8} />
+                <Pencil size={16} className="text-slate-400 hover:text-amber-600" strokeWidth={1.8} />
             </button>
 
             {/* Hapus */}
@@ -43,7 +43,7 @@ export default function UserActionButtons({
                 title="Delete"
                 aria-label="Delete user"
             >
-                <Trash2 size={16} className="text-gray-400 hover:text-red-600" strokeWidth={1.8} />
+                <Trash2 size={16} className="text-slate-400 hover:text-red-600" strokeWidth={1.8} />
             </button>
         </div>
     );

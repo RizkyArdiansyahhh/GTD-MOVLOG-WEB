@@ -19,7 +19,7 @@ export default function UserTableRow({
     isUpdatingStatus = false,
 }: UserTableRowProps) {
     return (
-        <tr className="border-b border-gray-50 hover:bg-gray-50/60 transition-colors duration-100">
+        <tr className="border-b border-slate-50 hover:bg-slate-50/60 transition-colors duration-100">
             {/* Pengguna (Avatar + Nama + Email) */}
             <td className="px-6 py-3.5 whitespace-nowrap">
                 <div className="flex items-center gap-3">
@@ -36,7 +36,7 @@ export default function UserTableRow({
                         >
                             {user.name}
                         </p>
-                        <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                        <p className="text-xs text-slate-400 truncate">{user.email}</p>
                     </div>
                 </div>
             </td>
@@ -48,7 +48,7 @@ export default function UserTableRow({
 
             {/* Email */}
             <td className="px-4 py-3.5 whitespace-nowrap">
-                <span className="text-sm text-gray-500">{user.email}</span>
+                <span className="text-sm text-slate-500">{user.email}</span>
             </td>
 
             {/* Status (Toggle Switch) */}

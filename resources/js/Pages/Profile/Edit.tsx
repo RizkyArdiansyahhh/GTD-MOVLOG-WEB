@@ -1,7 +1,8 @@
-import { useState, useRef, useId } from 'react';
+import { useState, useRef, useId, useEffect } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import AvatarCropModal from '@/Components/AvatarCropModal';
+import { PageHeader } from '@/Components/ui';
 import {
     User,
     Mail,
@@ -106,6 +107,14 @@ export default function EditProfile({ profile }: EditProfileProps) {
     const primaryRoleLabel = profile.roles[0]?.label || 'Internal Staff';
     const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name || 'User')}&background=F6C343&color=1a1a1a&bold=true&size=128`;
 
+    // Keep preview in sync with the server value after save/reload.
+    useEffect(() => {
+        if (!profileData.avatar && !isDeletingAvatar) {
+            setAvatarPreview(profile.avatar_url);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [profile.avatar_url]);
+
     // Handle Initial File Selection & Validation
     const handleAvatarFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -135,12 +144,13 @@ export default function EditProfile({ profile }: EditProfileProps) {
     };
 
     // Callback when crop is completed in modal
+    // NOTE: Inertia useForm.setData does NOT support functional updater
+    // (prev) => ... — it must be called as setData(key, value) or
+    // setData(object). The previous functional form silently stored a
+    // function as form data, so `avatar` never reached the server.
     const handleCropFinished = (croppedFile: File, croppedPreviewUrl: string) => {
-        setProfileData((prev) => ({
-            ...prev,
-            avatar: croppedFile,
-            delete_avatar: false,
-        }));
+        setProfileData('avatar', croppedFile);
+        setProfileData('delete_avatar', false);
         setIsDeletingAvatar(false);
         setAvatarPreview(croppedPreviewUrl);
         setFileValidationError(null);
@@ -148,11 +158,8 @@ export default function EditProfile({ profile }: EditProfileProps) {
 
     // Handle Remove Avatar
     const handleRemoveAvatar = () => {
-        setProfileData((prev) => ({
-            ...prev,
-            avatar: null,
-            delete_avatar: true,
-        }));
+        setProfileData('avatar', null);
+        setProfileData('delete_avatar', true);
         setIsDeletingAvatar(true);
         setAvatarPreview(null);
         setFileValidationError(null);
@@ -166,8 +173,16 @@ export default function EditProfile({ profile }: EditProfileProps) {
         e.preventDefault();
         submitProfile('/profil', {
             preserveScroll: true,
-            onSuccess: () => {
+            forceFormData: true,
+            onSuccess: (page) => {
                 setIsDeletingAvatar(false);
+                // Adopt the fresh server avatar URL so the photo persists
+                // after refresh / re-login (not just the local blob URL).
+                const freshUrl = (page.props.profile as { avatar_url?: string | null } | undefined)?.avatar_url
+                    ?? (page.props.auth as { user?: { avatar_url?: string | null } } | undefined)?.user?.avatar_url;
+                if (freshUrl) {
+                    setAvatarPreview(freshUrl);
+                }
             },
         });
     };
@@ -220,16 +235,12 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                 <span>Dashboard</span>
                             </Link>
                             <span>/</span>
-                            <span className="text-slate-700">Account Settings</span>
-                            <span>/</span>
                             <span className="text-[#06283A] font-bold">Edit Profile</span>
                         </div>
-                        <h1 className="text-xl sm:text-2xl font-bold text-[#06283A] tracking-tight">
-                            Manage Profile & Account Security
-                        </h1>
-                        <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                            Update your personal identity, profile photo, and account password.
-                        </p>
+                        <PageHeader
+                            title="Manage Profile & Account Security"
+                            subtitle="Update your personal identity, profile photo, and account password."
+                        />
                     </div>
                 </div>
 
@@ -252,7 +263,7 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                     <button
                                         type="button"
                                         onClick={() => fileInputRef.current?.click()}
-                                        className="absolute -bottom-1 -right-1 p-2.5 rounded-full bg-[#06283A] text-white hover:bg-yellow-400 hover:text-slate-900 transition-all shadow-md cursor-pointer group-hover:scale-105"
+                                        className="absolute -bottom-1 -right-1 p-2.5 rounded-full bg-[#06283A] text-white hover:bg-[#F6C343] hover:text-slate-900 transition-all shadow-md cursor-pointer group-hover:scale-105"
                                         title="Change & Crop Profile Photo"
                                     >
                                         <Camera size={15} strokeWidth={2} />
@@ -270,15 +281,15 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                 {/* Name & Info with generous spacing */}
                                 <div className="mt-6 space-y-1">
                                     <h2 className="text-base sm:text-lg font-bold text-[#06283A] leading-snug">
-                                        {profileData.name || profile.name}
+                                        {profile.name}
                                     </h2>
                                     <p className="text-xs text-slate-500 font-medium">
                                         {profile.email}
                                     </p>
                                 </div>
 
-                                <div className="mt-3.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-yellow-400/20 text-gray-900 border border-yellow-400/40 shadow-xs">
-                                    <Shield size={13} className="text-yellow-700" strokeWidth={2.4} />
+                                <div className="mt-3.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#F6C343]/20 text-slate-900 border border-[#F6C343]/40 shadow-xs">
+                                    <Shield size={13} className="text-amber-700" strokeWidth={2.4} />
                                     <span>{primaryRoleLabel}</span>
                                 </div>
 
@@ -325,14 +336,14 @@ export default function EditProfile({ profile }: EditProfileProps) {
                         </div>
 
                         {/* Read-Only Internal Account & Authorization Information */}
-                        <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-5 sm:p-6">
-                            <div className="flex items-center gap-2.5 pb-3 border-b border-gray-100">
-                                <ShieldCheck size={18} className="text-yellow-600 shrink-0" strokeWidth={2.2} />
+                        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6">
+                            <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
+                                <ShieldCheck size={18} className="text-amber-600 shrink-0" strokeWidth={2.2} />
                                 <div>
-                                    <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
                                         Account Information & Permissions (Read-Only)
                                     </h3>
-                                    <p className="text-xs text-gray-600 font-medium">
+                                    <p className="text-xs text-slate-600 font-medium">
                                         Kredensial dan hak akses sistem internal
                                     </p>
                                 </div>
@@ -341,15 +352,15 @@ export default function EditProfile({ profile }: EditProfileProps) {
                             <div className="mt-4 space-y-3.5">
                                 {/* Role / Peran */}
                                 <div>
-                                    <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide flex items-center gap-1">
-                                        <Shield size={12} className="text-gray-400" />
+                                    <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide flex items-center gap-1">
+                                        <Shield size={12} className="text-slate-400" />
                                         Peran / Jabatan Sistem
                                     </span>
                                     <div className="flex flex-wrap gap-1.5 mt-1">
                                         {profile.roles.map((r) => (
                                             <span
                                                 key={r.name}
-                                                className="px-2.5 py-0.5 rounded text-xs font-bold bg-gray-100 text-gray-800 border border-gray-200"
+                                                className="px-2.5 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200"
                                             >
                                                 {r.label}
                                             </span>
@@ -359,7 +370,7 @@ export default function EditProfile({ profile }: EditProfileProps) {
 
                                 {/* Account Status */}
                                 <div>
-                                    <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">
+                                    <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
                                         Account Status
                                     </span>
                                     <div className="mt-1 flex items-center gap-2">
@@ -372,44 +383,44 @@ export default function EditProfile({ profile }: EditProfileProps) {
 
                                 {/* ID Pengguna */}
                                 <div>
-                                    <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide flex items-center gap-1">
-                                        <Hash size={12} className="text-gray-400" />
+                                    <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide flex items-center gap-1">
+                                        <Hash size={12} className="text-slate-400" />
                                         System User ID
                                     </span>
-                                    <p className="text-xs font-mono font-bold text-gray-800 mt-0.5 truncate bg-gray-50 px-2 py-1 rounded border border-gray-200/60">
+                                    <p className="text-xs font-mono font-bold text-slate-800 mt-0.5 truncate bg-slate-50 px-2 py-1 rounded border border-slate-200/60">
                                         {profile.id}
                                     </p>
                                 </div>
 
                                 {/* Tanggal Bergabung */}
                                 <div>
-                                    <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide flex items-center gap-1">
-                                        <Calendar size={12} className="text-gray-400" />
+                                    <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide flex items-center gap-1">
+                                        <Calendar size={12} className="text-slate-400" />
                                         Terdaftar Sejak
                                     </span>
-                                    <p className="text-xs font-semibold text-gray-700 mt-0.5">
+                                    <p className="text-xs font-semibold text-slate-700 mt-0.5">
                                         {profile.created_at}
                                     </p>
                                 </div>
 
                                 {/* Unit Kerja */}
                                 <div>
-                                    <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide flex items-center gap-1">
-                                        <Building2 size={12} className="text-gray-400" />
+                                    <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide flex items-center gap-1">
+                                        <Building2 size={12} className="text-slate-400" />
                                         Unit Kerja / Organisasi
                                     </span>
-                                    <p className="text-xs font-bold text-gray-900 mt-0.5">
+                                    <p className="text-xs font-bold text-slate-900 mt-0.5">
                                         PT Global Trans Djaya (Internal LMS)
                                     </p>
                                 </div>
                             </div>
 
                             {/* Security Notice Alert */}
-                            <div className="mt-5 p-3 rounded-xl bg-gray-50 border border-gray-200/80 text-[11px] text-gray-600 leading-relaxed flex items-start gap-2">
-                                <Info size={15} className="text-gray-400 shrink-0 mt-0.5" strokeWidth={2} />
+                            <div className="mt-5 p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px] text-slate-600 leading-relaxed flex items-start gap-2">
+                                <Info size={15} className="text-slate-400 shrink-0 mt-0.5" strokeWidth={2} />
                                 <span>
                                     Wewenang, peran penugasan, dan status akun dikelola oleh{' '}
-                                    <strong className="text-gray-800 font-semibold">Super Admin GTD</strong>. Hubungi Administrator jika terdapat penyesuaian wewenang atau mutasi tugas.
+                                    <strong className="text-slate-800 font-semibold">Super Admin GTD</strong>. Hubungi Administrator jika terdapat penyesuaian wewenang atau mutasi tugas.
                                 </span>
                             </div>
                         </div>
@@ -453,7 +464,7 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                             value={profileData.name}
                                             onChange={(e) => setProfileData('name', e.target.value)}
                                             required
-                                            className="w-full pl-9 pr-3.5 py-2.5 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all font-medium"
+                                            className="w-full pl-9 pr-3.5 py-2.5 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#F6C343] focus:border-transparent transition-all font-medium"
                                             placeholder="Enter your full name"
                                         />
                                     </div>
@@ -482,7 +493,7 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                             type="tel"
                                             value={profileData.phone}
                                             onChange={(e) => setProfileData('phone', e.target.value)}
-                                            className="w-full pl-9 pr-3.5 py-2.5 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all font-medium"
+                                            className="w-full pl-9 pr-3.5 py-2.5 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#F6C343] focus:border-transparent transition-all font-medium"
                                             placeholder="Contoh: 081234567890"
                                         />
                                     </div>
@@ -585,7 +596,7 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                             value={passwordData.current_password}
                                             onChange={(e) => setPasswordData('current_password', e.target.value)}
                                             required
-                                            className="w-full pl-9 pr-10 py-2.5 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all font-medium"
+                                            className="w-full pl-9 pr-10 py-2.5 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#F6C343] focus:border-transparent transition-all font-medium"
                                             placeholder="Enter your current password"
                                         />
                                         <button
@@ -622,7 +633,7 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                             value={passwordData.password}
                                             onChange={(e) => setPasswordData('password', e.target.value)}
                                             required
-                                            className="w-full pl-9 pr-10 py-2.5 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all font-medium"
+                                            className="w-full pl-9 pr-10 py-2.5 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#F6C343] focus:border-transparent transition-all font-medium"
                                             placeholder="Minimal 8 karakter (huruf, angka, simbol)"
                                         />
                                         <button
@@ -686,7 +697,7 @@ export default function EditProfile({ profile }: EditProfileProps) {
                                             value={passwordData.password_confirmation}
                                             onChange={(e) => setPasswordData('password_confirmation', e.target.value)}
                                             required
-                                            className="w-full pl-9 pr-10 py-2.5 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all font-medium"
+                                            className="w-full pl-9 pr-10 py-2.5 rounded-lg border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#F6C343] focus:border-transparent transition-all font-medium"
                                             placeholder="Repeat your new password"
                                         />
                                         <button

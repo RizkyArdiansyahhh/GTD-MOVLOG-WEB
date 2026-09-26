@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Plus, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Head, Link, router } from '@inertiajs/react';
+import { Plus } from 'lucide-react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
+import { PageHeader } from '@/Components/ui';
 import type { MasterTemplateItem, CheckpointOption } from './types';
 
 interface IndexProps {
@@ -10,7 +11,6 @@ interface IndexProps {
 }
 
 export default function TemplateLaporanIndex({ templates = [], checkpoints = [] }: IndexProps) {
-    const { flash } = usePage<{ flash: { success?: string; error?: string } }>().props;
     const [selectedCheckpoint, setSelectedCheckpoint] = useState<string>('all');
     const [deletingId, setDeletingId] = useState<number | null>(null);
 
@@ -19,7 +19,7 @@ export default function TemplateLaporanIndex({ templates = [], checkpoints = [] 
         : templates.filter((t) => String(t.checkpoint_id) === selectedCheckpoint);
 
     const handleDelete = (template: MasterTemplateItem) => {
-        if (!confirm(`Hapus template '${template.name}'? Tindakan ini tidak dapat dibatalkan.`)) {
+        if (!confirm(`Delete template '${template.name}'? This action cannot be undone.`)) {
             return;
         }
 
@@ -34,41 +34,20 @@ export default function TemplateLaporanIndex({ templates = [], checkpoints = [] 
         <DashboardLayout>
             <Head title="Report Templates - GTD Logistics" />
 
-            <div className="w-full max-w-7xl mx-auto space-y-4">
-                {/* ── Page Header ── */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
-                    <div>
-                        <h1 className="text-base font-bold text-[#06283A]">
-                            Report Templates
-                        </h1>
-                        <p className="text-xs text-slate-500">
-                            Konfigurasi formulir dan slot foto bukti untuk setiap tahapan pengiriman
-                        </p>
-                    </div>
-
-                    <Link
-                        href="/template-laporan/create"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#06283A] bg-[#F5B800] hover:bg-[#E5AC00] transition-colors self-start sm:self-auto cursor-pointer shadow-2xs"
-                    >
-                        <Plus size={13} />
-                        Add Template
-                    </Link>
-                </div>
-
-                {/* ── Flash Messages ── */}
-                {flash?.success && (
-                    <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center gap-2 text-xs text-emerald-800">
-                        <CheckCircle2 size={14} className="shrink-0 text-emerald-600" />
-                        <span>{flash.success}</span>
-                    </div>
-                )}
-
-                {flash?.error && (
-                    <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-lg flex items-center gap-2 text-xs text-rose-800">
-                        <AlertCircle size={14} className="shrink-0 text-rose-600" />
-                        <span>{flash.error}</span>
-                    </div>
-                )}
+            <div className="w-full max-w-7xl mx-auto space-y-6">
+                <PageHeader
+                    title="Report Templates"
+                    subtitle="Configure forms and proof photo slots for each shipment stage"
+                    actions={
+                        <Link
+                            href="/template-laporan/create"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#06283A] bg-[#F6C343] hover:bg-[#E0AD2C] transition-colors self-start sm:self-auto cursor-pointer shadow-2xs"
+                        >
+                            <Plus size={13} />
+                            Add Template
+                        </Link>
+                    }
+                />
 
                 {/* ── Subtle Filter Tabs ── */}
                 <div className="flex items-center gap-1 overflow-x-auto border-b border-slate-200">

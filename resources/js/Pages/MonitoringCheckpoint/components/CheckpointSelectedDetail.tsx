@@ -21,9 +21,9 @@ interface CheckpointSelectedDetailProps {
 
 function statusLabel(raw: string): string {
     const s = raw.toLowerCase();
-    if (s === "completed" || s === "selesai") return "Selesai";
-    if (s === "in_progress" || s === "aktif") return "Berlangsung";
-    return "Menunggu";
+    if (s === "completed" || s === "selesai") return "Completed";
+    if (s === "in_progress" || s === "aktif") return "In Progress";
+    return "Pending";
 }
 
 function statusVariant(raw: string): "done" | "active" | "idle" {
@@ -111,7 +111,7 @@ function ArmadaPanel({ step, report, photos, onOpenLightbox }: ArmadaPanelProps)
             {fieldsToDisplay.length > 0 && (
                 <div className="px-5 py-4">
                     <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                        Data Isian Lapangan ({fieldsToDisplay.length} Field)
+                        Field Input Data ({fieldsToDisplay.length} Fields)
                     </p>
                     <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-3">
                         {fieldsToDisplay.map((field) => {
@@ -134,7 +134,7 @@ function ArmadaPanel({ step, report, photos, onOpenLightbox }: ArmadaPanelProps)
                                             isFilled ? "text-[#06283A]" : "text-slate-300 italic"
                                         }`}
                                     >
-                                        {value || "Belum diisi"}
+                                        {value || "Not filled yet"}
                                     </span>
                                 </div>
                             );
@@ -147,12 +147,12 @@ function ArmadaPanel({ step, report, photos, onOpenLightbox }: ArmadaPanelProps)
             {photos.length > 0 ? (
                 <div className="px-5 py-4">
                     <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                        Foto Dokumentasi ({photos.length})
+                        Documentation Photos ({photos.length})
                     </p>
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                         {photos.map((photo, idx) => {
                             const slot = photoSlots[idx];
-                            const caption = photo.caption || slot?.label || `Foto ${idx + 1}`;
+                            const caption = photo.caption || slot?.label || `Photo ${idx + 1}`;
                             return (
                                 <div
                                     key={photo.id}
@@ -170,7 +170,7 @@ function ArmadaPanel({ step, report, photos, onOpenLightbox }: ArmadaPanelProps)
                                         />
                                         <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/60 to-transparent p-2 opacity-0 transition-opacity group-hover:opacity-100">
                                             <p className="truncate text-[10px] font-semibold text-white">
-                                                Klik untuk perbesar
+                                                Click to enlarge
                                             </p>
                                         </div>
                                     </button>
@@ -187,7 +187,7 @@ function ArmadaPanel({ step, report, photos, onOpenLightbox }: ArmadaPanelProps)
             ) : photoSlots.length > 0 ? (
                 <div className="px-5 py-4">
                     <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                        Slot Foto Dokumentasi ({photoSlots.length} Wajib)
+                        Documentation Photo Slots ({photoSlots.length} Required)
                     </p>
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
                         {photoSlots.map((slot) => (
@@ -206,7 +206,7 @@ function ArmadaPanel({ step, report, photos, onOpenLightbox }: ArmadaPanelProps)
             {/* Belum ada laporan sama sekali */}
             {!hasAnyData && (
                 <div className="px-5 py-8 text-center">
-                    <p className="text-sm text-slate-300 italic">Belum ada laporan yang dikirim untuk tahap ini.</p>
+                    <p className="text-sm text-slate-300 italic">No reports submitted for this stage yet.</p>
                 </div>
             )}
 
@@ -214,7 +214,7 @@ function ArmadaPanel({ step, report, photos, onOpenLightbox }: ArmadaPanelProps)
             <div className="grid grid-cols-1 divide-y divide-slate-100 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
                 <div className="px-5 py-4">
                     <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                        Penanggung Jawab
+                        Person in Charge
                     </p>
                     {step.picName ? (
                         <div className="flex items-center gap-3">
@@ -227,29 +227,29 @@ function ArmadaPanel({ step, report, photos, onOpenLightbox }: ArmadaPanelProps)
                             </div>
                         </div>
                     ) : (
-                        <p className="text-xs italic text-slate-300">Belum ditugaskan</p>
+                        <p className="text-xs italic text-slate-300">Not assigned yet</p>
                     )}
                     <div className="mt-4 grid grid-cols-2 gap-3">
                         <div>
-                            <p className="text-[10px] font-semibold text-slate-400">Mulai</p>
+                            <p className="text-[10px] font-semibold text-slate-400">Started</p>
                             <p className="mt-0.5 text-xs font-medium text-slate-700">{fmtDate(step.actualStart)}</p>
                         </div>
                         <div>
-                            <p className="text-[10px] font-semibold text-slate-400">Selesai</p>
+                            <p className="text-[10px] font-semibold text-slate-400">Completed</p>
                             <p className="mt-0.5 text-xs font-medium text-slate-700">{fmtDate(step.actualFinish)}</p>
                         </div>
                     </div>
                 </div>
                 <div className="px-5 py-4">
                     <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                        Catatan Lapangan
+                        Field Notes
                     </p>
                     {report?.description ? (
                         <p className="text-xs leading-relaxed text-slate-700 whitespace-pre-line">
                             {report.description}
                         </p>
                     ) : (
-                        <p className="text-xs italic text-slate-300">Belum ada catatan.</p>
+                        <p className="text-xs italic text-slate-300">No notes yet.</p>
                     )}
                 </div>
             </div>
@@ -341,7 +341,7 @@ export default function CheckpointSelectedDetail({
             const blobUrl = window.URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = blobUrl;
-            a.download = `${(caption ?? "foto").toLowerCase().replace(/[^a-z0-9]/g, "-")}.jpg`;
+            a.download = `${(caption ?? "photo").toLowerCase().replace(/[^a-z0-9]/g, "-")}.jpg`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -367,19 +367,19 @@ export default function CheckpointSelectedDetail({
                 <div>
                     <div className="flex items-center gap-2 mb-0.5">
                         <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                            Tahap {step.order} dari {totalSteps}
+                            Stage {step.order} of {totalSteps}
                         </span>
                         {isCompleted ? (
                             <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-[#06283A] border border-slate-200">
-                                Selesai
+                                Completed
                             </span>
                         ) : isInProgress ? (
                             <span className="rounded-md bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-800 border border-amber-200">
-                                Berlangsung
+                                In Progress
                             </span>
                         ) : (
                             <span className="rounded-md bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-400 border border-slate-200">
-                                Menunggu
+                                Pending
                             </span>
                         )}
                     </div>
@@ -399,7 +399,7 @@ export default function CheckpointSelectedDetail({
                         }`}
                     >
                         <ChevronLeft className="h-3.5 w-3.5" />
-                        Sebelumnya
+                        Previous
                     </button>
                     <button
                         type="button"
@@ -411,7 +411,7 @@ export default function CheckpointSelectedDetail({
                                 : "border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed"
                         }`}
                     >
-                        Berikutnya
+                        Next
                         <ChevronRight className="h-3.5 w-3.5" />
                     </button>
                 </div>
@@ -425,7 +425,7 @@ export default function CheckpointSelectedDetail({
                     <>
                         <div>
                             <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                                Armada ({movements.length})
+                                Fleet ({movements.length})
                             </p>
                             <div className="space-y-2">
                                 {movements.map((m) => {
@@ -494,7 +494,7 @@ export default function CheckpointSelectedDetail({
                     >
                         <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3">
                             <p className="text-sm font-semibold text-[#06283A]">
-                                {lightbox.caption ?? "Foto Dokumentasi"}
+                                {lightbox.caption ?? "Documentation Photo"}
                             </p>
                             <div className="flex items-center gap-2">
                                 <button
@@ -503,7 +503,7 @@ export default function CheckpointSelectedDetail({
                                     className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition cursor-pointer"
                                 >
                                     <Download className="h-3.5 w-3.5" />
-                                    Unduh
+                                    Download
                                 </button>
                                 <button
                                     type="button"
@@ -517,7 +517,7 @@ export default function CheckpointSelectedDetail({
                         <div className="flex max-h-[65vh] items-center justify-center bg-slate-950 p-3">
                             <img
                                 src={lightbox.url}
-                                alt={lightbox.caption ?? "Foto"}
+                                alt={lightbox.caption ?? "Photo"}
                                 className="max-h-[62vh] w-auto object-contain rounded-lg"
                             />
                         </div>

@@ -298,7 +298,7 @@ export default function TemplateLaporanEdit({ template, checkpoints = [] }: Edit
                         <button
                             type="submit"
                             disabled={processing}
-                            className="px-4 py-2 rounded-lg text-xs font-bold text-[#06283A] bg-[#F5B800] hover:bg-[#E5AC00] shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+                            className="px-4 py-2 rounded-lg text-xs font-bold text-[#06283A] bg-[#F6C343] hover:bg-[#E0AD2C] shadow-xs transition-all disabled:opacity-50 cursor-pointer"
                         >
                             {processing ? 'Menyimpan...' : 'Simpan Perubahan Master Template'}
                         </button>

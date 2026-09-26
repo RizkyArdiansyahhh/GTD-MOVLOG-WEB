@@ -141,7 +141,7 @@ class CustomerPortalTest extends TestCase
             );
     }
 
-    public function test_customer_monitoring_barang_filters_by_search(): void
+    public function test_customer_checkpoint_list_filters_by_search(): void
     {
         ShippingSession::create([
             'customer_id'    => $this->customer->id,
@@ -168,11 +168,11 @@ class CustomerPortalTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->customerUser)
-            ->get('/customer/monitoring-barang?search=Excavator');
+            ->get('/customer/checkpoints?search=Excavator');
 
         $response->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Customer/MonitoringBarang', false)
+                ->component('Customer/Checkpoint', false)
                 ->has('shipments.data', 1)
                 ->where('shipments.data.0.assignment_no', 'LTR-1001')
             );
@@ -243,7 +243,7 @@ class CustomerPortalTest extends TestCase
 
         $response->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Customer/DetailShipment', false)
+                ->component('Customer/CheckpointDetail', false)
                 ->has('shipment', fn (Assert $s) => $s
                     ->where('id', (string) $session->id)
                     ->where('assignment_no', 'LTR-5501')
@@ -251,6 +251,45 @@ class CustomerPortalTest extends TestCase
                 )
                 ->has('documents', 1)
                 ->where('documents.0.file_name', 'BL_LTR5501_Verified.pdf')
+            );
+    }
+
+    public function test_legacy_cargo_detail_url_redirects_to_merged_checkpoint_detail(): void
+    {
+        $session = ShippingSession::create([
+            'customer_id'    => $this->customer->id,
+            'created_by'     => $this->customerUser->id,
+            'assignment_no'  => 'LTR-5502',
+            'cargo_name'     => 'Muatan Semen',
+            'total_quantity' => 100,
+            'unit'           => 'Ton',
+            'origin'         => 'Gresik',
+            'destination'    => 'Balikpapan',
+            'status'         => ShippingSessionStatus::IN_TRANSIT,
+        ]);
+
+        SessionUnit::create([
+            'shipping_session_id' => $session->id,
+            'unit_name'           => 'Semen Gresik 50kg',
+            'quantity'            => 2000,
+            'notes'              => 'Batch A',
+        ]);
+
+        // Legacy cargo URL must preserve the ID and land on the merged page.
+        $this->actingAs($this->customerUser)->get("/customer/monitoring-barang/{$session->id}")
+            ->assertRedirect("/customer/shipment/{$session->id}");
+
+        $this->actingAs($this->customerUser)->get("/customer/shipment/{$session->id}")
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Customer/CheckpointDetail')
+                ->where('shipment.assignment_no', 'LTR-5502')
+                ->has('units', 1)
+                ->where('units.0.unit_name', 'Semen Gresik 50kg')
+                ->has('shipment', fn (Assert $s) => $s
+                    ->has('updated_at')
+                    ->etc()
+                )
             );
     }
 
@@ -283,7 +322,8 @@ class CustomerPortalTest extends TestCase
         $sessionB = ShippingSession::factory()->create(['customer_id' => $customerB->id]);
 
         $response = $this->actingAs($userA)->get("/customer/monitoring-barang/{$sessionB->id}");
-        $response->assertForbidden(); // harus 403, bukan menampilkan data customerB
+        $response->assertRedirect("/customer/shipment/{$sessionB->id}"); // legacy URL preserves ID, no data leaked
+        $this->actingAs($userA)->get("/customer/shipment/{$sessionB->id}")->assertForbidden();
 
         $responseShipment = $this->actingAs($userA)->get("/customer/shipment/{$sessionB->id}");
         $responseShipment->assertForbidden();

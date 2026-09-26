@@ -11,9 +11,9 @@ interface CheckpointAccordionProps {
 
 function statusLabel(raw: string): string {
     const s = raw.toLowerCase();
-    if (s === "completed" || s === "selesai") return "Selesai";
-    if (s === "in_progress" || s === "aktif") return "Berlangsung";
-    return "Menunggu";
+    if (s === "completed" || s === "selesai") return "Completed";
+    if (s === "in_progress" || s === "aktif") return "In Progress";
+    return "Pending";
 }
 
 function statusVariant(raw: string): "done" | "active" | "idle" {
@@ -108,7 +108,7 @@ function PanelContent({ step }: PanelContentProps) {
             const blobUrl = window.URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = blobUrl;
-            a.download = `${(caption ?? "foto").toLowerCase().replace(/[^a-z0-9]/g, "-")}.jpg`;
+            a.download = `${(caption ?? "photo").toLowerCase().replace(/[^a-z0-9]/g, "-")}.jpg`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -124,7 +124,7 @@ function PanelContent({ step }: PanelContentProps) {
             {movements.length > 1 && (
                 <div className="px-6 py-4">
                     <p className="mb-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                        Armada ({movements.length})
+                        Fleet ({movements.length})
                     </p>
                     <div className="flex flex-wrap gap-1.5">
                         {movements.map((m) => {
@@ -161,7 +161,7 @@ function PanelContent({ step }: PanelContentProps) {
             {requiredFields.length > 0 && (
                 <div className="px-6 py-4">
                     <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                        Data Laporan
+                        Report Data
                     </p>
                     <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
                         {requiredFields.map((field) => {
@@ -184,7 +184,7 @@ function PanelContent({ step }: PanelContentProps) {
                                             filled ? "text-[#06283A]" : "italic text-slate-300"
                                         }`}
                                     >
-                                        {value || "Belum diisi"}
+                                        {value || "Not filled yet"}
                                     </span>
                                 </div>
                             );
@@ -197,7 +197,7 @@ function PanelContent({ step }: PanelContentProps) {
             {requiredPhotoSlots.length > 0 && (
                 <div className="px-6 py-4">
                     <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                        Foto Bukti ({photos.length}/{requiredPhotoSlots.length})
+                        Proof Photos ({photos.length}/{requiredPhotoSlots.length})
                     </p>
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                         {requiredPhotoSlots.map((slot, idx) => {
@@ -240,7 +240,7 @@ function PanelContent({ step }: PanelContentProps) {
                 {/* PIC */}
                 <div className="px-6 py-4">
                     <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                        Penanggung Jawab
+                        Person in Charge
                     </p>
                     {step.picName ? (
                         <div className="flex items-center gap-3">
@@ -253,18 +253,18 @@ function PanelContent({ step }: PanelContentProps) {
                             </div>
                         </div>
                     ) : (
-                        <p className="text-xs italic text-slate-300">Belum ditugaskan</p>
+                        <p className="text-xs italic text-slate-300">Not assigned yet</p>
                     )}
 
                     <div className="mt-4 grid grid-cols-2 gap-3">
                         <div>
-                            <p className="text-[10px] font-semibold text-slate-400">Mulai</p>
+                            <p className="text-[10px] font-semibold text-slate-400">Started</p>
                             <p className="mt-0.5 text-xs font-medium text-slate-700">
                                 {fmtDate(step.actualStart)}
                             </p>
                         </div>
                         <div>
-                            <p className="text-[10px] font-semibold text-slate-400">Selesai</p>
+                            <p className="text-[10px] font-semibold text-slate-400">Completed</p>
                             <p className="mt-0.5 text-xs font-medium text-slate-700">
                                 {fmtDate(step.actualFinish)}
                             </p>
@@ -275,14 +275,14 @@ function PanelContent({ step }: PanelContentProps) {
                 {/* Catatan */}
                 <div className="px-6 py-4">
                     <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                        Catatan Lapangan
+                        Field Notes
                     </p>
                     {report?.description ? (
                         <p className="text-xs leading-relaxed text-slate-700 whitespace-pre-line">
                             {report.description}
                         </p>
                     ) : (
-                        <p className="text-xs italic text-slate-300">Belum ada catatan.</p>
+                        <p className="text-xs italic text-slate-300">No notes yet.</p>
                     )}
                 </div>
             </div>
@@ -301,7 +301,7 @@ function PanelContent({ step }: PanelContentProps) {
                     >
                         <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3">
                             <p className="text-sm font-semibold text-[#06283A]">
-                                {lightbox.caption ?? "Foto Dokumentasi"}
+                                {lightbox.caption ?? "Documentation Photo"}
                             </p>
                             <div className="flex items-center gap-2">
                                 <button
@@ -310,7 +310,7 @@ function PanelContent({ step }: PanelContentProps) {
                                     className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition cursor-pointer"
                                 >
                                     <Download className="h-3.5 w-3.5" />
-                                    Unduh
+                                    Download
                                 </button>
                                 <button
                                     type="button"
@@ -324,7 +324,7 @@ function PanelContent({ step }: PanelContentProps) {
                         <div className="flex max-h-[65vh] items-center justify-center bg-slate-950 p-3">
                             <img
                                 src={lightbox.url}
-                                alt={lightbox.caption ?? "Foto"}
+                                alt={lightbox.caption ?? "Photo"}
                                 className="max-h-[62vh] w-auto object-contain rounded-lg"
                             />
                         </div>
@@ -395,13 +395,13 @@ function AccordionItem({ step, index, isOpen, onToggle, isCurrent }: AccordionIt
                         <StatusPill raw={step.status ?? "pending"} />
                         {isCurrent && !isOpen && (
                             <span className="rounded-md bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">
-                                Tahap Aktif
+                                Active Stage
                             </span>
                         )}
                     </div>
                     {movements.length > 0 && (
                         <p className="mt-1 text-[11px] text-slate-400">
-                            {movements.length} armada
+                            {movements.length} fleet
                             {step.picName ? ` · PIC: ${step.picName}` : ""}
                         </p>
                     )}

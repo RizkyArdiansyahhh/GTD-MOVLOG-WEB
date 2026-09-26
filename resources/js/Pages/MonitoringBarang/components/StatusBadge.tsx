@@ -6,6 +6,7 @@ const STATUS_STYLES: Record<ShippingStatus, { bg: string; text: string }> = {
   'Sampai Tujuan': { bg: '#E6F6EA', text: '#15803D' },
   'Sampai Checkpoint': { bg: '#E5F0FF', text: '#1D4ED8' },
   'Terlambat': { bg: '#FDE8E8', text: '#DC2626' },
+    'Delayed': { bg: '#FDE8E8', text: '#DC2626' },
   'Menunggu': { bg: '#FEF9E7', text: '#B7950B' },
     'Pending': { bg: '#FEF9E7', text: '#B7950B' },
   'Dibatalkan': { bg: '#F1F5F9', text: '#64748B' },
@@ -14,8 +15,20 @@ const STATUS_STYLES: Record<ShippingStatus, { bg: string; text: string }> = {
     'Pending Verification': { bg: '#FEF9E7', text: '#B7950B' },
 };
 
+// Legacy Indonesian status values (from older data) are mapped to English
+// labels for display. Style lookup still supports both variants.
+const STATUS_LABELS: Record<string, string> = {
+  'Dalam Perjalanan': 'In Transit',
+  'Sampai Tujuan': 'Delivered',
+  'Sampai Checkpoint': 'Arrived at Checkpoint',
+  'Terlambat': 'Delayed',
+  'Menunggu': 'Pending',
+  'Dibatalkan': 'Cancelled',
+};
+
 export function StatusBadge({ status }: { status: ShippingStatus }) {
   const style = STATUS_STYLES[status] ?? STATUS_STYLES['Menunggu'];
+  const label = STATUS_LABELS[status] ?? status;
   return (
     <span
       className="inline-flex items-center justify-center rounded-full"
@@ -28,7 +41,7 @@ export function StatusBadge({ status }: { status: ShippingStatus }) {
         color: style.text,
       }}
     >
-      {status}
+      {label}
     </span>
   );
 }

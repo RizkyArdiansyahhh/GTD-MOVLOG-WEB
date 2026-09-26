@@ -202,10 +202,10 @@ export default function Login() {
                                         Password
                                     </label>
                                     <a
-                                        href="#"
+                                        href="/forgot-password"
                                         className="text-xs text-foreground/50 hover:text-gold hover:underline transition-colors font-body"
                                     >
-                                        Lupa Password?
+                                        Forgo Password?
                                     </a>
                                 </div>
                                 <div className="relative">
@@ -396,7 +396,7 @@ export default function Login() {
                                     Password
                                 </label>
                                 <a
-                                    href="#"
+                                    href="/forgot-password"
                                     className="text-xs text-foreground/50 hover:text-gold hover:underline transition-colors font-body"
                                 >
                                     Lupa Password?

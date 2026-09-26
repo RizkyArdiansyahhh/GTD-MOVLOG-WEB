@@ -23,7 +23,7 @@ export default function DocumentActions({
     // Hide action buttons if status is already Verified or Rejected
     if (isFinalStatus) {
         return (
-            <div className="pt-3 border-t border-gray-100 shrink-0">
+            <div className="pt-3 border-t border-slate-100 shrink-0">
                 {isApproved && (
                     <div className="flex items-center gap-2.5 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium">
                         <ShieldCheck size={18} className="text-emerald-600 shrink-0" />
@@ -50,7 +50,7 @@ export default function DocumentActions({
     }
 
     return (
-        <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-3 border-t border-gray-100 shrink-0">
+        <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-3 border-t border-slate-100 shrink-0">
             {/* Secondary Action: Reject */}
             <button
                 type="button"
@@ -70,7 +70,7 @@ export default function DocumentActions({
                 disabled={isSubmitting}
                 className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold shadow-md hover:shadow-lg active:scale-[0.98] disabled:opacity-50 transition-all duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
                 style={{
-                    backgroundColor: '#F5B800',
+                    backgroundColor: '#F6C343',
                     color: '#06283A',
                 }}
             >

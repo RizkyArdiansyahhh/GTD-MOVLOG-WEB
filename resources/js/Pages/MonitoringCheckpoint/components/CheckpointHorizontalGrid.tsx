@@ -67,14 +67,14 @@ export default function CheckpointHorizontalGrid({
     return (
         <div className="space-y-6">
             {/* Horizontal Stepper Connector Bar */}
-            <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xs">
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
                 <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
                     <div>
                         <h2 className="text-base font-bold text-[#06283A]">
-                            Alur Perjalanan Checkpoint
+                            Checkpoint Journey Flow
                         </h2>
                         <p className="text-xs text-slate-500">
-                            Pelacakan perpindahan kargo dari titik muat awal hingga titik bongkar akhir
+                            Track cargo movements from initial loading point to final unloading point
                         </p>
                     </div>
 
@@ -99,7 +99,7 @@ export default function CheckpointHorizontalGrid({
                                     : "border border-amber-200 bg-amber-50 text-amber-900"
                             }`}
                         >
-                            {completedCount} dari {steps.length} Tahap Selesai
+                            {completedCount} of {steps.length} Stages Completed
                         </span>
                     </div>
                 </div>
@@ -128,7 +128,7 @@ export default function CheckpointHorizontalGrid({
                             return (
                                 <div
                                     key={step.checkpointId}
-                                    className={`relative flex flex-col items-center rounded-2xl border p-4 text-center transition-all ${
+                                    className={`relative flex flex-col items-center rounded-xl border p-4 text-center transition-all ${
                                         isInProgress
                                             ? "border-amber-300 bg-amber-50/40 shadow-xs ring-2 ring-amber-400/20"
                                             : isCompleted
@@ -139,18 +139,18 @@ export default function CheckpointHorizontalGrid({
                                     {/* Number / Status Circle Node */}
                                     <div className="mb-3">
                                         {isCompleted ? (
-                                            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#06283A] text-white shadow-xs">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#06283A] text-white shadow-xs">
                                                 <Check className="h-5 w-5" strokeWidth={2.5} />
                                             </div>
                                         ) : isInProgress ? (
-                                            <div className="flex h-10 w-10 items-center justify-center rounded-2xl border-2 border-[#B7791F] bg-amber-50 text-[#B7791F] shadow-xs">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-[#B7791F] bg-amber-50 text-[#B7791F] shadow-xs">
                                                 <span className="relative flex h-3 w-3">
                                                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
                                                     <span className="relative inline-flex h-3 w-3 rounded-full bg-[#B7791F]" />
                                                 </span>
                                             </div>
                                         ) : (
-                                            <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-xs font-bold text-slate-400">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-400">
                                                 {idx + 1}
                                             </div>
                                         )}
@@ -158,7 +158,7 @@ export default function CheckpointHorizontalGrid({
 
                                     {/* Title & Stage */}
                                     <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                                        Tahap {step.order}
+                                        Stage {step.order}
                                     </span>
                                     <h3 className="text-sm font-bold text-[#06283A] mt-0.5">
                                         {step.title}
@@ -168,17 +168,17 @@ export default function CheckpointHorizontalGrid({
                                     <div className="mt-2.5">
                                         {isCompleted && (
                                             <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700">
-                                                <Check className="h-3 w-3" /> Selesai
+                                                <Check className="h-3 w-3" /> Completed
                                             </span>
                                         )}
                                         {isInProgress && (
                                             <span className="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-100/90 px-2.5 py-0.5 text-[11px] font-semibold text-amber-900">
-                                                Sedang Berjalan
+                                                In Progress
                                             </span>
                                         )}
                                         {isPending && (
                                             <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-medium text-slate-500">
-                                                Belum Dimulai
+                                                Not Started
                                             </span>
                                         )}
                                     </div>
@@ -203,7 +203,7 @@ export default function CheckpointHorizontalGrid({
                     return (
                         <div
                             key={step.checkpointId}
-                            className={`flex flex-col rounded-2xl border bg-white shadow-xs transition-all ${
+                            className={`flex flex-col rounded-xl border bg-white shadow-xs transition-all ${
                                 isInProgress
                                     ? "border-amber-300 ring-1 ring-amber-300/40"
                                     : isCompleted
@@ -240,11 +240,11 @@ export default function CheckpointHorizontalGrid({
                                     <div>
                                         {isCompleted ? (
                                             <span className="inline-flex rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200">
-                                                Selesai
+                                                Completed
                                             </span>
                                         ) : isInProgress ? (
                                             <span className="inline-flex rounded-md bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-800 border border-amber-200">
-                                                Aktif
+                                                Active
                                             </span>
                                         ) : (
                                             <span className="inline-flex rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-500">
@@ -259,7 +259,7 @@ export default function CheckpointHorizontalGrid({
                                     <div className="flex items-center justify-between gap-2 bg-slate-50 rounded-xl p-2.5 border border-slate-100">
                                         <div className="flex items-center gap-1.5 text-slate-500">
                                             <User className="h-3.5 w-3.5 text-slate-400" />
-                                            <span>PIC Petugas:</span>
+                                            <span>Officer PIC:</span>
                                         </div>
                                         <span className="font-semibold text-slate-800 truncate max-w-[120px]">
                                             {step.picName ?? "-"}
@@ -269,7 +269,7 @@ export default function CheckpointHorizontalGrid({
                                     <div className="bg-slate-50 rounded-xl p-2.5 border border-slate-100 space-y-1">
                                         <div className="flex items-center gap-1.5 text-slate-500">
                                             <Clock className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                                            <span>Jadwal / Waktu:</span>
+                                            <span>Schedule / Time:</span>
                                         </div>
                                         <div className="text-[11px] font-medium text-slate-700 pl-5">
                                             {step.actualStart ? (
@@ -291,7 +291,7 @@ export default function CheckpointHorizontalGrid({
                                                     )}
                                                 </>
                                             ) : (
-                                                <span className="text-slate-400">Belum ada catatan waktu</span>
+                                                <span className="text-slate-400">No time records yet</span>
                                             )}
                                         </div>
                                     </div>
@@ -309,12 +309,12 @@ export default function CheckpointHorizontalGrid({
                                         >
                                             <span className="flex items-center gap-1.5">
                                                 <FileText className="h-3.5 w-3.5" />
-                                                Laporan Lapangan
+                                                Field Report
                                             </span>
                                             <div className="flex items-center gap-1">
                                                 {report.photos.length > 0 && (
                                                     <span className="rounded-full bg-amber-100 px-1.5 py-0.2 text-[10px] font-bold text-amber-800">
-                                                        {report.photos.length} foto
+                                                        {report.photos.length} photos
                                                     </span>
                                                 )}
                                                 <ChevronDown
@@ -331,7 +331,7 @@ export default function CheckpointHorizontalGrid({
                                                 {report.description && (
                                                     <div className="rounded-xl border border-slate-200/80 bg-slate-50/80 p-3">
                                                         <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
-                                                            Catatan Operasional
+                                                            Operational Notes
                                                         </p>
                                                         <p className="text-xs text-slate-700 leading-relaxed line-clamp-4 hover:line-clamp-none">
                                                             {report.description}
@@ -343,7 +343,7 @@ export default function CheckpointHorizontalGrid({
                                                 {report.photos.length > 0 && (
                                                     <div>
                                                         <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-                                                            Foto Dokumentasi
+                                                            Documentation Photos
                                                         </p>
                                                         <div className="grid grid-cols-2 gap-2">
                                                             {report.photos.map((photo) => (
@@ -353,7 +353,7 @@ export default function CheckpointHorizontalGrid({
                                                                     onClick={() =>
                                                                         setActivePhotoModal({
                                                                             url: photo.photoUrl,
-                                                                            caption: photo.caption,
+                                                                            caption: photo.caption ?? undefined,
                                                                             title: `${step.title} - Step ${step.order}`,
                                                                         })
                                                                     }
@@ -379,7 +379,7 @@ export default function CheckpointHorizontalGrid({
                                     </div>
                                 ) : (
                                     <div className="py-6 text-center text-xs text-slate-400">
-                                        <p>Belum ada laporan lapangan</p>
+                                        <p>No field reports yet</p>
                                     </div>
                                 )}
                             </div>
@@ -416,7 +416,7 @@ export default function CheckpointHorizontalGrid({
                         <div className="p-4 bg-slate-950 flex items-center justify-center max-h-[70vh] overflow-hidden">
                             <img
                                 src={activePhotoModal.url}
-                                alt={activePhotoModal.caption ?? "Foto Dokumentasi"}
+                                alt={activePhotoModal.caption ?? "Documentation Photo"}
                                 className="max-h-[65vh] w-auto object-contain rounded-lg"
                             />
                         </div>

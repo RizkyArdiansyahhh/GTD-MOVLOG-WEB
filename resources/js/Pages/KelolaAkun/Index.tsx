@@ -1,7 +1,8 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Users, ShieldCheck, UserCheck, UserX, Plus, AlertCircle } from 'lucide-react';
 import DashboardLayout from '@/Layouts/DashboardLayout';
+import { PageHeader } from '@/Components/ui';
 import type { PageProps } from '@/types';
 import UserStatsCard from './components/UserStatsCard';
 import UserFilters from './components/UserFilters';
@@ -59,7 +60,7 @@ const ITEMS_PER_PAGE = 5;
 // ─────────────────────────────────────────────
 export default function Index() {
     const pageProps = usePage<KelolaAkunProps>().props;
-    const { users, stats, availableRoles, filters, auth, flash } = pageProps;
+    const { users, stats, availableRoles, filters, auth } = pageProps;
 
     // ── Access control ──
     const isSuperAdmin = useMemo(() => {
@@ -68,17 +69,93 @@ export default function Index() {
         return roles.includes('super-admin') || roles.includes('Super Admin');
     }, [auth]);
 
-    // Determine if server data is present and non-empty
-    const hasServerData = users && Array.isArray(users.data) && users.data.length > 0;
+    // Determine if server data is present (even when result set is empty).
+    // Previously `users.data.length > 0` caused empty search results to fall
+    // back to local seeder mock data — hiding the true "not found" state.
+    const hasServerData = Boolean(users && Array.isArray(users.data));
 
     // Base user list: server data if available, otherwise exact AdminUserSeeder data
     const [localUsers, setLocalUsers] = useState<KelolaAkunUser[]>(seederUsers);
-    const baseUsers: KelolaAkunUser[] = hasServerData ? users.data : localUsers;
+    const baseUsers: KelolaAkunUser[] = hasServerData ? (users as PaginatedUsers).data : localUsers;
+    const isEmptyServerResult = hasServerData && (users as PaginatedUsers).data.length === 0;
 
     const [search, setSearch] = useState(filters?.search ?? '');
     const [roleFilter, setRoleFilter] = useState(filters?.role ?? 'All Roles');
     const [statusFilter, setStatusFilter] = useState(filters?.status ?? 'All Statuses');
     const [currentPage, setCurrentPage] = useState(users?.current_page ?? 1);
+    const [isSearching, setIsSearching] = useState(false);
+    const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    // Skips the debounced fetch on first mount — the initial props already
+    // reflect the URL filters, so an immediate request would be redundant.
+    const isFirstFilterRunRef = useRef(true);
+    // Set when a handler already fired its request immediately, so the
+    // state updates it caused don't produce a second (debounced) request.
+    const skipNextFilterEffectRef = useRef(false);
+
+    const cancelPendingSearch = () => {
+        if (searchDebounceRef.current) {
+            clearTimeout(searchDebounceRef.current);
+            searchDebounceRef.current = null;
+        }
+    };
+
+    const fetchFiltered = (params: { search: string; role: string; status: string; page?: string | number }) => {
+        router.get('/kelola-akun', params, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+            onStart: () => setIsSearching(true),
+            onFinish: () => setIsSearching(false),
+        });
+    };
+
+    // Single debounced server search (400ms) for search + role + status.
+    // Collapsing all three filters into one effect guarantees the request
+    // always carries the latest values (no stale closure) and that rapid
+    // changes produce exactly one request.
+    useEffect(() => {
+        if (!hasServerData) return;
+        if (isFirstFilterRunRef.current) {
+            isFirstFilterRunRef.current = false;
+            return;
+        }
+        if (skipNextFilterEffectRef.current) {
+            skipNextFilterEffectRef.current = false;
+            return;
+        }
+        cancelPendingSearch();
+        searchDebounceRef.current = setTimeout(() => {
+            fetchFiltered({ search, role: roleFilter, status: statusFilter });
+        }, 400);
+        return () => {
+            cancelPendingSearch();
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [search, roleFilter, statusFilter]);
+
+    // Keep local state in sync with server-provided filters/page so the
+    // browser back/forward buttons and external navigation update the UI.
+    // React bails out when the value is identical, so this never triggers
+    // a redundant fetch loop.
+    const serverPage = users?.current_page;
+    useEffect(() => {
+        setCurrentPage(serverPage ?? 1);
+    }, [serverPage]);
+
+    const serverSearch = filters?.search;
+    useEffect(() => {
+        if (serverSearch !== undefined) setSearch(serverSearch);
+    }, [serverSearch]);
+
+    const serverRole = filters?.role;
+    useEffect(() => {
+        if (serverRole !== undefined) setRoleFilter(serverRole);
+    }, [serverRole]);
+
+    const serverStatus = filters?.status;
+    useEffect(() => {
+        if (serverStatus !== undefined) setStatusFilter(serverStatus);
+    }, [serverStatus]);
 
     // State for Status Confirmation Modal, Delete Confirmation Modal & Toast
     const [modalUser, setModalUser] = useState<KelolaAkunUser | null>(null);
@@ -88,22 +165,9 @@ export default function Index() {
     const [isSubmittingDelete, setIsSubmittingDelete] = useState(false);
     const [toast, setToast] = useState<ToastMessage | null>(null);
 
-    // Listen to flash messages (e.g., success message on redirect from Edit User)
-    useEffect(() => {
-        if (flash?.success) {
-            setToast({
-                id: String(Date.now()),
-                type: 'success',
-                message: flash.success,
-            });
-        } else if (flash?.error) {
-            setToast({
-                id: String(Date.now()),
-                type: 'error',
-                message: flash.error,
-            });
-        }
-    }, [flash]);
+    // NOTE: flash.success/error is rendered by the global <Toast /> in
+    // DashboardLayout. Do NOT mirror it into the local ToastNotification —
+    // that was the source of the double popup after create/status/delete.
 
     // Filtered users (works for both server fallback and local client filter)
     const filteredUsers = useMemo(() => {
@@ -153,45 +217,51 @@ export default function Index() {
 
     const handleSearchChange = (value: string) => {
         setSearch(value);
-        if (hasServerData) {
-            router.get('/kelola-akun', { search: value, role: roleFilter, status: statusFilter }, { preserveState: true, preserveScroll: true });
-        }
+        // Server fetch is handled by the debounced effect above.
     };
 
     const handleSearchSubmit = () => {
-        if (hasServerData) {
-            router.get('/kelola-akun', { search, role: roleFilter, status: statusFilter }, { preserveState: true, preserveScroll: true });
-        }
+        if (!hasServerData) return;
+        // Flush immediately instead of waiting for the debounce timer,
+        // and cancel the pending timer so only one request fires.
+        cancelPendingSearch();
+        fetchFiltered({ search, role: roleFilter, status: statusFilter });
     };
 
     const handleRoleChange = (value: string) => {
         setRoleFilter(value);
-        if (hasServerData) {
-            router.get('/kelola-akun', { search, role: value, status: statusFilter }, { preserveState: true, preserveScroll: true });
-        }
+        // Server fetch is handled by the debounced effect above.
     };
 
     const handleStatusChange = (value: string) => {
         setStatusFilter(value);
-        if (hasServerData) {
-            router.get('/kelola-akun', { search, role: roleFilter, status: value }, { preserveState: true, preserveScroll: true });
-        }
+        // Server fetch is handled by the debounced effect above.
     };
 
     const handleReset = () => {
+        cancelPendingSearch();
+        // The state updates below would re-trigger the debounced effect
+        // with identical values — skip it since we fetch immediately.
+        skipNextFilterEffectRef.current = true;
         setSearch('');
         setRoleFilter('All Roles');
         setStatusFilter('All Statuses');
         setCurrentPage(1);
         if (hasServerData) {
-            router.get('/kelola-akun', {}, { preserveState: true, preserveScroll: true });
+            fetchFiltered({ search: '', role: 'All Roles', status: 'All Statuses' });
+        } else {
+            skipNextFilterEffectRef.current = false;
         }
     };
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
         if (hasServerData) {
-            router.get('/kelola-akun', { search, role: roleFilter, status: statusFilter, page: String(page) }, { preserveState: true, preserveScroll: true });
+            // An explicit page navigation takes precedence over any
+            // pending debounced filter request (which carries the same
+            // latest filter values anyway).
+            cancelPendingSearch();
+            fetchFiltered({ search, role: roleFilter, status: statusFilter, page: String(page) });
         }
     };
 
@@ -224,15 +294,12 @@ export default function Index() {
                     preserveScroll: true,
                     preserveState: false,
                     onSuccess: () => {
+                        // Success flash from the server redirect is rendered
+                        // by the global <Toast /> — no local toast here.
                         updateLocal();
                         setIsSubmittingStatus(false);
                         setUpdatingUserId(null);
                         setModalUser(null);
-                        setToast({
-                            id: String(Date.now()),
-                            type: 'success',
-                            message: `Account status for ${modalUser.name} has been ${actionLabel}.`,
-                        });
                     },
                     onError: (errors) => {
                         setIsSubmittingStatus(false);
@@ -286,14 +353,11 @@ export default function Index() {
                 preserveScroll: true,
                 preserveState: false,
                 onSuccess: () => {
+                    // Success flash from the server redirect is rendered
+                    // by the global <Toast /> — no local toast here.
                     updateLocal();
                     setIsSubmittingDelete(false);
                     setDeleteModalUser(null);
-                    setToast({
-                        id: String(Date.now()),
-                        type: 'success',
-                        message: '✅ User deleted successfully.',
-                    });
                 },
                 onError: (errors) => {
                     setIsSubmittingDelete(false);
@@ -324,9 +388,9 @@ export default function Index() {
     };
 
     // Pagination bounds
-    const totalPages = hasServerData ? (users.last_page ?? 1) : Math.max(1, Math.ceil(filteredUsers.length / ITEMS_PER_PAGE));
+    const totalPages = hasServerData ? ((users as PaginatedUsers).last_page ?? 1) : Math.max(1, Math.ceil(filteredUsers.length / ITEMS_PER_PAGE));
     const paginatedUsers = hasServerData ? filteredUsers : filteredUsers.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
-    const totalItems = hasServerData ? (users.total ?? filteredUsers.length) : filteredUsers.length;
+    const totalItems = hasServerData ? ((users as PaginatedUsers).total ?? filteredUsers.length) : filteredUsers.length;
 
     return (
         <DashboardLayout>
@@ -354,45 +418,40 @@ export default function Index() {
             />
 
             {!isSuperAdmin ? (
-                <div className="bg-white rounded-2xl border border-red-100 shadow-sm p-8 text-center my-8">
+                <div className="bg-white rounded-xl border border-red-100 shadow-sm p-8 text-center my-8">
                     <div
                         className="flex items-center justify-center rounded-full mx-auto mb-4"
                         style={{ width: 56, height: 56, backgroundColor: '#fef2f2' }}
                     >
                         <AlertCircle size={28} className="text-red-500" strokeWidth={1.8} />
                     </div>
-                    <h2 className="text-lg font-bold text-gray-900 mb-1">Access Denied</h2>
-                    <p className="text-sm text-gray-500 max-w-md mx-auto">
+                    <h2 className="text-lg font-bold text-slate-900 mb-1">Access Denied</h2>
+                    <p className="text-sm text-slate-500 max-w-md mx-auto">
                         The <strong>Account Management</strong> page is only accessible to users with the <strong>super-admin</strong> role.
                     </p>
                 </div>
             ) : (
                 <>
                     {/* ── Header ── */}
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-                        <div>
-                            <h1
-                                className="text-2xl font-bold"
-                                style={{ color: '#06283A' }}
-                            >
-                                Account Management
-                            </h1>
-                            <p className="text-sm text-gray-500 mt-1">
-                                Manage all user accounts including roles, status, and recent activity.
-                            </p>
-                        </div>
-                        <Link
-                            href="/kelola-akun/tambah"
-                            className="flex items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold shadow-lg transition-all duration-200 hover:shadow-xl hover:brightness-110 active:scale-[0.98] shrink-0 cursor-pointer w-full sm:w-auto text-decoration-none"
-                            style={{
-                                height: 44,
-                                backgroundColor: '#F5B800',
-                                color: '#06283A',
-                            }}
-                        >
-                            <Plus size={18} strokeWidth={2.2} />
-                            Add New User
-                        </Link>
+                    <div className="mb-6">
+                        <PageHeader
+                            title="Account Management"
+                            subtitle="Manage all user accounts including roles, status, and recent activity."
+                            actions={
+                                <Link
+                                    href="/kelola-akun/tambah"
+                                    className="flex items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold shadow-lg transition-all duration-200 hover:shadow-xl hover:brightness-110 active:scale-[0.98] shrink-0 cursor-pointer w-full sm:w-auto text-decoration-none"
+                                    style={{
+                                        height: 44,
+                                        backgroundColor: '#F6C343',
+                                        color: '#06283A',
+                                    }}
+                                >
+                                    <Plus size={18} strokeWidth={2.2} />
+                                    Add New User
+                                </Link>
+                            }
+                        />
                     </div>
 
                     {/* ── Stats Cards ── */}
@@ -442,6 +501,11 @@ export default function Index() {
                     />
 
                     {/* ── User Table ── */}
+                    {isSearching && (
+                        <p className="text-xs text-slate-400 mb-2" role="status">
+                            Mencari…
+                        </p>
+                    )}
                     <UserTable
                         users={paginatedUsers}
                         onStatusToggleClick={handleStatusToggleClick}
@@ -456,7 +520,7 @@ export default function Index() {
                         totalPages={totalPages}
                         onPageChange={handlePageChange}
                         totalItems={totalItems}
-                        itemsPerPage={ITEMS_PER_PAGE}
+                        itemsPerPage={hasServerData ? ((users as PaginatedUsers).per_page ?? ITEMS_PER_PAGE) : ITEMS_PER_PAGE}
                     />
                 </>
             )}

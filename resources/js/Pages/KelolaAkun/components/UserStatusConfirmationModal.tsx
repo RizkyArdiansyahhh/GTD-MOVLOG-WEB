@@ -49,7 +49,7 @@ export default function UserStatusConfirmationModal({
 
             {/* Modal Card */}
             <div
-                className="relative bg-white rounded-2xl border border-gray-100 shadow-2xl p-6 max-w-md w-full z-10 transform transition-all duration-200"
+                className="relative bg-white rounded-2xl border border-slate-100 shadow-2xl p-6 max-w-md w-full z-10 transform transition-all duration-200"
                 style={{ fontFamily: "'Poppins', sans-serif" }}
             >
                 {/* Icon Container */}
@@ -78,22 +78,22 @@ export default function UserStatusConfirmationModal({
                 </h3>
 
                 {/* Message */}
-                <p className="text-sm text-gray-500 leading-relaxed mb-6">
+                <p className="text-sm text-slate-500 leading-relaxed mb-6">
                     {isCurrentlyActive ? (
                         <>
                             Are you sure you want to deactivate the account of{' '}
-                            <strong className="text-gray-900 font-semibold">{user.name}</strong>?
+                            <strong className="text-slate-900 font-semibold">{user.name}</strong>?
                             <br />
-                            <span className="block mt-2 text-xs text-gray-400">
+                            <span className="block mt-2 text-xs text-slate-400">
                                 This user will not be able to log in until the account is reactivated.
                             </span>
                         </>
                     ) : (
                         <>
                             Are you sure you want to reactivate the account of{' '}
-                            <strong className="text-gray-900 font-semibold">{user.name}</strong>?
+                            <strong className="text-slate-900 font-semibold">{user.name}</strong>?
                             <br />
-                            <span className="block mt-2 text-xs text-gray-400">
+                            <span className="block mt-2 text-xs text-slate-400">
                                 This user will regain access to all features according to their role.
                             </span>
                         </>
@@ -106,7 +106,7 @@ export default function UserStatusConfirmationModal({
                         type="button"
                         disabled={isSubmitting}
                         onClick={onClose}
-                        className="rounded-xl px-4 text-sm font-semibold text-gray-600 border border-gray-200 hover:bg-gray-50 transition-all duration-150 disabled:opacity-50 cursor-pointer"
+                        className="rounded-xl px-4 text-sm font-semibold text-slate-600 border border-slate-200 hover:bg-slate-50 transition-all duration-150 disabled:opacity-50 cursor-pointer"
                         style={{ height: 42 }}
                     >
                         Cancel

@@ -31,32 +31,32 @@ export default function DocumentMetadata({ document }: DocumentMetadataProps) {
     return (
         <div className="flex flex-col gap-3">
             {/* General Document Metadata */}
-            <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3 border-b border-gray-100 pb-2 flex items-center justify-between">
+            <div className="bg-white rounded-xl border border-slate-100 p-4 shadow-sm">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3 border-b border-slate-100 pb-2 flex items-center justify-between">
                     <span>Document Metadata</span>
-                    <span className="text-[10px] text-gray-400 font-mono font-normal">
+                    <span className="text-[10px] text-slate-400 font-mono font-normal">
                         ID: {document.id}
                     </span>
                 </h4>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-[12px] font-medium" style={{ color: '#64748B' }}>
                     <div>
-                        <span className="block text-gray-400 text-[11px] font-normal mb-0.5">Uploaded By</span>
-                        <span className="text-gray-900 font-semibold">{document.uploadedBy}</span>
+                        <span className="block text-slate-400 text-[11px] font-normal mb-0.5">Uploaded By</span>
+                        <span className="text-slate-900 font-semibold">{document.uploadedBy}</span>
                     </div>
 
                     <div>
-                        <span className="block text-gray-400 text-[11px] font-normal mb-0.5">Upload Date</span>
-                        <span className="text-gray-900 font-semibold">{document.uploadDate}</span>
+                        <span className="block text-slate-400 text-[11px] font-normal mb-0.5">Upload Date</span>
+                        <span className="text-slate-900 font-semibold">{document.uploadDate}</span>
                     </div>
 
                     <div>
-                        <span className="block text-gray-400 text-[11px] font-normal mb-0.5">Document Type</span>
-                        <span className="text-gray-900 font-semibold">{document.documentType}</span>
+                        <span className="block text-slate-400 text-[11px] font-normal mb-0.5">Document Type</span>
+                        <span className="text-slate-900 font-semibold">{document.documentType}</span>
                     </div>
 
                     <div>
-                        <span className="block text-gray-400 text-[11px] font-normal mb-0.5">Shipment Reference</span>
+                        <span className="block text-slate-400 text-[11px] font-normal mb-0.5">Shipment Reference</span>
                         <span className="text-amber-700 font-mono font-semibold bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200/60 inline-block">
                             {document.shipmentReference || document.assignmentNoRef}
                         </span>

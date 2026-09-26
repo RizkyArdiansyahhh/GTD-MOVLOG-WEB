@@ -11,13 +11,17 @@ enum SessionCheckpointStatus: string
     case COMPLETED = 'completed';
     case SKIPPED = 'skipped';
 
+    /**
+     * Natural Indonesian label for narrative sentences
+     * (e.g. "Tahap Kapal selesai").
+     */
     public function label(): string
     {
         return match ($this) {
-            self::PENDING => 'Pending',
-            self::IN_PROGRESS => 'In Progress',
-            self::COMPLETED => 'Completed',
-            self::SKIPPED => 'Skipped',
+            self::PENDING => 'belum dimulai',
+            self::IN_PROGRESS => 'sedang berjalan',
+            self::COMPLETED => 'selesai',
+            self::SKIPPED => 'dilewati',
         };
     }
 

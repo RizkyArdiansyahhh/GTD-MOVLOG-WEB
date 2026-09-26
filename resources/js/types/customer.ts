@@ -27,6 +27,7 @@ export interface ShipmentSummary {
     current_checkpoint: string | null;
     progress_percent: number;
     eta: string;
+    updated_at?: string | null;
     units: Array<{ name: string; qty: number }>;
 }
 
@@ -81,6 +82,7 @@ export interface ShipmentDetail {
     progress_percent: number;
     eta?: string;
     current_checkpoint?: string;
+    updated_at?: string | null;
 }
 
 export interface CustomerShipmentListItem {

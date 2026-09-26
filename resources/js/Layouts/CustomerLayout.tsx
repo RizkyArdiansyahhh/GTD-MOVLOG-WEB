@@ -3,15 +3,11 @@ import { type ReactNode, useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import {
     LayoutDashboard,
-    PackageSearch,
     MapPin,
+    LifeBuoy,
     LogOut,
-    Search,
     ChevronDown,
     Building2,
-    CheckCircle,
-    AlertCircle,
-    X,
     Bell,
     UserRound,
     CheckCheck,
@@ -19,6 +15,7 @@ import {
     Truck,
 } from 'lucide-react';
 import Toast from '@/Components/Toast';
+import { PageTransition } from '@/Components/ui';
 import type { PageProps, CustomerNotificationItem } from '@/types';
 
 interface CustomerLayoutProps {
@@ -26,21 +23,27 @@ interface CustomerLayoutProps {
     title?: string;
 }
 
-const navLinks = [
+interface CustomerNavLink {
+    href: string;
+    label: string;
+    icon: typeof LayoutDashboard;
+    /** Additional paths that should highlight this tab (detail pages / aliases). */
+    aliases?: string[];
+}
+
+const navLinks: CustomerNavLink[] = [
     { href: '/customer/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/customer/monitoring-barang', label: 'Cargo Monitoring', icon: PackageSearch },
-    { href: '/customer/checkpoints', label: 'Checkpoint', icon: MapPin },
+    { href: '/customer/checkpoints', label: 'Checkpoint', icon: MapPin, aliases: ['/customer/shipment'] },
+    { href: '/customer/pusat-bantuan', label: 'Help Center', icon: LifeBuoy, aliases: ['/customer/panduan', '/customer/help-center', '/customer/system-guide'] },
 ];
 
 export default function CustomerLayout({ children }: CustomerLayoutProps) {
     const { props, url } = usePage<PageProps>();
-    const { auth, notifications, flash } = props;
+    const { auth, notifications } = props;
 
     // Dropdown states
     const [profileOpen, setProfileOpen] = useState(false);
     const [notifOpen, setNotifOpen] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [showFlash, setShowFlash] = useState(true);
 
     // Notification states
     const [unreadCount, setUnreadCount] = useState<number>(notifications?.unread_count ?? 0);
@@ -53,6 +56,11 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
 
     const [imageError, setImageError] = useState(false);
     const user = auth?.user;
+    // Retry loading the avatar whenever the URL changes (e.g. right after
+    // the user uploads a new photo).
+    useEffect(() => {
+        setImageError(false);
+    }, [user?.avatar_url]);
     const companyName = user?.customer?.company_name ?? user?.name ?? 'Customer';
 
     const getInitials = (name?: string) => {
@@ -69,14 +77,6 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
             setNotificationList(notifications.latest);
         }
     }, [notifications]);
-
-    useEffect(() => {
-        if (flash?.success || flash?.error) {
-            setShowFlash(true);
-            const timer = setTimeout(() => setShowFlash(false), 6000);
-            return () => clearTimeout(timer);
-        }
-    }, [flash]);
 
     // Close dropdowns on outside click
     useEffect(() => {
@@ -99,23 +99,29 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
         };
     }, [profileOpen, notifOpen]);
 
-    const isActive = (href: string) => {
-        if (!url) return false;
-        if (href === '/customer/dashboard') {
-            return url === '/customer/dashboard' || url === '/customer' || url === '/';
-        }
-        return url.startsWith(href);
+    // Normalize a URL/path for active-state comparison:
+    // strips query string + hash and removes trailing slashes (except root).
+    const normalizePath = (raw: string): string => {
+        if (!raw) return '/';
+        let path = raw.split(/[?#]/)[0];
+        if (!path.startsWith('/')) path = `/${path}`;
+        if (path.length > 1) path = path.replace(/\/+$/, '');
+        return path || '/';
     };
 
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (searchQuery.trim()) {
-            router.get(
-                '/customer/monitoring-barang',
-                { search: searchQuery.trim() },
-                { preserveState: true }
-            );
+    const isActive = (href: string) => {
+        if (!url) return false;
+        const current = normalizePath(url);
+        const target = normalizePath(href);
+        if (target === '/customer/dashboard') {
+            return current === '/customer/dashboard' || current === '/customer' || current === '/';
         }
+        return current === target || current.startsWith(`${target}/`);
+    };
+
+    const isNavActive = (item: CustomerNavLink) => {
+        if (isActive(item.href)) return true;
+        return item.aliases?.some((alias) => isActive(alias)) ?? false;
     };
 
     // Handle marking a single notification as read & navigating
@@ -163,7 +169,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
     const getNotificationIcon = (type: string) => {
         switch (type) {
             case 'shipment_stage_updated':
-                return <MapPin size={15} className="text-yellow-600 shrink-0" strokeWidth={1.8} />;
+                return <MapPin size={15} className="text-amber-600 shrink-0" strokeWidth={1.8} />;
             case 'document_verified':
                 return <FileCheck size={15} className="text-emerald-600 shrink-0" strokeWidth={1.8} />;
             case 'shipment_completed':
@@ -212,7 +218,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
                     {/* Inline Horizontal Menu Tabs */}
                     <nav className="hidden md:flex items-center gap-8">
                         {navLinks.map((item) => {
-                            const active = isActive(item.href);
+                            const active = isNavActive(item);
                             return (
                                 <Link
                                     key={item.href}
@@ -235,21 +241,8 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
                         })}
                     </nav>
 
-                    {/* Right Search & User Avatar */}
+                    {/* Right User Controls */}
                     <div className="flex items-center gap-3">
-                        {/* Quick Search */}
-                        <form onSubmit={handleSearch} className="hidden lg:flex items-center">
-                            <div className="flex items-center gap-2 rounded-full px-3.5 bg-slate-100/90 border border-slate-200 focus-within:ring-2 focus-within:ring-yellow-400 focus-within:bg-white transition-all w-52 h-9">
-                                <Search size={14} className="text-slate-400 shrink-0" strokeWidth={2} />
-                                <input
-                                    type="text"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    placeholder="Search..."
-                                    className="flex-1 bg-transparent text-xs text-slate-800 placeholder-slate-400 outline-none font-medium"
-                                />
-                            </div>
-                        </form>
 
                         {/* Notification Bell Dropdown Container */}
                         <div className="relative" ref={notifDropdownRef}>
@@ -259,7 +252,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
                                     setNotifOpen(!notifOpen);
                                     setProfileOpen(false);
                                 }}
-                                className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200/80 border border-slate-200 flex items-center justify-center text-slate-600 transition-colors cursor-pointer relative focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400"
+                                className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200/80 border border-slate-200 flex items-center justify-center text-slate-600 transition-colors cursor-pointer relative focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F6C343]"
                                 title="Notifikasi Sistem"
                                 aria-label="Notifikasi"
                             >
@@ -284,7 +277,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
                                                 Notifikasi
                                             </span>
                                             {unreadCount > 0 && (
-                                                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-yellow-400/20 text-yellow-800 border border-yellow-400/40">
+                                                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#F6C343]/20 text-amber-800 border border-[#F6C343]/40">
                                                     {unreadCount} baru
                                                 </span>
                                             )}
@@ -367,11 +360,11 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
                                     {/* Dropdown Footer */}
                                     <div className="p-2 border-t border-slate-100 bg-slate-50/50 text-center">
                                         <Link
-                                            href="/customer/monitoring-barang"
+                                            href="/customer/checkpoints"
                                             onClick={() => setNotifOpen(false)}
                                             className="text-[11px] font-bold text-slate-600 hover:text-slate-900 transition-colors block py-1"
                                         >
-                                            Lihat Semua Monitoring Kargo →
+                                            Lihat Semua Checkpoint →
                                         </Link>
                                     </div>
                                 </div>
@@ -385,17 +378,17 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
                                     setProfileOpen(!profileOpen);
                                     setNotifOpen(false);
                                 }}
-                                className="flex items-center gap-2.5 p-1 rounded-full hover:bg-slate-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 cursor-pointer group"
+                                className="flex items-center gap-2.5 p-1 rounded-full hover:bg-slate-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F6C343] cursor-pointer group"
                             >
                                 {user?.avatar_url && !imageError ? (
                                     <img
                                         src={user.avatar_url}
                                         alt={user?.name ?? 'Customer'}
                                         onError={() => setImageError(true)}
-                                        className="w-9 h-9 rounded-full object-cover ring-2 ring-slate-200 group-hover:ring-yellow-400 transition-all duration-150"
+                                        className="w-9 h-9 rounded-full object-cover ring-2 ring-slate-200 group-hover:ring-[#F6C343] transition-all duration-150"
                                     />
                                 ) : (
-                                    <div className="w-9 h-9 rounded-full bg-slate-900 text-[#F6C343] font-bold flex items-center justify-center text-xs ring-2 ring-slate-200 group-hover:ring-yellow-400 transition-all duration-150 shadow-sm">
+                                    <div className="w-9 h-9 rounded-full bg-slate-900 text-[#F6C343] font-bold flex items-center justify-center text-xs ring-2 ring-slate-200 group-hover:ring-[#F6C343] transition-all duration-150 shadow-sm">
                                         {getInitials(companyName)}
                                     </div>
                                 )}
@@ -450,7 +443,7 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
                 {/* Mobile Navigation Tabs */}
                 <div className="md:hidden flex items-center justify-around bg-white rounded-xl border border-slate-200 mt-2 py-2 px-3 shadow-xs">
                     {navLinks.map((item) => {
-                        const active = isActive(item.href);
+                        const active = isNavActive(item);
                         const Icon = item.icon;
                         return (
                             <Link
@@ -473,43 +466,9 @@ export default function CustomerLayout({ children }: CustomerLayoutProps) {
                 </div>
             </div>
 
-            {/* Flash Messages (Inline fallback) */}
-            {showFlash && flash?.success && (
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-3 w-full animate-in fade-in">
-                    <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-semibold flex items-center justify-between shadow-xs">
-                        <div className="flex items-center gap-2">
-                            <CheckCircle size={16} className="text-emerald-600 shrink-0" />
-                            <span>{flash.success}</span>
-                        </div>
-                        <button
-                            onClick={() => setShowFlash(false)}
-                            className="text-emerald-600 hover:text-emerald-900 p-1 cursor-pointer"
-                        >
-                            <X size={14} />
-                        </button>
-                    </div>
-                </div>
-            )}
-            {showFlash && flash?.error && (
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-3 w-full animate-in fade-in">
-                    <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-900 text-xs font-semibold flex items-center justify-between shadow-xs">
-                        <div className="flex items-center gap-2">
-                            <AlertCircle size={16} className="text-red-600 shrink-0" />
-                            <span>{flash.error}</span>
-                        </div>
-                        <button
-                            onClick={() => setShowFlash(false)}
-                            className="text-red-600 hover:text-red-900 p-1 cursor-pointer"
-                        >
-                            <X size={14} />
-                        </button>
-                    </div>
-                </div>
-            )}
-
             {/* Main Content */}
             <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 w-full">
-                {children}
+                <PageTransition>{children}</PageTransition>
             </main>
 
             {/* Footer */}
