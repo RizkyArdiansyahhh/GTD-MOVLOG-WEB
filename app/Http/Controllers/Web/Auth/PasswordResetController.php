@@ -62,17 +62,20 @@ class PasswordResetController extends Controller
             Log::info('password.reset.link_requested', [
                 'email' => $email,
                 'status' => $status,
+                'ip' => $request->ip(),
             ]);
 
             if ($status !== Password::RESET_LINK_SENT) {
                 Log::warning('password.reset.link_not_sent', [
                     'email' => $email,
                     'status' => $status,
+                    'ip' => $request->ip(),
                 ]);
             }
         } catch (Throwable $e) {
             Log::error('password.reset.mail_failed', [
                 'email' => $email,
+                'ip' => $request->ip(),
                 'exception' => get_class($e),
                 'message' => $e->getMessage(),
             ]);

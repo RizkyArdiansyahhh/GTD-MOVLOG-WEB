@@ -16,10 +16,10 @@ class ResetPasswordRequested extends Notification
 
     public function __construct(string $token, string $email)
     {
-        $this->resetUrl = url(route('password.reset', [
+        $this->resetUrl = rtrim(config('app.url'), '/') . route('password.reset', [
             'token' => $token,
             'email' => $email,
-        ], false));
+        ], false);
     }
 
     public function via(object $notifiable): array
