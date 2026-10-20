@@ -9,6 +9,9 @@ interface ToastItem {
 }
 
 let nextId = 0;
+// Expired-session events survive layout remounts and Inertia history restores.
+// A new ID still allows the same message on a later failed submission.
+const consumedErrors = new Set<string>();
 
 // ── Styles ────────────────────────────────────────────────────────────────
 const BG: Record<ToastItem['type'], string> = {
@@ -87,7 +90,7 @@ function ToastCard({ item, onDone }: { item: ToastItem; onDone: (id: number) => 
 
 // ── Toast container (reads from Inertia flash props) ──────────────────────
 export default function Toast() {
-    const { flash } = usePage<{ flash?: { success?: string; error?: string } }>().props;
+    const { flash } = usePage<{ flash?: { success?: string; error?: string; error_id?: string } }>().props;
     const [toasts, setToasts] = useState<ToastItem[]>([]);
     const prevRef = useRef<{ success?: string; error?: string }>({});
 
@@ -103,7 +106,8 @@ export default function Toast() {
                 message: flash.success,
             });
         }
-        if (flash?.error && flash.error !== prev.error) {
+        if (flash?.error && (flash.error_id ? !consumedErrors.has(flash.error_id) : flash.error !== prev.error)) {
+            if (flash.error_id) consumedErrors.add(flash.error_id);
             added.push({
                 id: ++nextId,
                 type: 'error',
@@ -117,7 +121,7 @@ export default function Toast() {
         }
 
         prevRef.current = { success: flash?.success, error: flash?.error };
-    }, [flash?.success, flash?.error]);
+    }, [flash?.success, flash?.error, flash?.error_id]);
 
     const remove = (id: number) =>
         setToasts((prev) => prev.filter((t) => t.id !== id));

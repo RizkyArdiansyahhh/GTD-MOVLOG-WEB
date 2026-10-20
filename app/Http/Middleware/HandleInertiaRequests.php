@@ -6,6 +6,7 @@ namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Handle Inertia Requests
@@ -26,6 +27,18 @@ class HandleInertiaRequests extends Middleware
     public function version(Request $request): ?string
     {
         return parent::version($request);
+    }
+
+    public function onVersionChange(Request $request, Response $response): Response
+    {
+        // Keep the custom error's HTTP status instead of replacing it with
+        // Inertia's 409 asset-reload response, which can also repeat failures.
+        if ($response->headers->get('X-Inertia') === 'true'
+            && ($response->isClientError() || $response->isServerError())) {
+            return $response;
+        }
+
+        return parent::onVersionChange($request, $response);
     }
 
     /**
@@ -78,6 +91,7 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error'   => fn () => $request->session()->get('error'),
+                'error_id' => fn () => $request->session()->get('error_id'),
             ],
         ]);
     }
