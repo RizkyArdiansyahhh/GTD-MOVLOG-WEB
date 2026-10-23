@@ -1,0 +1,14 @@
+# Optional SMTP connectivity fix for hosts whose IPv4 internet path fails.
+# Use only when the host has working IPv6; see docs/GMAIL_SMTP_SETUP.md.
+services:
+  app:
+    volumes:
+      - ./docker/app/gai-ipv6.conf:/etc/gai.conf:ro
+    networks:
+      - smtp_egress
+
+networks:
+  smtp_egress:
+    driver: bridge
+    enable_ipv4: false
+    enable_ipv6: true

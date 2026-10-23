@@ -1,6 +1,7 @@
 <?php
 
 use App\Exceptions\BusinessException;
+use App\Exceptions\WebErrorResponse;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -47,6 +48,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->respond(fn ($response, $exception, $request) => app(WebErrorResponse::class)($response, $exception, $request));
+
         // ─── JSON exceptions for API routes ───────────────────────────────
 
         // Business rule violations (from Services)
